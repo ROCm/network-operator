@@ -1,0 +1,31 @@
+apiVersion: network.amd.com/v1
+kind: AINIC
+metadata:
+  name: ainic-dpdk
+  namespace: default
+spec:
+  nodeSelector:
+    feature.node.kubernetes.io/network-ainic: "true"
+  driver:
+    image: "amd/ainic-driver:latest" 
+    version: "1.0.0"
+    args:
+      - "--log-level=debug"
+      - "--enable-dpdk"
+      - "--dpdk-driver=vfio-pci"
+    env:
+      - name: "AINIC_MODE"
+        value: "dpdk"
+      - name: "DPDK_HUGEPAGES"
+        value: "4096"
+      - name: "DEBUG"
+        value: "true"
+  networkConfig:
+    networkMode: "DPDK"
+    vfs: 16
+    mtu: 9000
+  resources:
+    memory: "4Gi"
+    cpu: "4"
+    hugepagesSize: "2Mi"
+    hugepagesCount: 2048

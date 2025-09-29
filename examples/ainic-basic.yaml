@@ -1,0 +1,33 @@
+apiVersion: network.amd.com/v1
+kind: AINIC
+metadata:
+  name: ainic-basic
+  namespace: default
+spec:
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  driver:
+    image: "amd/ainic-driver:latest"
+    version: "1.0.0"
+    args:
+      - "--log-level=info"
+      - "--enable-sriov"
+    env:
+      - name: "AINIC_MODE"
+        value: "performance"
+      - name: "DEBUG"
+        value: "false"
+  networkConfig:
+    networkMode: "SR-IOV"
+    vfs: 8
+    mtu: 9000
+    vlan:
+      - id: 100
+        priority: 1
+      - id: 200
+        priority: 2
+  resources:
+    memory: "2Gi"
+    cpu: "2"
+    hugepagesSize: "1Gi"
+    hugepagesCount: 4
