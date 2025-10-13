@@ -1,0 +1,98 @@
+apiVersion: amd.com/v1alpha1
+kind: NetworkConfig
+metadata:
+  name: test-networkconfig
+  # it is highly recommended to use the namespace where AMD Network Operator is running
+  namespace: kube-amd-network
+spec:
+  # Driver config
+  driver:
+    enable: True
+    # Specify driver image here
+    # DO NOT include the image tag as AMD Network Operator will automatically manage the image tag for you
+    # e.g. docker.io/username/amdainic_kmods
+    image: docker.io/amdpsdo/amdainic_kmods
+    # Specify the credential for your private registry if it requires credential to get pull/push access
+    # you can create the docker-registry type secret by running command like:
+    # kubectl create secret docker-registry mysecret -n KMM-NameSpace -docker-server=registry.example.com --docker-username=xxx --docker-password=xxx
+    # Make sure you created the secret within the namespace that KMM operator is running
+    imageRegistrySecret:
+      name: amdpsdo-secret
+    # Specify the driver version
+    # when you need to upgrade the driver, just update this field
+    # we will unload the old version driver and load the new version driver
+    version: 1.117.1-a-42
+
+  devicePlugin:
+    # To enable/disable NL
+    enableNodeLabeller: True
+
+    # node labeller image
+    # default value is amdpsdo/k8s-network-node-labeller:0.0.1
+    nodeLabellerImage: docker.io/amdpsdo/k8s-network-node-labeller:0.0.1
+
+    # Specify the device plugin image
+    # default value is rocm/k8s-device-plugin:latest
+    #devicePluginImage: rocm/k8s-device-plugin:latest
+    devicePluginImage: docker.io/amdpsdo/k8s-network-device-plugin:v1.0.0-beta.0
+
+    # Specify Device Plugin image pull policy
+    # default value is IfNotPresent for valid tags, Always for no tag or "latest" tag
+    devicePluginImagePullPolicy: "Always"
+
+    # Specify Node Labeller image pull policy
+    # default value is IfNotPresent for valid tags, Always for no tag or "latest" tag
+    nodeLabellerImagePullPolicy: "Always"
+
+    # image registry secret used to pull/push images
+    # ensure it's created in the same namespace as network operator is running
+    imageRegistrySecret:
+      name: amdpsdo-secret
+        
+  # Specify the metrics exporter config
+  metricsExporter:
+    # To enable/disable the metrics exporter, disabled by default
+    enable: True
+
+    # Network operator metrics exporter port where metrics are served
+    port: 5001
+
+    # kubernetes service type for metrics exporter, clusterIP(default) or NodePort
+    serviceType: "NodePort"
+
+    # Node port for metrics exporter service, metrics endpoint $node-ip:$nodePort
+    nodePort: 32500
+
+    # exporter image
+    image: docker.io/amdpsdo/device-metrics-exporter:exporter-0.0.1-139
+
+    # image pull policy for metrics exporter
+    # default value is IfNotPresent for valid tags, Always for no tag or "latest" tag
+    imagePullPolicy: "Always"
+
+    # image registry secret used to pull/push images
+    imageRegistrySecret:
+      name: amdpsdo-secret
+
+    # metrics config in configmap
+    ###config:
+      # configmap name, example config in example/metricsExporter/config.json
+      ###name: configmap-exp
+    
+    # run pods with host networking
+    hostNetwork: true
+
+  # Secondary network configuration
+  secondaryNetwork:
+    # CNI plugin configuration
+    cniPlugins:
+      enable: True
+      image: docker.io/amdpsdo/cni-plugins:v1.0.0-beta.0
+      imagePullPolicy: "Always"
+      # image registry secret used to pull/push images
+      imageRegistrySecret:
+        name: amdpsdo-secret
+  
+  # Specifythe node to be managed by this NetworkConfig Custom Resource
+  selector:
+    feature.node.kubernetes.io/amd-nic: "true"

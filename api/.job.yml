@@ -1,0 +1,13 @@
+---
+version: 2.0
+
+targets:
+  api-test:
+    commands: [ "/bin/sh", "-c", "echo hello world && exit 0" ]
+    owners: ["email:yshankar@amd.com"]
+    area:
+    sub-area:
+
+image:
+  bind_dir: "/go/src/github.com/pensando/network-operator"
+  work_dir: "/go/src/github.com/pensando/network-operator"
