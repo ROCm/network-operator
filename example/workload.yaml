@@ -1,0 +1,53 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: workload-app 
+spec: 
+  replicas: 2
+  selector: 
+    matchLabels: 
+      app: workload-app 
+  template: 
+    metadata: 
+      annotations: 
+        k8s.v1.cni.cncf.io/networks: amd-host-device-nad
+      labels: 
+        app: workload-app
+    spec:
+        # Prefer not to schedule pods with label 'app: workload-app' on same node.
+        #  If no other nodes are available, new pod may be scheduled on node that already has a matching pod.
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - workload-app
+                topologyKey: "kubernetes.io/hostname"
+        hostNetwork: false
+        containers:
+          - name: workload-container
+            image: amdpsdo/rdma-workload-ubuntu22.04:rocm6.3_rccl.ba9c_anp.01f3_ainic1.117
+            imagePullPolicy: IfNotPresent
+            workingDir: /tmp
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                /tmp/container_setup.sh
+            securityContext:
+              capabilities:
+                add: 
+                  - IPC_LOCK
+                  - NET_ADMIN
+                  - NET_RAW
+            resources:
+              requests:
+                amd.com/gpu: 1
+                amd.com/nic: 1
+              limits:
+                amd.com/gpu: 1
+                amd.com/nic: 1

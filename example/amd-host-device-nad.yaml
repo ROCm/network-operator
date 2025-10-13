@@ -1,0 +1,12 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: amd-host-device-nad
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: amd.com/vnic
+spec:
+  config: '{
+  "name": "amd-host-device-nad",
+  "cniVersion": "0.3.1",
+  "type": "amd-host-device"
+}'
