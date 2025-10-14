@@ -4,6 +4,10 @@
 # Required
 version: 2
 
+python:
+  install:
+    - requirements: docs/sphinx/requirements-extra.txt
+
 # Set the OS, Python version, and other tools you might need
 build:
   os: ubuntu-24.04
@@ -13,5 +17,4 @@ build:
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
    configuration: docs/conf.py
-
-        
+   
