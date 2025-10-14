@@ -5,7 +5,7 @@ copyright = "Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved
 author = "Shrey Ajmera, Akhila Yeruva"
 
 import os
-
+extensions = ["rocm_docs", "rocm_docs.doxygen", "sphinxcontrib.doxylink"]
 html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "instinct.docs.amd.com")
 html_context = {}
 if os.environ.get("READTHEDOCS", "") == "True":
@@ -17,7 +17,6 @@ html_title = project
 external_projects_current_project = "network-operator"
 
 # Required settings
-extensions = ["rocm_docs", "rocm_docs.doxygen", "sphinxcontrib.doxylink"]
 html_theme = "rocm_docs_theme"
 html_theme_options = {
     "flavor": "instinct",
