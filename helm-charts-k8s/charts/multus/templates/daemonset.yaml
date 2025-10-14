@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "helm-charts-k8s.fullname" . }}-multus
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "multus.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: multus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: multus
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: multus
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/thin_entrypoint"]
+          args:
+          - "--multus-conf-file={{- if .Values.config -}}/tmp/multus-conf/00-multus.conf{{- else -}}auto{{- end -}}"
+          - "--multus-autoconfig-dir=/host/etc/cni/net.d"
+          - "--cni-conf-dir=/host/etc/cni/net.d"
+          - "--cleanup-config-on-exit"
+          - "--skip-config-watch"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 300Mi
+          securityContext:
+            privileged: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - name: cni-bin
+              mountPath: /host{{ .Values.cniBinDir }}
+            - name: cni-conf
+              mountPath: /host{{ .Values.multusConfig.confDir }}
+          {{- if .Values.config }}
+            - name: multus-cni-config
+              mountPath: /tmp/multus-conf
+          {{- end }}
+      initContainers:
+        - name: install-multus-binary
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/install_multus"]
+          args:
+            - "--type"
+            - "thin"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "15Mi"
+          securityContext:
+            privileged: true
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - name: cni-bin
+              mountPath: /host/opt/cni/bin
+              mountPropagation: Bidirectional
+      volumes:
+        - name: cni-bin
+          hostPath:
+            path: {{ .Values.cniBinDir }}
+        - name: cni-conf
+          hostPath:
+            path: {{ .Values.multusConfig.confDir }}
+      {{- if .Values.config }}
+        - name: multus-cni-config
+          configMap:
+            name: "{{ .Release.Name }}-multus-cni-config"
+            items:
+            - key: cni-conf.json
+              path: 00-multus.conf
+      {{- end }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  minReadySeconds: 5

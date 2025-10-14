@@ -1,0 +1,11 @@
+serviceAccountName: multus
+image:
+  repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+  tag: v4.2.2
+  pullPolicy: IfNotPresent
+rbac:
+  create: true
+cniBinDir: /opt/cni/bin
+multusConfig:
+  confDir: /etc/cni/net.d
+  fileName: 00-multus.conf
