@@ -1,0 +1,12 @@
+dependencies:
+- name: node-feature-discovery
+  repository: https://kubernetes-sigs.github.io/node-feature-discovery/charts
+  version: 0.16.1
+- name: kmm
+  repository: file://./charts/kmm
+  version: v1.0.0
+- name: multus
+  repository: file://./charts/multus
+  version: 1.0.0
+digest: sha256:04b5697c8fd25d5cb6cac27cf0248a255fd8a31e9cd3c9b7b8f114eedf788eab
+generated: "2025-10-13T19:31:01.935561972Z"
