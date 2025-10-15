@@ -12,9 +12,10 @@ documentation for details.
 
 
 
-.. toctree::
-   :maxdepth: 2
-
-   overview.md
-   troubleshooting.md
+```{toctree}
+:maxdepth: 2
+:caption: Contents:
+ 
+overview.md
+troubleshooting.md
    
