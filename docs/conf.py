@@ -16,7 +16,7 @@ html_title = project
 external_projects_current_project = "network-operator"
 
 # Required settings
-html_theme = "rocm_docs_theme"
+html_theme = "alabaster"
 html_theme_options = {
     "flavor": "instinct",
     "link_main_doc": True,
