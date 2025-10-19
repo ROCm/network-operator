@@ -1,0 +1,20 @@
+{% macro top_level_header(branch, latest_version, release_candidate_version) -%}
+    <a class="klavika-font hover-opacity" href="https://rocm.blogs.amd.com/">ROCm&#8482; Blogs</a>
+{%- endmacro -%}
+
+{% macro version_list() -%}{%- endmacro -%}
+
+{%
+set repo_url = theme_repository_url|replace("-internal", "")
+%}
+{% set repo_url = repo_url|replace("http://", "https://") %}
+{%
+set nav_secondary_items = {
+    "GitHub": repo_url,
+    "Community": "https://github.com/ROCm/ROCm/discussions",
+    "ROCm&#8482; Docs": "https://rocm.docs.amd.com",
+    "ROCm Developer Hub": "https://www.amd.com/en/developer/resources/rocm-hub.html",
+    "Instinct&#8482; Docs": "https://instinct.docs.amd.com",
+    "Support": repo_url + "/issues/new/choose"
+}
+%}

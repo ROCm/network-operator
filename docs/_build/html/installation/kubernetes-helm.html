@@ -1,0 +1,1114 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Kubernetes (Helm) &#8212; Network Operator</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=643846e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/rocm_header.css?v=9557e3d1" />
+    <link rel="stylesheet" type="text/css" href="../_static/rocm_footer.css?v=7095035a" />
+    <link rel="stylesheet" type="text/css" href="../_static/fonts.css?v=fcff5274" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=a1637f0b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script async="async" src="../_static/code_word_breaks.js?v=327952c4"></script>
+    <script async="async" src="../_static/renameVersionLinks.js?v=929fe5e4"></script>
+    <script async="async" src="../_static/rdcMisc.js?v=01f88d96"></script>
+    <script async="async" src="../_static/theme_mode_captions.js?v=15f4ec5d"></script>
+    <script defer="defer" src="../_static/search.js?v=90a4452c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'installation/kubernetes-helm';</script>
+    <script async="async" src="https://download.amd.com/js/analytics/analyticsinit.js"></script>
+    <link rel="canonical" href="instinct.docs.amd.com/installation/kubernetes-helm.html" />
+    <link rel="icon" href="https://www.amd.com/content/dam/code/images/favicon/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <meta name="google-site-verification" content="vo35SZt_GASsTHAEmdww7AYKPCvZyzLvOXBl8guBME4" />
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+
+<header class="common-header" >
+    <nav class="navbar navbar-expand-xl">
+        <div class="container-fluid main-nav rocm-header">
+            
+            <button class="navbar-toggler collapsed" id="nav-icon" data-tracking-information="mainMenuToggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="header-logo">
+                <a class="navbar-brand" href="https://www.amd.com/">
+                    <img src="../_static/images/amd-header-logo.svg" alt="AMD Logo" title="AMD Logo" width="90" class="d-inline-block align-text-top hover-opacity"/>
+                </a>
+                <div class="vr vr mx-40 my-25"></div>
+                
+        
+    
+    <a class="klavika-font hover-opacity" href="https://instinct.docs.amd.com">Instinct&#8482; Documentation</a>
+                
+            </div>
+            <div class="icon-nav text-center d-flex ms-auto">
+            </div>
+        </div>
+    </nav>
+    
+    <nav class="navbar navbar-expand-xl second-level-nav">
+        <div class="container-fluid main-nav">
+            <div class="navbar-nav-container collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav nav-mega me-auto mb-2 mb-lg-0 col-xl-10">
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="http://github.com/ROCm/network-operator" id="navgithub" role="button" aria-expanded="false" target="_blank" >
+                                GitHub
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="https://github.com/ROCm/ROCm/discussions" id="navcommunity" role="button" aria-expanded="false" target="_blank" >
+                                Community
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="https://rocm.blogs.amd.com/" id="navblogs" role="button" aria-expanded="false" target="_blank" >
+                                Blogs
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="https://www.amd.com/en/developer/resources/rocm-hub.html" id="navrocm-developer-hub" role="button" aria-expanded="false" target="_blank" >
+                                ROCm Developer Hub
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="https://rocm.docs.amd.com" id="navrocm&#8482;-docs" role="button" aria-expanded="false" target="_blank" >
+                                ROCm&#8482; Docs
+                            </a>
+                        </li>
+                    
+                        <li class="nav-item">
+                            <a class="nav-link top-level header-menu-links" href="http://github.com/ROCm/network-operator/issues/new/choose" id="navsupport" role="button" aria-expanded="false" target="_blank" >
+                                Support
+                            </a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+</header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<a class="navbar-brand logo" href="https://instinct.docs.amd.com">
+    <p>Instinct Documentation</p>
+</a></div>
+          
+        
+      </div>
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Network Operator</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-angle-right"></span>
+  </label></div>
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Kubernetes (Helm)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Kubernetes (Helm)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Kubernetes (Helm)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#system-requirements">System Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cluster-requirements">Cluster Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#required-access">Required Access</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-installation-steps">Pre-Installation Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#verify-cluster-status">1. Verify Cluster Status</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-network-operator">Installing Network Operator</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-operator">1. Install the Operator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#helm-chart-customization-parameters">2. Helm Chart Customization Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#verify-the-operator-installation">3. Verify the Operator Installation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-configuration">Resource Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-manager-resource-settings">Controller Manager Resource Settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-adjust-resource-settings">When to Adjust Resource Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-custom-resource">Install Custom Resource</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#post-installation-verification">Post-Installation Verification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-a-workload-deployment">Test a Workload Deployment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#uninstallation">Uninstallation</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-of-gpu-operator-and-network-operator-together">Installation of GPU Operator and Network Operator together</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-cert-manager">1. Install Cert-Manager</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-amd-gpu-operator">2. Install AMD GPU Operator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-amd-network-operator">3. Install AMD Network Operator</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Uninstallation</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="kubernetes-helm">
+<h1>Kubernetes (Helm)<a class="headerlink" href="#kubernetes-helm" title="Link to this heading">#</a></h1>
+<p>This guide walks through installing the AMD Network Operator on a Kubernetes cluster using Helm.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<section id="system-requirements">
+<h3>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Kubernetes cluster v1.29.0 or later</p></li>
+<li><p>Helm v3.2.0 or later</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kubectl</span></code> command-line tool configured with access to the cluster</p></li>
+<li><p>Cluster admin privileges</p></li>
+</ul>
+</section>
+<section id="cluster-requirements">
+<h3>Cluster Requirements<a class="headerlink" href="#cluster-requirements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>A functioning Kubernetes cluster with:</p>
+<ul>
+<li><p>All system pods running and ready</p></li>
+<li><p>Properly configured Container Network Interface (CNI)</p></li>
+<li><p>Worker nodes with AMD NICs</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="required-access">
+<h3>Required Access<a class="headerlink" href="#required-access" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Access to pull images from:</p>
+<ul>
+<li><p>AMD’s container registry or your configured registry</p></li>
+<li><p>Public container registries (Docker Hub, Quay.io)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="pre-installation-steps">
+<h2>Pre-Installation Steps<a class="headerlink" href="#pre-installation-steps" title="Link to this heading">#</a></h2>
+<section id="verify-cluster-status">
+<h3>1. Verify Cluster Status<a class="headerlink" href="#verify-cluster-status" title="Link to this heading">#</a></h3>
+<p>Check that your cluster is healthy and running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-A
+</pre></div>
+</div>
+<p>Expected output should show:</p>
+<ul class="simple">
+<li><p>All nodes in <code class="docutils literal notranslate"><span class="pre">Ready</span></code> state</p></li>
+<li><p>System pods running (kube-system namespace)</p></li>
+<li><p>CNI pods running (e.g., Flannel, Calico)</p></li>
+</ul>
+<p>Example of a healthy cluster:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NAMESPACE<span class="w">      </span>NAME<span class="w">                                          </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+kube-flannel<span class="w">   </span>kube-flannel-ds-7krtk<span class="w">                         </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10d
+kube-system<span class="w">    </span>coredns-7db6d8ff4d-644fp<span class="w">                      </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>2d20h
+kube-system<span class="w">    </span>kube-apiserver-control-plane<span class="w">                  </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>64d
+kube-system<span class="w">    </span>kube-controller-manager-control-plane<span class="w">         </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>64d
+kube-system<span class="w">    </span>kube-scheduler-control-plane<span class="w">                  </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>64d
+</pre></div>
+</div>
+</section>
+</section>
+<section id="installing-network-operator">
+<h2>Installing Network Operator<a class="headerlink" href="#installing-network-operator" title="Link to this heading">#</a></h2>
+<blockquote>
+<div><p><strong>Warning</strong></p>
+<p>If you are trying to install AMD GPU Operator and AMD Network Operator together within the same Kubernetes cluster, please jump to this section <a class="reference internal" href="#installation-of-gpu-operator-and-network-operator-together">Installation of GPU Operator and Network Operator together</a></p>
+</div></blockquote>
+<section id="install-the-operator">
+<h3>1. Install the Operator<a class="headerlink" href="#install-the-operator" title="Link to this heading">#</a></h3>
+<p>Basic installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-network-operator<span class="w"> </span>network-operator-helm-k8s-v1.0.0.tgz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-n<span class="w"> </span>kube-amd-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>kmm.enabled<span class="o">=</span><span class="nb">false</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Installation Options</p>
+<ul class="simple">
+<li><p>Skip NFD installation: <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">node-feature-discovery.enabled=false</span></code></p></li>
+<li><p>Skip Multus installation: <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">multus.enabled=false</span></code></p></li>
+<li><p>Disable default NFD rules: <code class="docutils literal notranslate"><span class="pre">--installdefaultNFDRule=false</span></code></p></li>
+</ul>
+</div>
+</section>
+<section id="helm-chart-customization-parameters">
+<h3>2. Helm Chart Customization Parameters<a class="headerlink" href="#helm-chart-customization-parameters" title="Link to this heading">#</a></h3>
+<p>Installation with custom options:</p>
+<ul class="simple">
+<li><p>Prepare your custom configuration in a YAML file (e.g. <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code>), then use it with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code> command to deploy your helm charts.</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-network-operator<span class="w"> </span>network-operator-helm-k8s-v1.0.0.tgz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--namespace<span class="w"> </span>kube-amd-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-f<span class="w"> </span>values.yaml
+</pre></div>
+</div>
+<p>The following parameters are able to be configured when using the Helm Chart. In order to view all available options, please refer to this section or run the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar<span class="w"> </span>-xvf<span class="w"> </span>network-operator-helm-k8s-v1.0.0.tgz
+helm<span class="w"> </span>show<span class="w"> </span>values<span class="w"> </span>./network-operator-charts/
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>controllerManager.manager.image.repository</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;docker.io/rocm/network-operator&quot;</span></code></p></td>
+<td><p>AMD Network operator controller manager image repository</p></td>
+</tr>
+<tr class="row-odd"><td><p>controllerManager.manager.image.tag</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;v1.2.0&quot;</span></code></p></td>
+<td><p>AMD Network operator controller manager image tag</p></td>
+</tr>
+<tr class="row-even"><td><p>controllerManager.manager.imagePullPolicy</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;Always&quot;</span></code></p></td>
+<td><p>Image pull policy for AMD GNetworkPU operator controller manager pod</p></td>
+</tr>
+<tr class="row-odd"><td><p>controllerManager.manager.imagePullSecrets</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-even"><td><p>controllerManager.manager.resources.limits.cpu</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;1000m&quot;</span></code></p></td>
+<td><p>CPU limits for the controller manager. Consider increasing for large clusters</p></td>
+</tr>
+<tr class="row-odd"><td><p>controllerManager.manager.resources.limits.memory</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;1Gi&quot;</span></code></p></td>
+<td><p>Memory limits for the controller manager. Consider increasing if experiencing OOM issues</p></td>
+</tr>
+<tr class="row-even"><td><p>controllerManager.manager.resources.requests.cpu</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;100m&quot;</span></code></p></td>
+<td><p>CPU requests for the controller manager. Adjust based on observed CPU usage</p></td>
+</tr>
+<tr class="row-odd"><td><p>controllerManager.manager.resources.requests.memory</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;256Mi&quot;</span></code></p></td>
+<td><p>Memory requests for the controller manager. Adjust based on observed memory usage</p></td>
+</tr>
+<tr class="row-even"><td><p>controllerManager.nodeAffinity.nodeSelectorTerms</p></td>
+<td><p>list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[{&quot;key&quot;:&quot;node-role.kubernetes.io/control-plane&quot;,&quot;operator&quot;:&quot;Exists&quot;},{&quot;key&quot;:&quot;node-role.kubernetes.io/master&quot;,&quot;operator&quot;:&quot;Exists&quot;}]</span></code></p></td>
+<td><p>Node affinity selector terms config for the AMD Network operator controller manager, set it to [] if you want to make affinity config empty</p></td>
+</tr>
+<tr class="row-odd"><td><p>controllerManager.nodeSelector</p></td>
+<td><p>object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
+<td><p>Node selector for AMD Network operator controller manager deployment</p></td>
+</tr>
+<tr class="row-even"><td><p>installdefaultNFDRule</p></td>
+<td><p>bool</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Set to true to install default NFD rule for detecting AMD NIC hardware based on pci vendor ID and device ID</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.manager.env.relatedImageBuild</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;gcr.io/kaniko-project/executor:v1.23.2&quot;</span></code></p></td>
+<td><p>KMM kaniko builder image for building driver image within cluster</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.manager.env.relatedImageBuildPullSecret</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling KMM kaniko builder image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.manager.env.relatedImageSign</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;docker.io/amdpsdo/kernel-module-management-signimage:v1.4.0&quot;</span></code></p></td>
+<td><p>KMM signer image for signing driver image’s kernel module with given key pairs within cluster</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.manager.env.relatedImageSignPullSecret</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling KMM signer image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.manager.env.relatedImageWorker</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;docker.io/amdpsdo/kernel-module-management-worker:v1.4.0&quot;</span></code></p></td>
+<td><p>KMM worker image for loading / unloading driver kernel module on worker nodes</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.manager.env.relatedImageWorkerPullSecret</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling KMM worker image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.manager.image.repository</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;docker.io/amdpsdo/kernel-module-management-operator&quot;</span></code></p></td>
+<td><p>KMM controller manager image repository</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.manager.image.tag</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;v1.4.0&quot;</span></code></p></td>
+<td><p>KMM controller manager image tag</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.manager.imagePullPolicy</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;Always&quot;</span></code></p></td>
+<td><p>Image pull policy for KMM controller manager pod</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.manager.imagePullSecrets</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling KMM controller manager image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.controller.nodeAffinity.nodeSelectorTerms</p></td>
+<td><p>list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[{&quot;key&quot;:&quot;node-role.kubernetes.io/control-plane&quot;,&quot;operator&quot;:&quot;Exists&quot;},{&quot;key&quot;:&quot;node-role.kubernetes.io/master&quot;,&quot;operator&quot;:&quot;Exists&quot;}]</span></code></p></td>
+<td><p>Node affinity selector terms config for the KMM controller manager deployment, set it to [] if you want to make affinity config empty</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.controller.nodeSelector</p></td>
+<td><p>object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
+<td><p>Node selector for the KMM controller manager deployment</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.enabled</p></td>
+<td><p>bool</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Set to true/false to enable/disable the installation of kernel module management (KMM) operator</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.webhookServer.nodeAffinity.nodeSelectorTerms</p></td>
+<td><p>list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[{&quot;key&quot;:&quot;node-role.kubernetes.io/control-plane&quot;,&quot;operator&quot;:&quot;Exists&quot;},{&quot;key&quot;:&quot;node-role.kubernetes.io/master&quot;,&quot;operator&quot;:&quot;Exists&quot;}]</span></code></p></td>
+<td><p>Node affinity selector terms config for the KMM webhook deployment, set it to [] if you want to make affinity config empty</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.webhookServer.nodeSelector</p></td>
+<td><p>object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
+<td><p>KMM webhook’s deployment node selector</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.webhookServer.webhookServer.image.repository</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;docker.io/rocm/kernel-module-management-webhook-server&quot;</span></code></p></td>
+<td><p>KMM webhook image repository</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.webhookServer.webhookServer.image.tag</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;dev&quot;</span></code></p></td>
+<td><p>KMM webhook image tag</p></td>
+</tr>
+<tr class="row-even"><td><p>kmm.webhookServer.webhookServer.imagePullPolicy</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;Always&quot;</span></code></p></td>
+<td><p>Image pull policy for KMM webhook pod</p></td>
+</tr>
+<tr class="row-odd"><td><p>kmm.webhookServer.webhookServer.imagePullSecrets</p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>Image pull secret name for pulling KMM webhook image if registry needs credential to pull image</p></td>
+</tr>
+<tr class="row-even"><td><p>upgradeCRD</p></td>
+<td><p>bool</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>CRD will be patched as pre-upgrade/pre-rollback hook when doing helm upgrade/rollback to current helm chart</p></td>
+</tr>
+<tr class="row-odd"><td><p>node-feature-discovery.enabled</p></td>
+<td><p>bool</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Set to true/false to enable/disable the installation of node feature discovery (NFD) operator</p></td>
+</tr>
+<tr class="row-even"><td><p>multus.enabled</p></td>
+<td><p>bool</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Set to true/false to enable/disable the installation of multus</p></td>
+</tr>
+<tr class="row-odd"><td><p>multus.config</p></td>
+<td><p>map</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
+<td><p>CNI configuration to be passed to the multus configmap. If not set, multus will auto-generate a default configuration</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="verify-the-operator-installation">
+<h3>3. Verify the Operator Installation<a class="headerlink" href="#verify-the-operator-installation" title="Link to this heading">#</a></h3>
+<p>Check that all operator components are running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kube-amd-network
+</pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NAME<span class="w">                                                              </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+amd-network-operator-multus-multus-qjlvq<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span>
+amd-network-operator-network-operator-charts-controller-man9bgt<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>9h
+amd-network-operator-node-feature-discovery-gc-77d6d6449c-46868<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>9h
+amd-network-operator-node-feature-discovery-master-869f4bbwjp75<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>9h
+amd-network-operator-node-feature-discovery-worker-vzwf9<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>9h
+</pre></div>
+</div>
+<p>Verify that nodes with AMD NIC hardware are properly labeled:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-L<span class="w"> </span>feature.node.kubernetes.io/amd-nic
+</pre></div>
+</div>
+</section>
+</section>
+<section id="resource-configuration">
+<h2>Resource Configuration<a class="headerlink" href="#resource-configuration" title="Link to this heading">#</a></h2>
+<section id="controller-manager-resource-settings">
+<h3>Controller Manager Resource Settings<a class="headerlink" href="#controller-manager-resource-settings" title="Link to this heading">#</a></h3>
+<p>The AMD Network Operator controller manager component has default resource limits and requests configured for typical usage scenarios. You may need to adjust these values based on your specific cluster environment:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">controllerManager</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">manager</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000m</span>
+<span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1Gi</span>
+<span class="w">      </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100m</span>
+<span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256Mi</span>
+</pre></div>
+</div>
+<section id="when-to-adjust-resource-settings">
+<h4>When to Adjust Resource Settings<a class="headerlink" href="#when-to-adjust-resource-settings" title="Link to this heading">#</a></h4>
+<p>You should consider adjusting the controller manager resource settings in these scenarios:</p>
+<ul class="simple">
+<li><p><strong>Large clusters</strong>: If managing a large number of nodes or NIC devices, consider increasing both CPU and memory limits</p></li>
+<li><p><strong>Memory pressure</strong>: If you observe OOM (Out of Memory) kills in controller manager pods, increase the memory limit and request</p></li>
+<li><p><strong>CPU pressure</strong>: If the controller manager is experiencing throttling or slow response times during operations, increase the CPU limit and request</p></li>
+<li><p><strong>Resource-constrained environments</strong>: For smaller development or test clusters, you may reduce these values to conserve resources</p></li>
+</ul>
+<p>You can apply resource changes by updating your values.yaml file and upgrading the Helm release:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>upgrade<span class="w"> </span>amd-network-operator<span class="w"> </span>network-operator-helm-k8s-v1.0.0.tgz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--debug<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--namespace<span class="w"> </span>kube-amd-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-f<span class="w"> </span>values.yaml
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="install-custom-resource">
+<h2>Install Custom Resource<a class="headerlink" href="#install-custom-resource" title="Link to this heading">#</a></h2>
+<p>After the installation of AMD GPU Operator:</p>
+<ul class="simple">
+<li><p>For the network operator to begin working and orchestrate its operands, a <code class="docutils literal notranslate"><span class="pre">NetworkConfig</span></code> custom resource must be created. This can be accomplished by preparing a YAML manifest and applying it by running <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">apply</span> <span class="pre">-f</span> <span class="pre">networkconfig.yaml</span></code>.</p></li>
+<li><p>For custom resource definition and more detailed information, please refer to <a class="reference internal" href="networkconfig.html"><span class="std std-doc">Custom Resource Installation Guide</span></a>. Here are some examples for common deployment scenarios.</p></li>
+</ul>
+</section>
+<section id="post-installation-verification">
+<h2>Post-Installation Verification<a class="headerlink" href="#post-installation-verification" title="Link to this heading">#</a></h2>
+<p>Verify driver installation status:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>networkconfigs<span class="w"> </span>-n<span class="w"> </span>kube-amd-network<span class="w"> </span>-oyaml
+</pre></div>
+</div>
+<p>Verify the AMD NIC allocatable resource:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-oyaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;amd.com/nic&quot;</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-oyaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;amd.com/vnic&quot;</span>
+</pre></div>
+</div>
+<p>Verify the AMD NIC node label:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-oyaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w">  </span><span class="s2">&quot;amd.com&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="test-a-workload-deployment">
+<h2>Test a Workload Deployment<a class="headerlink" href="#test-a-workload-deployment" title="Link to this heading">#</a></h2>
+<p>To deploy the workload with an AMD NIC, please refer to <a class="reference internal" href="workload.html"><span class="std std-doc">workload</span></a> for the detailed instructions.</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<p>If you encounter issues during installation:</p>
+<ul class="simple">
+<li><p>Check operator logs:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kube-amd-network<span class="w"> </span>deployment<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>amd-network-operator-network-operator-charts-controller-manager
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Check NFD status:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>nodefeaturerules<span class="w"> </span>-n<span class="w"> </span>kube-amd-network
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Check Multus status:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>network-attachment-definition<span class="w"> </span>-n<span class="w"> </span>kube-amd-network
+</pre></div>
+</div>
+<p>For more detailed troubleshooting steps, see our <a class="reference internal" href="../troubleshooting.html"><span class="std std-doc">Troubleshooting Guide</span></a>.</p>
+</section>
+<section id="uninstallation">
+<h2>Uninstallation<a class="headerlink" href="#uninstallation" title="Link to this heading">#</a></h2>
+<p>Please refer to the <a class="reference internal" href="../uninstallation/uninstallation.html"><span class="std std-doc">Uninstallation</span></a> document for uninstalling related resources.</p>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="installation-of-gpu-operator-and-network-operator-together">
+<h1>Installation of GPU Operator and Network Operator together<a class="headerlink" href="#installation-of-gpu-operator-and-network-operator-together" title="Link to this heading">#</a></h1>
+<p>AMD GPU Operator and AMD Network Operator could co-exist in the same Kubernetes cluster, here are the instructions to do the installation and uninstallation for the use case where 2 operators are working together.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<section id="install-cert-manager">
+<h3>1. Install Cert-Manager<a class="headerlink" href="#install-cert-manager" title="Link to this heading">#</a></h3>
+<p>If cert-manager is already installed in your cluster, you can skip this step.</p>
+<p>The Kubernetes <code class="docutils literal notranslate"><span class="pre">cert-manager</span></code> is a pre-requisite required by the AMD GPU Operator to do the TLS certificate management.</p>
+<ul class="simple">
+<li><p>Add the cert-manager repository:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>jetstack<span class="w"> </span>https://charts.jetstack.io<span class="w"> </span>--force-update
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Install cert-manager:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>cert-manager<span class="w"> </span>jetstack/cert-manager<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--namespace<span class="w"> </span>cert-manager<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--version<span class="w"> </span>v1.15.1<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>crds.enabled<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Verify the installation:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>cert-manager
+</pre></div>
+</div>
+<p>Expected output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NAME<span class="w">                                       </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+cert-manager-84489bc478-qjwmw<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>2m
+cert-manager-cainjector-7477d56b47-v8nq8<span class="w">  </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>2m
+cert-manager-webhook-6d5cb854fc-h6vbk<span class="w">     </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>2m
+</pre></div>
+</div>
+</section>
+<section id="install-amd-gpu-operator">
+<h3>2. Install AMD GPU Operator<a class="headerlink" href="#install-amd-gpu-operator" title="Link to this heading">#</a></h3>
+<p>If AMD GPU Operator is already installed in your cluster, you can skip this step.</p>
+<p>Please refer to <a class="reference external" href="https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html#installing-operator">AMD GPU Operator official documentation</a> for detailed installation and configuration instructions. Here are the quick start instructions:</p>
+<p>2.1 Add ROCm helm chart repository</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add AMD GPU Operator helm repository</span>
+helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>rocm<span class="w"> </span>https://rocm.github.io/gpu-operator
+helm<span class="w"> </span>repo<span class="w"> </span>update
+</pre></div>
+</div>
+<p>2.2 Install AMD GPU Operator helm chart</p>
+<p>The default command to install the chart is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-gpu-operator<span class="w"> </span>rocm/gpu-operator-charts<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--namespace<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--version<span class="o">=</span>v1.4.0-beta.0
+</pre></div>
+</div>
+<p>Different users may have various deployment scenarios, please consider configuring these helm options when installing the helm chart:</p>
+<ul>
+<li><p>If you are using a VM based worker node:</p>
+<ul>
+<li><p>case 1: Using AMD GPU in a Virtual Machine with VF-Passthrough, please set <code class="docutils literal notranslate"><span class="pre">amd-vgpu</span></code> in the selector:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-gpu-operator<span class="w"> </span>rocm/gpu-operator-charts<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--namespace<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--version<span class="o">=</span>v1.4.0-beta.0<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set-json<span class="w"> </span><span class="s1">&#39;deviceConfig.spec.selector={&quot;feature.node.kubernetes.io/amd-gpu&quot;:null,&quot;feature.node.kubernetes.io/amd-vgpu&quot;:&quot;true&quot;}&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p>case 2: Using AMD GPU in a Virtual Machine with PF-Passthrough, please set <code class="docutils literal notranslate"><span class="pre">amd-gpu</span></code> in the selector:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-gpu-operator<span class="w"> </span>rocm/gpu-operator-charts<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--namespace<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--version<span class="o">=</span>v1.4.0-beta.0<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set-json<span class="w"> </span><span class="s1">&#39;deviceConfig.spec.selector={&quot;feature.node.kubernetes.io/amd-gpu&quot;:&quot;true&quot;}&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>If your worker node doesn’t have inbox / pre-installed amdgpu kernel module loaded:
+Use GPU Operator to install specific version of out-of-tree <code class="docutils literal notranslate"><span class="pre">amdgpu-dkms</span></code> kernel module.</p>
+<p>If you want to use AMD GPU Operator to install kernel module, you need to prepare an image registry and create corresponding secret to access your image registry if needed:</p>
+<p><strong>Due to a known issue in v1.4.0-beta.0, if you are using Ubuntu 24.04 please make sure <code class="docutils literal notranslate"><span class="pre">linux-headers-$(uname</span> <span class="pre">-r)</span></code> and <code class="docutils literal notranslate"><span class="pre">linux-modules-extra-$(uname</span> <span class="pre">-r)</span></code> are installed on your worker node then move forward with out-of-tree driver installation, this issue will be fixed in v1.4.0 GPU Operator official release</strong></p>
+<ul class="simple">
+<li><p>case 1: For the secure registry which requires credential:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. prepare image registry to store driver image (e.g. dockerHub)</span>
+<span class="c1"># 2. setup image registry secret:</span>
+<span class="c1"># kubectl create secret docker-registry mySecret -n kube-amd-gpu --docker-username=xxx --docker-password=xxx --docker-server=https://index.docker.io/v1/</span>
+helm<span class="w"> </span>install<span class="w"> </span>amd-gpu-operator<span class="w"> </span>rocm/gpu-operator-charts<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--namespace<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--version<span class="o">=</span>v1.4.0-beta.0<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.enable<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.blacklist<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.version<span class="o">=</span><span class="m">7</span>.0.1<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.image<span class="o">=</span>docker.io/myUserName/amd-driver-image<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.imageRegistrySecret.name<span class="o">=</span>mySecret
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>case 2: For the insecure image registry:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># prepare insecure image registry to store driver image</span>
+helm<span class="w"> </span>install<span class="w"> </span>amd-gpu-operator<span class="w"> </span>rocm/gpu-operator-charts<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--namespace<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--version<span class="o">=</span>v1.4.0-beta.0<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.enable<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.blacklist<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.version<span class="o">=</span><span class="m">7</span>.0.1<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.image<span class="o">=</span>docker.io/myUserName/amd-driver-image<span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.imageRegistryTLS.insecure<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--set<span class="w"> </span>deviceConfig.spec.driver.imageRegistryTLS.insecureSkipTLSVerify<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<p>then the driver builder pod will be triggered to build the amdgpu driver for your worker node</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-gpu<span class="w">   </span>default-build-lsnkw<span class="w">                                               </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">    </span><span class="m">0</span><span class="w">          </span>3s
+</pre></div>
+</div>
+</li>
+</ul>
+<p>2.3 Verify AMD GPU Operator installation</p>
+<p>After installing AMD GPU Operator you should be able to see the operands (device plugin, metrics exporter, etc) are running and the AMD GPU resources are being advertised</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-gpu<span class="w">   </span>default-device-plugin-h7rhq<span class="w">                                       </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>25s
+kube-amd-gpu<span class="w">   </span>default-metrics-exporter-qhx8s<span class="w">                                    </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>25s
+kube-amd-gpu<span class="w">   </span>default-node-labeller-zx4ww<span class="w">                                       </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>node<span class="w"> </span>-oyaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>amd.com/gpu
+amd.com/gpu:<span class="w"> </span><span class="s2">&quot;8&quot;</span>
+amd.com/gpu:<span class="w"> </span><span class="s2">&quot;8&quot;</span>
+</pre></div>
+</div>
+<p>By default the AMD GPU Operator would install Node Feature Discovery (NFD) operator and Kernel Module Management (KMM), please make sure those 2 operators are up and running (either pre-installed or installed by AMD GPU Operator helm charts) after this step.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-gpu<span class="w">   </span>amd-gpu-operator-kmm-controller-d9d8d48bc-r86j7<span class="w">                   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+kube-amd-gpu<span class="w">   </span>amd-gpu-operator-kmm-webhook-server-5c85557488-d8jbj<span class="w">              </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+kube-amd-gpu<span class="w">   </span>amd-gpu-operator-node-feature-discovery-gc-b8547dfb7-jw2x9<span class="w">        </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+kube-amd-gpu<span class="w">   </span>amd-gpu-operator-node-feature-discovery-master-6f587cd597-csbqv<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+kube-amd-gpu<span class="w">   </span>amd-gpu-operator-node-feature-discovery-worker-6c66c<span class="w">              </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>10m
+</pre></div>
+</div>
+</section>
+<section id="install-amd-network-operator">
+<h3>3. Install AMD Network Operator<a class="headerlink" href="#install-amd-network-operator" title="Link to this heading">#</a></h3>
+<p>3.1 Install without duplicating NFD and KMM</p>
+<p>After installing AMD GPU Operator you can start to install AMD Network Operator. Remember that we already installed <code class="docutils literal notranslate"><span class="pre">NFD</span></code> and <code class="docutils literal notranslate"><span class="pre">KMM</span></code> during installation of AMD GPU Operator, so you shouldn’t install them again when installing AMD Network Operator. Please disable the deployment of those 2 dependent operators when installing AMD Network Operator.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>amd-network-operator<span class="w"> </span>network-operator-helm-k8s-v1.0.0.tgz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-n<span class="w"> </span>kube-amd-network<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>kmm.enabled<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>node-feature-discovery.enabled<span class="o">=</span><span class="nb">false</span>
+</pre></div>
+</div>
+<p>Then during this step only the network operator and multus CNI pods would be brought up in the new namespace <code class="docutils literal notranslate"><span class="pre">kube-amd-network</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-network<span class="w">   </span>amd-network-operator-multus-multus-h5jvp<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>17s
+kube-amd-network<span class="w">   </span>amd-network-operator-network-operator-charts-controller-ma2s7cs<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>17s
+</pre></div>
+</div>
+<p>3.2 (Optional) Install the IONIC kernel module</p>
+<p>If your worker nodes don’t have inbox / pre-installed ionic kernel module and you want to re-use te existing KMM deployment to install ionic kernel module for AI NIC, you can follow the <a class="reference internal" href="../drivers/drivers.html"><span class="std std-doc">drivers installation section</span></a> to install ionic kernel module for your worker nodes.</p>
+<blockquote>
+<div><p><strong>Note</strong></p>
+<p>You can keep all the Network Operator related image registry secrets in the <code class="docutils literal notranslate"><span class="pre">kube-amd-network</span></code> namespace. The KMM operator is able to manage the AMD Network Operator’s kernel module in <code class="docutils literal notranslate"><span class="pre">kube-amd-network</span></code> namespace even though the KMM itself is deployed in another namespace.</p>
+</div></blockquote>
+<p>If you configured the image registry correctly the KMM builder pod would be triggered to build IONIC kernel module for your worker nodes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-network<span class="w">   </span>test-networkconfig-build-8xktx<span class="w">                                    </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">    </span><span class="m">0</span><span class="w">          </span>9s
+</pre></div>
+</div>
+<p>After the successful kernel module loading the device plugin would be up and running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kube-amd-network<span class="w">   </span>test-networkconfig-device-plugin-4ghf4<span class="w">                            </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4m57s
+</pre></div>
+</div>
+<p>3.3 Verify AMD Network Operator installation</p>
+<p>After bringing up all the expected operands, the NIC resources should be advertised in the cluster:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># for example, for a VM-based worker node</span>
+$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>node<span class="w"> </span>-oyaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>amd.com/vnic
+<span class="w">      </span>amd.com/vnic:<span class="w"> </span><span class="s2">&quot;8&quot;</span>
+</pre></div>
+</div>
+<p>You can also trigger some workload to verify your cluster to make sure they are ready to use.</p>
+</section>
+</section>
+<section id="id1">
+<h2>Uninstallation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>Please make sure uninstall the AMD Network Operator helm chart firstly then uninstall the AMD GPU Operator helm chart.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uninstall AMD Network Operator</span>
+helm<span class="w"> </span>delete<span class="w"> </span>amd-network-operator<span class="w"> </span>-n<span class="w"> </span>kube-amd-network<span class="w"> </span>--debug
+<span class="c1"># Uninstall AMD GPU Operator</span>
+helm<span class="w"> </span>delete<span class="w"> </span>amd-gpu-operator<span class="w"> </span>-n<span class="w"> </span>kube-amd-gpu<span class="w"> </span>--debug
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Kubernetes (Helm)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#system-requirements">System Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cluster-requirements">Cluster Requirements</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#required-access">Required Access</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-installation-steps">Pre-Installation Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#verify-cluster-status">1. Verify Cluster Status</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-network-operator">Installing Network Operator</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-operator">1. Install the Operator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#helm-chart-customization-parameters">2. Helm Chart Customization Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#verify-the-operator-installation">3. Verify the Operator Installation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-configuration">Resource Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-manager-resource-settings">Controller Manager Resource Settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-adjust-resource-settings">When to Adjust Resource Settings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-custom-resource">Install Custom Resource</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#post-installation-verification">Post-Installation Verification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#test-a-workload-deployment">Test a Workload Deployment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#uninstallation">Uninstallation</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-of-gpu-operator-and-network-operator-together">Installation of GPU Operator and Network Operator together</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-cert-manager">1. Install Cert-Manager</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-amd-gpu-operator">2. Install AMD GPU Operator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-amd-network-operator">3. Install AMD Network Operator</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Uninstallation</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <p>
+  </p>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+<footer class="rocm-footer">
+    <div class="container-lg">
+        <section class="bottom-menu menu py-45">
+            <div class="row d-flex align-items-center">
+                <div class="col-12 text-center">
+                    <ul>
+                        <li><a href="https://www.amd.com/en/corporate/copyright" target="_blank">Terms and Conditions</a></li>
+                        
+                        <li><a href="https://www.amd.com/en/corporate/privacy" target="_blank">Privacy</a></li>
+                        <li><a href="https://www.amd.com/en/corporate/trademarks" target="_blank">Trademarks</a></li>
+                        <li><a href="https://www.amd.com/content/dam/amd/en/documents/corporate/cr/supply-chain-transparency.pdf" target="_blank">Supply Chain Transparency</a></li>
+                        <li><a href="https://www.amd.com/en/corporate/competition" target="_blank">Fair and Open Competition</a></li>
+                        <li><a href="https://www.amd.com/system/files/documents/amd-uk-tax-strategy.pdf" target="_blank">UK Tax Strategy</a></li>
+                        <li><a href="https://www.amd.com/en/corporate/cookies" target="_blank">Cookie Policy</a></li>
+                        <!-- OneTrust Cookies Settings button start -->
+                        <li><a href="#cookie-settings" id="ot-sdk-btn" class="ot-sdk-show-settings">Cookie Settings</a></li>
+                        <!-- OneTrust Cookies Settings button end -->
+                    </ul>
+                </div>
+            </div>
+            <div class="row d-flex align-items-center">
+                <div class="col-12 text-center">
+                    <div>
+                        <span class="copyright">© 2025 Advanced Micro Devices, Inc</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</footer>
+
+<!-- <div id="rdc-watermark-container">
+    <img id="rdc-watermark" src="../_static/images/alpha-watermark.svg" alt="DRAFT watermark"/>
+</div> -->
+  </body>
+</html>
