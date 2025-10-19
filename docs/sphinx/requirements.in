@@ -1,2 +1,3 @@
 rocm-docs-core
 sphinx-reredirects
+sphinx-tags==0.4
