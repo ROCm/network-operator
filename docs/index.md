@@ -39,7 +39,7 @@ The components work together in the following sequence:
 6. Metrics Exporter provides ongoing monitoring
 7. Multus and CNIs ensure the requested network device is available for workloads
 
-[Placeholder: Architecture diagram]
+![Architecture diagram](./_static/amd-network-operator-diagram.jpg)
 
 ## Plugins and Extensions
 

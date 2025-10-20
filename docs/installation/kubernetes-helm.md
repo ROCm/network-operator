@@ -258,6 +258,8 @@ Please refer to the [Uninstallation](../uninstallation/uninstallation.md) docume
 
 AMD GPU Operator and AMD Network Operator could co-exist in the same Kubernetes cluster, here are the instructions to do the installation and uninstallation for the use case where 2 operators are working together.
 
+![Architecture diagram](./../_static/amd-network-gpu-operators-diagram.jpg)
+
 ## Installation 
 
 ### 1. Install Cert-Manager
