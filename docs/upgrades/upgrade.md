@@ -1,6 +1,5 @@
 # Upgrades
 
-## Uninstall Helm Charts
 
 ### 1. Verify Cluster Readiness
 
