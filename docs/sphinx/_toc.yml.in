@@ -6,9 +6,9 @@ subtrees:
   - caption: Usage
     entries:
     - file: overview
-    - title: Network Operator Overview
+      title: Network Operator Overview
     - file: releasenotes
-    - title: Release Notes
+      title: Release Notes
     - file: troubleshooting
       title: Troubleshooting 
   - caption: Installation
