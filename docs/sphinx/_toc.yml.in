@@ -14,48 +14,48 @@ subtrees:
   - caption: Installation
     entries:
       - file: installation/kubernetes-helm
-      - title: Kubernetes (Helm)
+        title: Kubernetes (Helm)
       - file: installation/networkconfig
-      - title: Custom Resource Guide
+        title: Custom Resource Guide
       - file: installation/networkconfig-full.md
-      - title: Network Config CR
+        title: Network Config CR
       - file: installation/workload
-      - title: Workload Deployment
+        title: Workload Deployment
       - file: uninstallation/uninstallation
-      - title: Uninstallation
+        title: Uninstallation
   - caption: Upgrades 
     entries:
       - file: upgrades/upgrade
-      - title: Upgrades
+        title: Upgrades
   - caption: Driver Management
     entries:
       - file: drivers/drivers
-      - title: Installation Guide
+        title: Installation Guide
       - file: drivers/
-      - title: Uninstallation
+        title: Uninstallation
       - file: drivers/upgrading
-      - title: Upgrade Drivers
+        title: Upgrade Drivers
   - caption: Metrics
     entries:
       - file: metrics/exporter
-      - title: Metrics Exporter
+        title: Metrics Exporter
       - file: metrics/prometheus
-      - title: Prometheus Integration with Metrics Exporter 
+        title: Prometheus Integration with Metrics Exporter 
       - file: metrics/kube-rbac-proxy
-      - title: Kube-RBAC-Proxy with Metrics Exporter 
+        title: Kube-RBAC-Proxy with Metrics Exporter 
       - file: metrics/health
         title: Health Checks
   - caption: Device Plugin
     entries:
       - file: device_plugin/deviceplugin
-      - title: Device Plugin
+        title: Device Plugin
       - file: device_plugin/resource-health
-      - title: Resource Allocation
+        title: Resource Allocation
   - caption: Secondary Network
     entries:
       - file: secondary_network/amd-host-device-cni
-      - title: AMD Host Device CNI Plugin 
+        title: AMD Host Device CNI Plugin 
       - file: secondary_network/other-cnis
-      - title: Alternative CNI Plugins
+        title: Alternative CNI Plugins
       - file: secondary_network/integration-flow
-      - title: Kubernetes Integration Flow
+        title: Kubernetes Integration Flow
