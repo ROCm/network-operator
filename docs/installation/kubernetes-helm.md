@@ -260,7 +260,7 @@ AMD GPU Operator and AMD Network Operator could co-exist in the same Kubernetes 
 
 ### K8s Cluster with AMD Network and AMD GPU Operators
 
-![Architecture diagram](./../_static/amd-network-gpu-operators-diagram.jpg)
+![Architecture diagram](./../_static/amd-network-and-amd-gpu-operators-diagram.jpg)
 
 ## Installation 
 
