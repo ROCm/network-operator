@@ -18,7 +18,7 @@ AMD Network Operator simplifies the use of AMD AINICs in Kubernetes environments
 ### **Supported Hardware**
 | Hardware | Status |
 |-----------|---------|
-| AMD AI NIC Polara Card | ✅ Supported |
+| AMD Pensando™ Pollara AI NIC | ✅ Supported |
 
 
 ## OS & Platform Support Matrix
