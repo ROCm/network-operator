@@ -136,6 +136,17 @@ spec:
         upgradePolicy:
             upgradeStrategy: RollingUpdate
             maxUnavailable: 5
+
+  commonConfig:
+    # -- init container image
+    initContainerImage: busybox:1.36
+    utilsContainer:
+      # -- network operator utility container image used for driver upgrade
+      image: docker.io/amdpsdo/network-operator-utils:v1.0.0
+      # -- utility container image pull policy
+      imagePullPolicy: IfNotPresent
+      # -- utility container image pull secret, e.g. {"name": "mySecretName"}
+      imageRegistrySecret: {}
   
   # Specify the node to be managed by this NetworkConfig Custom Resource
   selector:
