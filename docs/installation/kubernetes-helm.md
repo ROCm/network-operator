@@ -195,7 +195,7 @@ helm upgrade amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
 
 ## Install Custom Resource
 
-After the installation of AMD GPU Operator:
+After the installation of AMD Network Operator:
   * For the network operator to begin working and orchestrate its operands, a `NetworkConfig` custom resource must be created. This can be accomplished by preparing a YAML manifest and applying it by running ```kubectl apply -f networkconfig.yaml```.
   * For custom resource definition and more detailed information, please refer to [Custom Resource Installation Guide](./networkconfig.md). Here are some examples for common deployment scenarios.
 
