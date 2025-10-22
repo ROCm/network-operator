@@ -27,10 +27,8 @@ spec:
   # Device plugin and Node labeller config
   devicePlugin:
     enableNodeLabeller: True
-    nodeLabellerImage: docker.io/amdpsdo/k8s-network-node-labeller:0.0.1
-    devicePluginImage: docker.io/amdpsdo/k8s-network-device-plugin:v1.0.0-beta.0
-    imageRegistrySecret:
-      name: amdpsdo-secret
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.0.0
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.0.0
 
   # Metrics exporter config
   metricsExporter:
@@ -39,17 +37,13 @@ spec:
     serviceType: "NodePort"
     nodePort: 32500
     hostNetwork: true
-    image: docker.io/amdpsdo/device-metrics-exporter:exporter-0.0.1-139
-    imageRegistrySecret:
-      name: amdpsdo-secret
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.0.0
   
   # Secondary network config
   secondaryNetwork:
     cniPlugins:
       enable: True
-      image: docker.io/amdpsdo/cni-plugins:v1.0.0-beta.0
-      imageRegistrySecret:
-        name: amdpsdo-secret
+      image: docker.io/rocm/k8s-cni-plugins:v1.0.0
   
   # Specify the node to be managed by this NetworkConfig Custom Resource
   selector:
@@ -85,8 +79,8 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `devicePluginImage` | AMD GPU device plugin image | `docker.io/amdpsdo/k8s-network-device-plugin:v1.0.0-beta.0` |
-| `nodeLabellerImage` | Node labeller image | `docker.io/amdpsdo/k8s-network-node-labeller:0.0.1` |
+| `devicePluginImage` | AMD GPU device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.0.0` |
+| `nodeLabellerImage` | Node labeller image | `docker.io/rocm/k8s-network-node-labeller:v1.0.0` |
 | `imageRegistrySecret.name` | Name of registry credentials secret<br> to pull device plugin / node labeller image | |
 | `enableNodeLabeller` | enable / disable node labeller | `true` |
 
@@ -106,7 +100,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `cniPlugins.enable` | Enable/disable CNI plugins | `false` |
-| `cniPlugins.image` | CNI plugins image | `docker.io/amdpsdo/cni-plugins:v1.0.0-beta.0`|
+| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/cni-plugins:v1.0.0`|
 | `cniPlugins.imageRegistrySecret.name` | Name of registry credentials secret<br> to pull metrics exporter image | |
 
 #### `spec.selector` Parameters
