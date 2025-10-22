@@ -8,7 +8,7 @@ apiVersion: amd.com/v1alpha1
 kind: NetworkConfig
 metadata:
   name: test-networkconfig
-  # namespace where AMD GPU Operator is running
+  # namespace where AMD Network Operator is running
   namespace: kube-amd-network
 spec:
     driver:

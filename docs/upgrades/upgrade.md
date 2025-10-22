@@ -77,7 +77,7 @@ After the upgrade, ensure all components are running:
 kubectl get pods -n kube-amd-network
 ```
 
-Verify that nodes are labeled and GPUs are detected:
+Verify that nodes are labeled and NICs are detected:
 
 ```bash
 kubectl get nodes -oyaml | grep "amd.com/nic"

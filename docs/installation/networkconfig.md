@@ -13,7 +13,7 @@ apiVersion: amd.com/v1alpha1
 kind: NetworkConfig
 metadata:
   name: test-networkconfig
-  # namespace where AMD GPU Operator is running
+  # namespace where AMD Network Operator is running
   namespace: kube-amd-network
 spec:
   # Driver config
@@ -79,7 +79,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `devicePluginImage` | AMD GPU device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.0.0` |
+| `devicePluginImage` | AMD Network device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.0.0` |
 | `nodeLabellerImage` | Node labeller image | `docker.io/rocm/k8s-network-node-labeller:v1.0.0` |
 | `imageRegistrySecret.name` | Name of registry credentials secret<br> to pull device plugin / node labeller image | |
 | `enableNodeLabeller` | enable / disable node labeller | `true` |
