@@ -518,7 +518,7 @@ You can also trigger some workload to verify your cluster to make sure they are 
 
 ## Uninstallation
 
-Please make sure uninstall the AMD Network Operator helm chart firstly then uninstall the AMD GPU Operator helm chart.
+Please make sure to uninstall the AMD Network Operator helm chart first, then uninstall the AMD GPU Operator helm chart.
 
 ```bash
 # Uninstall AMD Network Operator
