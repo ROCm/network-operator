@@ -47,7 +47,7 @@ The components work together in the following sequence:
 
 ### Device Plugin
 
-The [AMD Network Device Plugin](https://github.com/pensando/k8s-network-device-plugin) enables NIC resource allocation in Kubernetes:
+The AMD Network Device Plugin enables NIC resource allocation in Kubernetes:
 
 - Implements the Kubernetes [Device Plugin API](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/)
 - Registers AMD NICs as allocatable resources
@@ -55,7 +55,7 @@ The [AMD Network Device Plugin](https://github.com/pensando/k8s-network-device-p
 
 ### Node Labeller
 
-The [Node Labeller](https://github.com/pensando/k8s-network-node-labeller) provides detailed NIC information through node labels:
+The Node Labeller provides detailed NIC information through node labels:
 
 - Automatically detects NIC properties
 - Adds detailed NIC-specific labels to nodes
@@ -63,7 +63,7 @@ The [Node Labeller](https://github.com/pensando/k8s-network-node-labeller) provi
 
 ### Metrics Exporter
 
-The [Device Metrics Exporter](https://github.com/pensando/device-metrics-exporter) provides monitoring capabilities:
+The [Device Metrics Exporter](https://github.com/ROCm/device-metrics-exporter) provides monitoring capabilities:
 
 - Exports NIC metrics in Prometheus format
 - Monitors NIC utilization, temperature, and health

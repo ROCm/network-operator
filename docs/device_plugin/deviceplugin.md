@@ -58,11 +58,3 @@ amd-network-operator-node-feature-discovery-worker-vbcxx          1/1     Runnin
 test-networkconfig-device-plugin-l89f9                            1/1     Running             0          53s
 test-networkconfig-node-labeller-kthdz                            1/1     Running             0          53s
 ```
-
-## Labels
-
-To learn more about the labels managed by the AMD Kubernetes Network Node Labeller, refer to the [Labels](https://github.com/pensando/k8s-network-node-labeller#labels) section in the Node Labeller documentation.
-
-## Device Plugin
-
-To learn more about how the devices are discovered and managed, refer to this [Device Plugin Documentation](https://github.com/pensando/k8s-network-device-plugin/blob/master/README.md)
