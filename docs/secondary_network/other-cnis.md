@@ -41,7 +41,7 @@ spec:
 
 ## RDMA CNI Plugin
 
-The RDMA CNI plugin provides network namespace isolation for RDMA workloads in containerized environments. It must be chained with other CNI plugins that handle the actual interface movement.
+The [RDMA CNI plugin](https://github.com/k8snetworkplumbingwg/rdma-cni) provides network namespace isolation for RDMA workloads in containerized environments. It must be chained with other CNI plugins that handle the actual interface movement.
 
 ### SR-IOV + RDMA + Tuning Example
 ```yaml
@@ -86,4 +86,21 @@ spec:
         }
       ]
     }
+```
+### Verification
+To verify that the RDMA CNI plugin is functioning correctly, run `rdma link show` inside the workload pod. The output should display only the RDMA device assigned to the pod in the `exclusive` mode, as shown below:
+```bash
+root@workload:/tmp# rdma link show
+link ionic_0/1 state ACTIVE physical_state LINK_UP netdev net1
+root@workload:/tmp#
+```
+In contrast, on a system configured in RDMA `shared` mode, the same command will list all available RDMA devices:
+```bash
+root@rccl-app-5f8b8dbddb-fgr6s:/tmp# rdma link show
+link roceo3/1 state ACTIVE physical_state LINK_UP netdev net1
+link rocep132s0/1 state ACTIVE physical_state LINK_UP
+link rocep33s0f0/1 state ACTIVE physical_state LINK_UP
+link rocep33s0f1/1 state ACTIVE physical_state LINK_UP
+link ionic_0/1 state ACTIVE physical_state LINK_UP
+root@rccl-app-5f8b8dbddb-fgr6s:/tmp#
 ```
