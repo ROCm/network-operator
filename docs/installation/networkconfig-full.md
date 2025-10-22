@@ -17,13 +17,13 @@ spec:
       blacklist: true
       AMDNetworkInstallerRepoURL: "https://repo.radeon.com"
       # DO NOT input the image tag, operator will automatically handle the image tag
-      image: "docker.io/amdpsdo/amdainic_kmods"
+      image: "registry.example.com/username/amdainic_kmods"
       # Specify the credential for your private registry if it requires credential to get pull/push access
       # You can create the docker-registry type secret by running command like:
       # kubectl create secret docker-registry my-secret -n kube-amd-network --docker-username=xxx --docker-password=xxx
       # Make sure you created the secret within the namespace that KMM operator is running
       imageRegistrySecret:
-        name: amdpsdo-secret
+        name: my-secret
       imageRegistryTLS:
         insecure: true
         insecureSkipTLSVerify: true
@@ -58,7 +58,7 @@ spec:
           gracePeriodSeconds: -2
   # Device plugin and Node labeller config
   devicePlugin:
-    devicePluginImage: docker.io/amdpsdo/k8s-network-device-plugin:v1.0.0-beta.0
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.0.0
     devicePluginImagePullPolicy: "Always"
     devicePluginTolerations:
         - key: "example-key"
@@ -70,7 +70,7 @@ spec:
           value: "example-value2"
           effect: "NoExecute"
     enableNodeLabeller: True
-    nodeLabellerImage: docker.io/amdpsdo/k8s-network-node-labeller:0.0.1
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.0.0
     nodeLabellerImagePullPolicy: "Always"
     nodeLabellerTolerations:
         - key: "example-key"
@@ -78,7 +78,7 @@ spec:
           value: "example-value"
           effect: "NoSchedule"
     imageRegistrySecret:
-      name: amdpsdo-secret
+      name: my-secret
     upgradePolicy:
         # the type of daemonset upgrade, RollingUpdate or OnDelete
         upgradeStrategy: OnDelete
@@ -90,10 +90,10 @@ spec:
     port: 5001
     serviceType: "NodePort"
     nodePort: 32500
-    image: docker.io/amdpsdo/device-metrics-exporter:exporter-0.0.1-139
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.0.0
     imagePullPolicy: "Always"
     imageRegistrySecret:
-      name: amdpsdo-secret
+      name: my-secret
     upgradePolicy:
         upgradeStrategy: RollingUpdate
         maxUnavailable: 5
@@ -124,10 +124,10 @@ spec:
   secondaryNetwork:
     cniPlugins:
         enable: True
-        image: docker.io/amdpsdo/cni-plugins:v1.0.0-beta.0
+        image: docker.io/rocm/k8s-cni-plugins:v1.0.0
         imagePullPolicy: "Always"
         imageRegistrySecret:
-            name: amdpsdo-secret
+            name: my-secret
         tolerations:
             - key: "example-key"
             operator: "Equal"
@@ -142,7 +142,7 @@ spec:
     initContainerImage: busybox:1.36
     utilsContainer:
       # -- network operator utility container image used for driver upgrade
-      image: docker.io/amdpsdo/network-operator-utils:v1.0.0
+      image: docker.io/rocm/network-operator-utils:v1.0.0
       # -- utility container image pull policy
       imagePullPolicy: IfNotPresent
       # -- utility container image pull secret, e.g. {"name": "mySecretName"}

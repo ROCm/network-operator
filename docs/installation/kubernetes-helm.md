@@ -52,21 +52,67 @@ kube-system    kube-controller-manager-control-plane         1/1     Running   0
 kube-system    kube-scheduler-control-plane                  1/1     Running   0          64d
 ```
 
-## Installing Network Operator
+### 2. Install Cert-Manager
+
+```{note}
+If `cert-manager` is already installed in your cluster, you can skip this step.
+```
+
+The AMD Network Operator requires `cert-manager` for TLS certificate management.
+
+- Add the `cert-manager` repository:
+
+```bash
+helm repo add jetstack https://charts.jetstack.io --force-update
+```
+
+- Install `cert-manager`:
+
+```bash
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.15.1 \
+  --set crds.enabled=true
+```
+
+- Verify the installation:
+
+```bash
+kubectl get pods -n cert-manager
+```
+
+Expected output:
+
+```bash
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-84489bc478-qjwmw             1/1     Running   0          2m
+cert-manager-cainjector-7477d56b47-v8nq8  1/1     Running   0          2m
+cert-manager-webhook-6d5cb854fc-h6vbk     1/1     Running   0          2m
+```
+
+3. ## Installing Network Operator
 
 > **Warning**
 >
 > If you are trying to install AMD GPU Operator and AMD Network Operator together within the same Kubernetes cluster, please jump to this section [Installation of GPU Operator and Network Operator together](#installation-of-gpu-operator-and-network-operator-together)
 
-### 1. Install the Operator
+### 1. Add the AMD Helm Repository
+
+```bash
+helm repo add rocm https://rocm.github.io/network-operator
+helm repo update
+```
+
+### 2. Install the Operator
 
 Basic installation:
 
 ```bash
-helm install amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
-  -n kube-amd-network \
+helm install amd-network-operator rocm/network-operator-charts \
+  --namespace kube-amd-network \
   --create-namespace \
-  --set kmm.enabled=false
+  --version=v1.0.0
 ```
 
 ```{note}
@@ -76,14 +122,14 @@ Installation Options
   - Disable default NFD rules: `--installdefaultNFDRule=false`  
 ```
 
-### 2. Helm Chart Customization Parameters
+### 3. Helm Chart Customization Parameters
 
 Installation with custom options:
 
 - Prepare your custom configuration in a YAML file (e.g. ```values.yaml```), then use it with ```helm install``` command to deploy your helm charts.
 
 ```bash
-helm install amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
+helm install amd-network-operator rocm/network-operator-charts \
   --namespace kube-amd-network \
   --create-namespace \
   -f values.yaml
@@ -91,14 +137,13 @@ helm install amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
 
 The following parameters are able to be configured when using the Helm Chart. In order to view all available options, please refer to this section or run the command:
 ```bash
-tar -xvf network-operator-helm-k8s-v1.0.0.tgz
-helm show values ./network-operator-charts/
+helm show values rocm/network-operator-charts
 ```
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controllerManager.manager.image.repository | string | `"docker.io/rocm/network-operator"` | AMD Network operator controller manager image repository |
-| controllerManager.manager.image.tag | string | `"v1.2.0"` | AMD Network operator controller manager image tag |
+| controllerManager.manager.image.tag | string | `"v1.0.0"` | AMD Network operator controller manager image tag |
 | controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD GNetworkPU operator controller manager pod |
 | controllerManager.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image |
 | controllerManager.manager.resources.limits.cpu | string | `"1000m"` | CPU limits for the controller manager. Consider increasing for large clusters |
@@ -110,11 +155,11 @@ helm show values ./network-operator-charts/
 | installdefaultNFDRule | bool | `true` | Set to true to install default NFD rule for detecting AMD NIC hardware based on pci vendor ID and device ID |
 | kmm.controller.manager.env.relatedImageBuild | string | `"gcr.io/kaniko-project/executor:v1.23.2"` | KMM kaniko builder image for building driver image within cluster |
 | kmm.controller.manager.env.relatedImageBuildPullSecret | string | `""` | Image pull secret name for pulling KMM kaniko builder image if registry needs credential to pull image |
-| kmm.controller.manager.env.relatedImageSign | string | `"docker.io/amdpsdo/kernel-module-management-signimage:v1.4.0"` | KMM signer image for signing driver image's kernel module with given key pairs within cluster |
+| kmm.controller.manager.env.relatedImageSign | string | `"docker.io/rocm/kernel-module-management-signimage:v1.4.0"` | KMM signer image for signing driver image's kernel module with given key pairs within cluster |
 | kmm.controller.manager.env.relatedImageSignPullSecret | string | `""` | Image pull secret name for pulling KMM signer image if registry needs credential to pull image |
-| kmm.controller.manager.env.relatedImageWorker | string | `"docker.io/amdpsdo/kernel-module-management-worker:v1.4.0"` | KMM worker image for loading / unloading driver kernel module on worker nodes |
+| kmm.controller.manager.env.relatedImageWorker | string | `"docker.io/rocm/kernel-module-management-worker:v1.4.0"` | KMM worker image for loading / unloading driver kernel module on worker nodes |
 | kmm.controller.manager.env.relatedImageWorkerPullSecret | string | `""` | Image pull secret name for pulling KMM worker image if registry needs credential to pull image |
-| kmm.controller.manager.image.repository | string | `"docker.io/amdpsdo/kernel-module-management-operator"` | KMM controller manager image repository |
+| kmm.controller.manager.image.repository | string | `"docker.io/rocm/kernel-module-management-operator"` | KMM controller manager image repository |
 | kmm.controller.manager.image.tag | string | `"v1.4.0"` | KMM controller manager image tag |
 | kmm.controller.manager.imagePullPolicy | string | `"Always"` | Image pull policy for KMM controller manager pod |
 | kmm.controller.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling KMM controller manager image if registry needs credential to pull image |
@@ -187,9 +232,10 @@ You should consider adjusting the controller manager resource settings in these 
 You can apply resource changes by updating your values.yaml file and upgrading the Helm release:
 
 ```bash
-helm upgrade amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
+helm upgrade amd-network-operator rocm/network-operator-charts \
   --debug \
   --namespace kube-amd-network \
+  --version=v1.0.0
   -f values.yaml
 ```
 
@@ -268,7 +314,7 @@ AMD GPU Operator and AMD Network Operator could co-exist in the same Kubernetes 
 
 If cert-manager is already installed in your cluster, you can skip this step.
 
-The Kubernetes `cert-manager` is a pre-requisite required by the AMD GPU Operator to do the TLS certificate management.
+The Kubernetes `cert-manager` is a pre-requisite required by both AMD GPU and Network Operator to do the TLS certificate management.
 
 * Add the cert-manager repository:
 
@@ -414,12 +460,21 @@ kube-amd-gpu   amd-gpu-operator-node-feature-discovery-worker-6c66c             
 
 After installing AMD GPU Operator you can start to install AMD Network Operator. Remember that we already installed `NFD` and `KMM` during installation of AMD GPU Operator, so you shouldn't install them again when installing AMD Network Operator. Please disable the deployment of those 2 dependent operators when installing AMD Network Operator.
 
+3.1.1 Add ROCm helm chart repository
 ```bash
-helm install amd-network-operator network-operator-helm-k8s-v1.0.0.tgz \
+# Add AMD Network Operator helm repository
+helm repo add rocm https://rocm.github.io/network-operator
+helm repo update
+```
+
+3.1.2 Install AMD Network Operator helm chart
+```bash
+helm install amd-network-operator rocm/network-operator-charts \
   -n kube-amd-network \
   --create-namespace \
   --set kmm.enabled=false \
-  --set node-feature-discovery.enabled=false
+  --set node-feature-discovery.enabled=false \
+  --version=v1.0.0
 ```
 Then during this step only the network operator and multus CNI pods would be brought up in the new namespace `kube-amd-network`:
 
