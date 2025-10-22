@@ -45,7 +45,7 @@ spec:
         hostNetwork: false
         containers:
           - name: workload-container
-            image: amdpsdo/rdma-workload-ubuntu22.04:rocm6.3_rccl.ba9c_anp.01f3_ainic1.117
+            image: docker.io/rocm/roce-workload:ubuntu24_rocm7_rccl-J13A-1_anp-v1.1.0-4D_ainic-1.117.1-a-63
             imagePullPolicy: IfNotPresent
             workingDir: /tmp
             command: ["/bin/bash", "-c"]
