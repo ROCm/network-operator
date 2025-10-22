@@ -74,6 +74,3 @@ Allocatable:
   amd.com/vnic:       0
 ```
 This ensures that the Kubernetes scheduler only assigns pods to nodes with healthy network devices.
-
-
-For comprehensive documentation on this health monitoring integration, including implementation details, refer to the [Device Plugin Documentation](https://github.com/pensando/k8s-network-device-plugin/tree/master/docs).
