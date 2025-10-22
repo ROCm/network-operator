@@ -1,0 +1,18 @@
+name: Linting
+
+on:
+  push:
+    branches: 
+    - develop
+    - main
+    - staging
+  pull_request:
+    branches: 
+    - develop
+    - main
+    - staging
+
+jobs:
+  call-workflow-passing-data:
+    name: Documentation
+    uses: ROCm/rocm-docs-core/.github/workflows/linting.yml@develop
