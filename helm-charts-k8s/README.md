@@ -77,7 +77,7 @@ root@app:/tmp# /tmp/vf_rccl_run.sh
 * K8s Network Device Plugin `docker pull amdpsdo/k8s-network-device-plugin:v1.0.0-beta.0`
 * Device Metrics Exporter: `docker pull amdpsdo/device-metrics-exporter:exporter-0.0.1-139`
 * CNI Plugins: `docker pull amdpsdo/cni-plugins:v1.0.0-beta.0`
-* RCCL & IB Workload: `amdpsdo/rdma-workload-ubuntu22.04:rocm6.3_rccl.ba9c_anp.01f3_ainic1.117`
+* RCCL & IB Workload: `docker pull docker.io/rocm/roce-workload:ubuntu24_rocm7_rccl-J13A-1_anp-v1.1.0-4D_ainic-1.117.1-a-63`
 
 
 ## Additional Installation Instructions
