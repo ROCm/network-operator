@@ -1,8 +1,8 @@
 # Custom Resource Guide
 
-### prerequisite
+### Prerequisite
 
-For bare metal setups, AMD NIC drivers must be included in the operating system (inbox) or pre-installed on the worker nodes, whereas in VM environments, the Network Operator can automatically handle the driver installation and management.
+For bare metal setups, AMD AINIC drivers must be pre-installed on the worker nodes, whereas in VM environments, the Network Operator can automatically handle the driver installation and management. The list of available AINIC drivers can be found here: https://repo.radeon.com/amdainic
 
 ### 1. Create DeviceConfig Resource
 
