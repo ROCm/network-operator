@@ -100,7 +100,7 @@ cert-manager-webhook-6d5cb854fc-h6vbk     1/1     Running   0          2m
 ### 1. Add the AMD Helm Repository
 
 ```bash
-helm repo add rocm https://rocm.github.io/network-operator
+helm repo add rocm-network https://rocm.github.io/network-operator
 helm repo update
 ```
 
@@ -109,7 +109,7 @@ helm repo update
 Basic installation:
 
 ```bash
-helm install amd-network-operator rocm/network-operator-charts \
+helm install amd-network-operator rocm-network/network-operator-charts \
   --namespace kube-amd-network \
   --create-namespace \
   --version=v1.0.0
@@ -461,13 +461,13 @@ After installing AMD GPU Operator you can start to install AMD Network Operator.
 3.1.1 Add ROCm helm chart repository
 ```bash
 # Add AMD Network Operator helm repository
-helm repo add rocm https://rocm.github.io/network-operator
+helm repo add rocm-network https://rocm.github.io/network-operator
 helm repo update
 ```
 
 3.1.2 Install AMD Network Operator helm chart
 ```bash
-helm install amd-network-operator rocm/network-operator-charts \
+helm install amd-network-operator rocm-network/network-operator-charts \
   -n kube-amd-network \
   --create-namespace \
   --set kmm.enabled=false \
