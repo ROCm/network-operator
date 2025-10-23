@@ -364,7 +364,7 @@ The default command to install the chart is:
 ```bash
 helm install amd-gpu-operator rocm/gpu-operator-charts \
       --namespace kube-amd-gpu --create-namespace \
-      --version=v1.4.0-beta.0
+      --version=v1.4.0
 ```
 Different users may have various deployment scenarios, please consider configuring these helm options when installing the helm chart:
 
@@ -374,7 +374,7 @@ Different users may have various deployment scenarios, please consider configuri
     ```bash
     helm install amd-gpu-operator rocm/gpu-operator-charts \
           --namespace kube-amd-gpu --create-namespace \
-          --version=v1.4.0-beta.0 \
+          --version=v1.4.0 \
           --set-json 'deviceConfig.spec.selector={"feature.node.kubernetes.io/amd-gpu":null,"feature.node.kubernetes.io/amd-vgpu":"true"}'
     ```
 
@@ -383,7 +383,7 @@ Different users may have various deployment scenarios, please consider configuri
     ```bash
     helm install amd-gpu-operator rocm/gpu-operator-charts \
           --namespace kube-amd-gpu --create-namespace \
-          --version=v1.4.0-beta.0 \
+          --version=v1.4.0 \
           --set-json 'deviceConfig.spec.selector={"feature.node.kubernetes.io/amd-gpu":"true"}'
     ```
 
@@ -391,8 +391,6 @@ Different users may have various deployment scenarios, please consider configuri
     Use GPU Operator to install specific version of out-of-tree `amdgpu-dkms` kernel module.
 
     If you want to use AMD GPU Operator to install kernel module, you need to prepare an image registry and create corresponding secret to access your image registry if needed:
-
-    **Due to a known issue in v1.4.0-beta.0, if you are using Ubuntu 24.04 please make sure `linux-headers-$(uname -r)` and `linux-modules-extra-$(uname -r)` are installed on your worker node then move forward with out-of-tree driver installation, this issue will be fixed in v1.4.0 GPU Operator official release**
 
     * case 1: For the secure registry which requires credential:
     
@@ -402,7 +400,7 @@ Different users may have various deployment scenarios, please consider configuri
     # kubectl create secret docker-registry mySecret -n kube-amd-gpu --docker-username=xxx --docker-password=xxx --docker-server=https://index.docker.io/v1/
     helm install amd-gpu-operator rocm/gpu-operator-charts \
           --namespace kube-amd-gpu --create-namespace \
-          --version=v1.4.0-beta.0 \
+          --version=v1.4.0 \
           --set deviceConfig.spec.driver.enable=true \
           --set deviceConfig.spec.driver.blacklist=true \
           --set deviceConfig.spec.driver.version=7.0.1 \
@@ -416,7 +414,7 @@ Different users may have various deployment scenarios, please consider configuri
     # prepare insecure image registry to store driver image
     helm install amd-gpu-operator rocm/gpu-operator-charts \
           --namespace kube-amd-gpu --create-namespace \
-          --version=v1.4.0-beta.0 \
+          --version=v1.4.0 \
           --set deviceConfig.spec.driver.enable=true \
           --set deviceConfig.spec.driver.blacklist=true \
           --set deviceConfig.spec.driver.version=7.0.1 \
