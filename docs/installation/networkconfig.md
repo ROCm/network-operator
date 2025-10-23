@@ -1,8 +1,8 @@
 # Custom Resource Guide
 
-### Prerequsite 
+### prerequisite
 
-AMD NIC drivers must be either included in the OS (inbox) or pre-installed on the worker node. Driver installation through the network operator is not supported currently.
+For bare metal setups, AMD NIC drivers must be included in the operating system (inbox) or pre-installed on the worker nodes, whereas in VM environments, the Network Operator can automatically handle the driver installation and management.
 
 ### 1. Create DeviceConfig Resource
 
@@ -22,7 +22,7 @@ spec:
     image: registry.example.com/username/amdainic_kmods
     imageRegistrySecret:
       name: my-secret
-    version: 1.117.1-a-42
+    version: 1.117.1-a-63
 
   # Device plugin and Node labeller config
   devicePlugin:
