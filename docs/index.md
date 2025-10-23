@@ -27,8 +27,8 @@ Additional versions will be added in future releases.
 
 | Operating System | Kubernetes Versions |
 |------------------|---------------------|
-| Ubuntu 22.04 LTS | 1.29 – 1.33 |
-| Ubuntu 24.04 LTS | 1.29 – 1.33 |
+| Ubuntu 22.04 LTS | 1.29 – 1.34 |
+| Ubuntu 24.04 LTS | 1.29 – 1.34 |
 
 
 ## Prerequisites
