@@ -5,11 +5,6 @@ The Kubernetes Device Plugin utilizes this health socket to determine AMD AINIC 
 
 Both the device plugin and metrics exporter components must be enabled through the Network Operator for this feature to function.
 
-## Requirements
-1. metrics exporter : v1.2.0 and up
-2. k8s-network-device-plugin : latest 
-3. network operator : latest
-
 **Note:** Health monitoring does not currently work in virtualized environments. The exporter pod must run on a non-VM Kubernetes node to obtain interface health information.
 
 ## Health Check Workflow
