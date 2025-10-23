@@ -18,7 +18,7 @@ subtrees:
       - file: installation/networkconfig
         title: Custom Resource Guide
       - file: installation/networkconfig-full.md
-        title: Network Config CR
+        title: Full Reference Config
       - file: installation/workload
         title: Workload Deployment
       - file: uninstallation/uninstallation
@@ -27,6 +27,8 @@ subtrees:
     entries:
       - file: upgrades/upgrade
         title: Upgrades
+      - file: upgrades/componentupgrades.md
+        title: Component Upgrades
   - caption: Driver Management
     entries:
       - file: drivers/drivers
