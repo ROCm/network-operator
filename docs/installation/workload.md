@@ -48,15 +48,13 @@ spec:
             image: docker.io/rocm/roce-workload:ubuntu24_rocm7_rccl-J13A-1_anp-v1.1.0-4D_ainic-1.117.1-a-63
             imagePullPolicy: IfNotPresent
             workingDir: /tmp
-            command: ["/bin/bash", "-c"]
-            args:
-              - |
-                /tmp/container_setup.sh
+            command: ["sleep", "infinity"]
             securityContext:
               capabilities:
                 add: 
                   - IPC_LOCK
                   - NET_ADMIN
+                  - NET_RAW   
             resources:
               requests:
                 amd.com/gpu: 1
@@ -64,6 +62,7 @@ spec:
               limits:
                 amd.com/gpu: 1
                 amd.com/nic: 1
+EOF
 ```
 
 ### 3. Run IB and RCCL Tests
