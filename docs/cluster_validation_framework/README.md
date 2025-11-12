@@ -86,7 +86,7 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 
 ---
 
-# 🚀 Deployment Steps
+## 🚀 Deployment Steps
 
 ## 1. Create ConfigMaps
 
@@ -96,9 +96,9 @@ kubectl apply -f cluster-validation-config.yaml
 
 ---
 
-## 2. Deploy Cluster Validation Job 
+## 2. Deploy Cluster Validation Job
 
-*(CronJob + MPIJob Template + RBAC)*
+###(CronJob + MPIJob Template + RBAC)
 
 ```bash
 kubectl apply -f cluster-validation-job.yaml
@@ -133,7 +133,7 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ---
 
-#  Example Output Labels
+## Example Output Labels
 
 | Node   | Label | Meaning |
 |:--------|:--------------------------------------------|:-----------------------------------------------------------|
@@ -143,12 +143,12 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ---
 
-#  Notes for Operators
+## Notes for Operators
 
-- Update image tags (**roce-workload**, **network-operator-utils**) as needed before deployment.
-- `slotsPerWorker` and resource limits must match the underlying GPU/NIC configuration.  
-- Modify `schedule` under `CronJob.spec` to change job frequency.  
-- Use `DEBUG_DELAY` to pause after job completion for debugging failed runs.  
+* Update image tags (**roce-workload**, **network-operator-utils**) as needed before deployment.
+* `slotsPerWorker` and resource limits must match the underlying GPU/NIC configuration.  
+* Modify `schedule` under `CronJob.spec` to change job frequency.  
+* Use `DEBUG_DELAY` to pause after job completion for debugging failed runs.  
 
 ---
 
