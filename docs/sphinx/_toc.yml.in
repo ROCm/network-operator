@@ -61,3 +61,7 @@ subtrees:
         title: Alternative CNI Plugins
       - file: secondary_network/integration-flow
         title: Kubernetes Integration Flow
+  - caption: Cluster Validation Framework
+    entries:
+      - file: cluster_validation_framework/README
+        title: Cluster Validation and Job Scheduling
