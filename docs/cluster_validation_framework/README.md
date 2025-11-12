@@ -9,6 +9,7 @@ In addition to validation, this framework can be leveraged for scheduling and or
 ## Overview
 
 The framework runs as a **Kubernetes CronJob** that:
+
 1. Selects and labels candidate nodes based on criteria specified through a configMap.
 2. Launches multiple distributed RCCL test OR AI/HPC workloads via MPIJob.
 3. Collects and logs test results for further analysis.
@@ -21,9 +22,11 @@ This setup is also useful for validating new worker nodes in a k8s cluster befor
 Training large models across multiple GPUs, AINICs or Nodes requires efficient inter-process communication (IPC) and resource coordination. This framework also empowers the user to run scalable, fault-tolerant, and reproducible distributed training jobs using AMD GPU and AINIC resources on a Kubernetes cluster without any manual MPI setup
 
 ---
+
 ## Requirements
 
 The following prerequisites need to be done on each new node which is intended to be added to the k8s production cluster.
+
 * Bringup basic k8s generic cluster with master and worker nodes and components like  kube-apiserver, controller, etcd , coredns etc
 * Each Worker node should be populated with X number of AMD GPUs and Y number of AMD AINICs.  X and Y could be one of 1,4 or 8.
 * AINIC Software and drivers need to be installed on the Host and AINIC cards. AMD Network Operator can install the required kernel driver inside the VM in GA  release.
@@ -53,13 +56,11 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 
 ---
 
-
-
 ## Key Components
 
 | Component | Description |
 |------------|-------------|
-| **CronJob** | Periodically triggers node health checks (e.g., every 24 hours). |
+| **CronJob** | Periodically triggers node cluster node validation checks (e.g., every 24 hours). |
 | **ConfigMap** | Stores configuration, candidate selection script, and MPIJob manifest templates. |
 | **ServiceAccount + RBAC** | Grants permission to list/label nodes and create workloads. |
 | **MPIJob** | Executes RCCL collective tests across candidate nodes. |
@@ -69,19 +70,19 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 ## Flow Summary
 
 1. **Candidate Node Selection**  
-   - The CronJob script selects nodes with configmap driven node selectors (e.g. `feature.node.kubernetes.io/amd-nic=true`).
-   - The matching nodes available after applying user specified filters are then labeled with a candidate marker (e.g. `amd.com/rccl-active-health-check-candidate=true`).
+   * The CronJob script selects nodes with configmap driven node selectors (e.g. `feature.node.kubernetes.io/amd-nic=true`).
+   * The matching nodes available after applying user specified filters are then labeled with a candidate marker (e.g. `amd.com/cluster-validation-candidate=true`).
 
 2. **RCCL Test Execution**
-   - A job manifest (like `MPIJob`) is applied dynamically using `kubectl apply`.
-   - The job runs distributed or node-local workloads to test network, GPU, AINIC and system health.
+   * A job manifest (like `MPIJob`) is applied dynamically using `kubectl apply`.
+   * The job runs distributed or node-local workloads to test network, GPU, AINIC and system health.
 
 3. **Result Validation**
-   - Test results are validated and the participating worker nodes are labelled with test status
-   - The candidate marker is removed from the nodes involved in the active health check at the end of the CronJob.
+   * Test results are validated and the participating worker nodes are labelled with test status
+   * The candidate marker is removed from the nodes involved in the cluster validation at the end of the CronJob.
 
 4. **Periodic Checks**
-   - This validation or job scheduling process is periodically triggered through CronJob and all available nodes in the cluster which are not part of an active workload job can be periodically qualified for performance and connectivity and used for job scheduling.
+   * This validation or job scheduling process is periodically triggered through CronJob and all available nodes in the cluster which are not part of an active workload job can be periodically qualified for performance and connectivity and used for job scheduling.
 
 ---
 
@@ -95,7 +96,8 @@ kubectl apply -f cluster-validation-config.yaml
 
 ---
 
-## 2. Deploy RCCL Active Health Checker  
+## 2. Deploy Cluster Validation Job 
+
 *(CronJob + MPIJob Template + RBAC)*
 
 ```bash
