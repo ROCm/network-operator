@@ -98,7 +98,7 @@ kubectl apply -f cluster-validation-config.yaml
 
 ## 2. Deploy Cluster Validation Job
 
-###(CronJob + MPIJob Template + RBAC)
+(CronJob + MPIJob Template + RBAC)
 
 ```bash
 kubectl apply -f cluster-validation-job.yaml
@@ -152,7 +152,7 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ---
 
-# Cleanup
+## Cleanup
 
 To remove all cluster validation resources:
 
