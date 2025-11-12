@@ -90,6 +90,8 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 
 ## 1. Create ConfigMaps
 
+[Download ConfigMap YAML](../_static/cluster-validation-config.yaml)
+
 ```bash
 kubectl apply -f cluster-validation-config.yaml
 ```
@@ -98,6 +100,7 @@ kubectl apply -f cluster-validation-config.yaml
 
 ## 2. Deploy Cluster Validation Job
 
+[Download CronJob YAML](../_static/cluster-validation-job.yaml)
 (CronJob + MPIJob Template + RBAC)
 
 ```bash
