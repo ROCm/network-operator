@@ -29,7 +29,6 @@ The following prerequisites need to be done on each new node which is intended t
 
 * Bringup basic k8s generic cluster with master and worker nodes and components like  kube-apiserver, controller, etcd , coredns etc
 * Each worker node should have a defined number of AMD GPUs and AMD AINICs provisioned based on the deployment requirements.
-* Each Worker node should be populated with X number of AMD GPUs and Y number of AMD AINICs.  X and Y could be one of 1,4 or 8.
 * AINIC Software and drivers need to be installed on the Host and AINIC cards. AMD Network Operator can install the required kernel driver inside the VM in GA  release.
 * AMD GPU drivers also need to be installed in worker node. GPU Operator can be installed to satisfy this requirement.
 * AMD GPU operator and AMD Network operator need to be installed, and GPU and NIC resources reported to kubelet.
