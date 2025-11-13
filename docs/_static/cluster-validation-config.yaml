@@ -6,17 +6,57 @@ data:
   JOB_NAME: cluster-validation-mpi-job  # Must match MPIJob metadata.name
   WORKER_REPLICAS: "2"                  # Number of Worker Pods in each MPIJob doing actual computation
   LAUNCHER_REPLICAS: "1"                # Number of Launcher Pods for the MPIJob, which coordinates workers
-  SLOTS_PER_WORKER: "1"                 # MPI ranks per Worker pod
+  SLOTS_PER_WORKER: "8"                 # MPI ranks per Worker pod
+  GPU_PER_WORKER: "8"                   # Number of GPUs to request per Worker pod
+  NIC_PER_WORKER: "8"                   # Number of NICs to request per Worker pod
+  MIN_MPI_NODES: "2"                    # Minimum number of nodes required to run the MPI job
   CLUSTER_VALIDATION_MIN_INTERVAL_MINS: "10"     # minimum interval between cluster validation runs on a given worker node
 
+  # === Node Selection Labels for candidates ===
+  # NOTE:
+  # For virtual function (VF) based GPU in a VM, use amd-vgpu=true instead of amd-gpu=true
+  # For virtual function (VF) based NIC in a VM, use amd-vnic=true instead of amd-nic=true
   NODE_SELECTOR_LABELS: |
     - feature.node.kubernetes.io/amd-gpu=true
     - feature.node.kubernetes.io/amd-nic=true
-    - feature.node.kubernetes.io/amd-vnic=true
   CANDIDATE_LABEL: "amd.com/cluster-validation-candidate=true"
   SUCCESS_LABEL: "amd.com/cluster-validation-status=passed"
   FAILURE_LABEL: "amd.com/cluster-validation-status=failed"
   TIMESTAMP_ANNOTATION: "amd.com/cluster-validation-last-run-timestamp"
+
+  # === GPU Validation Tests Definitions ===
+  # RVS: ROCm Validation Suite. For a full list of supported recipes and arguments, refer to https://instinct.docs.amd.com/projects/gpu-operator/en/latest/test/appendix-test-recipe.html  
+  # AGFHC: AMD GPU Field Health Check. For a full list of supported recipes and arguments, refer to https://instinct.docs.amd.com/projects/gpu-operator/en/latest/test/agfhc.html
+  # Refer to the above links for other available test frameworks and recipes, and configure the wait time accordingly.
+  TEST_RUNNER_JOB_WAIT_TIME: "1200"
+  TEST_RUNNER_SUCCESS_LABEL: "amd.com/gpu-validation-test=passed"
+  TEST_RUNNER_FAILURE_LABEL: "amd.com/gpu-validation-test=failed"
+  TEST_RUNNER_IMAGE: "docker.io/rocm/test-runner:v1.4.0"
+  GPU_VALIDATION_TESTS_JSON: |
+    {
+      "TestConfig": {
+        "GPU_HEALTH_CHECK": {
+          "TestLocationTrigger": {
+            "global": {
+              "TestParameters": {
+                "MANUAL": {
+                  "TestCases": [
+                    {
+                      "Framework": "RVS",
+                      "Recipe": "gst_single",
+                      "Iterations": 1,
+                      "StopOnFailure": true,
+                      "TimeoutSeconds": 1200,
+                      "Arguments": "--parallel"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
   # === RCCL Tests Definitions ===
   TESTS_JSON: |
@@ -28,6 +68,7 @@ data:
       ]
     }
 
+  RCCL_WORKLOAD_IMAGE: "docker.io/rocm/roce-workload:ubuntu24_rocm7_rccl-J13A-1_anp-v1.1.0-4D_ainic-1.117.1-a-63"
   MPIJOB_WAIT_TIME: "240"
   DEBUG_DELAY: "20"
   WAIT_FOR_WORKERS: "true"
