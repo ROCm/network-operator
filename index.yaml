@@ -2,8 +2,50 @@ apiVersion: v1
 entries:
   network-operator-charts:
   - apiVersion: v2
+    appVersion: v1.0.1
+    created: "2025-11-27T17:29:55.596778333Z"
+    dependencies:
+    - condition: node-feature-discovery.enabled
+      name: node-feature-discovery
+      repository: https://kubernetes-sigs.github.io/node-feature-discovery/charts
+      version: v0.16.1
+    - condition: kmm.enabled
+      name: kmm
+      repository: file://./charts/kmm
+      version: v1.0.0
+    - condition: multus.enabled
+      name: multus
+      repository: file://./charts/multus
+      version: v1.0.0
+    description: AMD Network Operator simplifies the deployment and management of
+      AMD AINICs within Kubernetes clusters.
+    digest: 7d92b9486aee33c4412381a01f134a8950631cc62a14cfb6798b24df4d0b83a1
+    home: https://github.com/ROCm/network-operator
+    icon: https://raw.githubusercontent.com/ROCm/k8s-device-plugin/master/helm/logo.png
+    keywords:
+    - kubernetes
+    - cluster
+    - hardware
+    - amd
+    - network
+    - ai
+    - deep learning
+    - monitoring
+    kubeVersion: '>= 1.29.0-0'
+    maintainers:
+    - name: Sundara Gurunathan<Sundaramurthy.Gurunathan@amd.com>
+    - name: Yuvarani Shankar<Yuvarani.Shankar@amd.com>
+    - name: Shrey Ajmera<Shrey.Ajmera@amd.com>
+    name: network-operator-charts
+    sources:
+    - https://github.com/ROCm/network-operator
+    type: application
+    urls:
+    - https://rocm.github.io/network-operator/charts/network-operator-charts-v1.0.1.tgz
+    version: v1.0.1
+  - apiVersion: v2
     appVersion: v1.0.0
-    created: "2025-10-22T18:11:48.136290444Z"
+    created: "2025-11-27T17:29:55.586406988Z"
     dependencies:
     - condition: node-feature-discovery.enabled
       name: node-feature-discovery
@@ -43,4 +85,4 @@ entries:
     urls:
     - https://rocm.github.io/network-operator/charts/network-operator-charts-v1.0.0.tgz
     version: v1.0.0
-generated: "2025-10-22T18:11:48.120802375Z"
+generated: "2025-11-27T17:29:55.569344481Z"

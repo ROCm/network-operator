@@ -1,0 +1,8 @@
+images:
+  # contoller
+  - target: docker.io/rocm/network-operator:v1.0.1
+    k8s_comp_prefix:
+      - network-operator-charts-controller
+  # operands
+  # device-metrics-exporter
+  - target: docker.io/rocm/device-metrics-exporter:nic-v1.0.1
