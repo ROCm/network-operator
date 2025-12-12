@@ -8,10 +8,18 @@
     ./docker-build.sh      tag_ver1      1.117.1-a-63
     ```
 
-2. [Docker-Build.sh](./docker-build.sh) can be customized to provide the following args in roce-workload image creation
+3. [Docker-Build.sh](./docker-build.sh) can be customized to provide the following args in roce-workload image creation
     * ROCM_BASE_IMAGE
     * RCCL_DROP_TAG
     * ANP_DROP_TAG
     * AINIC SW Version
 
-3. Start the workload pod by using the roce image in [Workload.yaml](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/workload.html#deploy-the-workload)
+4. Start the workload pods by specifying the roce image in [Workload.yaml](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/workload.html#deploy-the-workload)
+
+5. Exec into one of the workload pods and start dual-node RCCL run using [run-rccl.sh](run_rccl.sh) packaged as part of the workload docker image
+
+    ```bash
+    /tmp/run_rccl.sh <workload-pod1-ip> <workload-pod2-ip>
+
+    Ex: root@workload:/tmp# ./run_rccl.sh 10.244.0.141 10.244.1.44
+    ```

@@ -97,22 +97,22 @@ RUN git status
 RUN sudo make -j RCCL_HOME=$WORK_DIR/rccl RCCL_BUILD=$WORK_DIR/rccl/build/release MPI_INCLUDE=$WORK_DIR/ompi/install/include/ MPI_LIB_PATH=$WORK_DIR/ompi/install/lib
 
 # SSH dependencies for MPI
-#RUN sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
-#   echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
-#   sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config && \
-#   mkdir /var/run/sshd -p
+RUN sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
+   echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
+   sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config && \
+   mkdir /var/run/sshd -p
 
-## SSH install
-RUN mkdir /var/run/sshd && \
-    echo 'root:docker' | chpasswd && \
-    sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    mkdir -p /root/.ssh && ssh-keygen -t rsa -f /root/.ssh/id_rsa -q -N ""
+RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
+RUN ssh-keygen -t rsa -b 4096 -N '' -f /root/.ssh/id_rsa
+RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
 # User Scripts
 WORKDIR /tmp
-COPY ssh_setup.sh run_rccl.sh /tmp/
+COPY run_rccl.sh /tmp/
 COPY show_gid /usr/sbin/show_gid
-RUN chmod +x /tmp/ssh_setup.sh /tmp/run_rccl.sh /usr/sbin/show_gid
+RUN chmod +x /tmp/run_rccl.sh /usr/sbin/show_gid
 
 # ENV setup
 ENV LD_LIBRARY_PATH=$WORK_DIR/amd-anp/build:$WORK_DIR/rccl/build/release/build/lib:/opt/rocm/lib:/opt/rocm/lib64:$WORK_DIR/ompi/install/lib:$LD_LIBRARY_PATH
