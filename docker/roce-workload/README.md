@@ -2,7 +2,7 @@
 
 1. [Dockerfile](./Dockerfile) contains the docker build instructions for RoCE workload
 
-2. Build the RoCE/RCCL workload image by running [Docker-Build.sh](./docker-build.sh) script providing the docker image tag and AINIC FW version . The docker image bundles ROCm, RCCL, RCCL tests, AMD Network Plugin and AINIC user-space drivers and packages
+2. Build the RoCE/RCCL workload image by running [Docker-Build.sh](./docker-build.sh) script providing the docker image tag and AINIC FW version. The docker image bundles ROCm, RCCL, RCCL tests, AMD Network Plugin and AINIC user-space drivers and packages
 
     ```bash
     ./docker-build.sh      tag_ver1      1.117.1-a-63

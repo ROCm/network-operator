@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y openssh-server \
     net-tools \
     iproute2 \
     ethtool \
-    ethtool \
     sshpass \
     libpci-dev \
     isc-dhcp-client \
@@ -141,7 +140,7 @@ LABEL image.driver.repoURL=$REPO_URL
 LABEL image.driver.label=$DRIVER_LABEL
 LABEL image.driver.version=$DRIVERS_VERSION
 LABEL base_image=$ROCM_BASE_IMAGE \
-      name="roce-workload" \ 
+      name="roce-workload" \
       maintainer="sundaramurthy.gurunathan@amd.com" \
       version="v1.0.0" \
       description="Create RoCE workload docker image with ROCm, RCCL, RCCL-Tests, AMD Network Plugin, AMD AINIC drivers and libraries"

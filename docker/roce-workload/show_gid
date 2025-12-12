@@ -21,7 +21,7 @@ function cecho ()
     tput sgr0
 }
 
-# becho (color echo) prints text in bold.
+# becho (bold echo) prints text in bold.
 becho ()
 {
     echo -en $bold
