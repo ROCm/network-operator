@@ -21,21 +21,13 @@ metadata:
 spec:
   config: |-
     {
-      "cniVersion": "1.0.0",
+      "cniVersion": "0.3.1",
       "name": "sriov-nad",
-      "config":
-        {
-          "type": "sriov",
-          "spoofchk": "off",
-          "ipam": {
-            "type": "whereabouts",
-            "range": "51.1.1.0/24",
-            "exclude": [
-              "51.1.1.3/32",
-              "51.1.1.4/32"
-            ]
-          }
-        }
+      "type": "sriov",
+      "ipam": {
+        "type": "whereabouts",
+        "range": "51.3.1.0/24"
+      }
     }
 ```
 
