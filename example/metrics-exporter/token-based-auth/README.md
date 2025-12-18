@@ -111,7 +111,7 @@ kube-rbac-proxy config (part of NetworkConfig):
 rbacConfig:
   enable: true
   secret:
-    name: nic-metrics-tls
+    name: server-metrics-tls
 ```
 
 ServiceMonitor Config (part of NetworkConfig):
