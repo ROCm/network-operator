@@ -178,22 +178,9 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 	}
 
 	hostPathDirectory := v1.HostPathDirectory
-	hostPathFile := v1.HostPathFile
 	hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
 	healthCreateHostDirectory := v1.HostPathDirectoryOrCreate
 	specOut.DsSpec.MainContainer.VolumeMounts = []v1.VolumeMount{
-		{
-			Name:      "usr-bin",
-			MountPath: "/opt/nic/bin",
-		},
-		{
-			Name:      "usr-sbin",
-			MountPath: "/opt/nic/sbin",
-		},
-		{
-			Name:      "libmnl-so",
-			MountPath: "/lib64/libmnl.so.0",
-		},
 		{
 			Name:      "dev-volume",
 			MountPath: "/dev",
@@ -228,14 +215,6 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 			Name:      "run-crio",
 			MountPath: "/host/run/crio",
 		},
-		{
-			Name:      "opt-amd",
-			MountPath: "/opt/amd",
-		},
-		{
-			Name:      "libpci-so",
-			MountPath: "/lib64/libpci.so.3",
-		},
 	}
 	if specIn.Config.Name != "" {
 		specOut.DsSpec.MainContainer.VolumeMounts = append(specOut.DsSpec.MainContainer.VolumeMounts, v1.VolumeMount{
@@ -244,33 +223,6 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 		})
 	}
 	specOut.DsSpec.Volumes = []v1.Volume{
-		{
-			Name: "usr-bin",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/usr/bin",
-					Type: &hostPathDirectory,
-				},
-			},
-		},
-		{
-			Name: "usr-sbin",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/usr/sbin",
-					Type: &hostPathDirectory,
-				},
-			},
-		},
-		{
-			Name: "libmnl-so",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/lib/x86_64-linux-gnu/libmnl.so.0",
-					Type: &hostPathFile,
-				},
-			},
-		},
 		{
 			Name: "dev-volume",
 			VolumeSource: v1.VolumeSource{
@@ -342,24 +294,6 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 				HostPath: &v1.HostPathVolumeSource{
 					Path: "/run/crio",
 					Type: &hostPathDirectoryOrCreate,
-				},
-			},
-		},
-		{
-			Name: "opt-amd",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/opt/amd",
-					Type: &hostPathDirectory,
-				},
-			},
-		},
-		{
-			Name: "libpci-so",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/lib/x86_64-linux-gnu/libpci.so",
-					Type: &hostPathFile,
 				},
 			},
 		},
