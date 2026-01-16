@@ -204,13 +204,14 @@ type RegistryTLS struct {
 
 type DriverSpec struct {
 	// enable driver install. default value is true.
-	// disable is for skipping driver install/uninstall for dryrun or using in-tree amdnetwork kernel module
+	// disable is for skipping driver install/uninstall for dryrun or using in-tree ionic and rdma related kernel modules
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:enable"}
 	// +kubebuilder:default=true
 	Enable *bool `json:"enable,omitempty"`
 
-	// blacklist amdnetwork drivers on the host. Node reboot is required to apply the baclklist on the worker nodes.
-	// Not working for OpenShift cluster. OpenShift users please use the Machine Config Operator (MCO) resource to configure amdnetwork blacklist.
+	// blacklist amdnetwork drivers on the host. Node reboot is required to apply the blacklist on the worker nodes.
+	// Require spec.devicePlugin.enableNodeLabeller=true to take effect.
+	// Not working for OpenShift cluster. OpenShift users please use the Machine Config Operator (MCO) resource to configure ionic blacklist.
 	// Example MCO resource is available at https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/openshift-olm.html#create-blacklist-for-installing-out-of-tree-kernel-module
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BlacklistDrivers",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:blacklistDrivers"}
 	Blacklist *bool `json:"blacklist,omitempty"`
@@ -258,6 +259,11 @@ type DriverSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="UpgradePolicy",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:upgradePolicy"}
 	// +optional
 	UpgradePolicy *DriverUpgradePolicySpec `json:"upgradePolicy,omitempty"`
+
+	// tolerations for kmm module object
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:tolerations"}
+	// +optional
+	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 }
 
 // UpgradeState captures the state of the upgrade process on a node
@@ -281,6 +287,8 @@ const (
 	UpgradeStateComplete UpgradeState = "Upgrade-Complete"
 	// Node upgrade failed
 	UpgradeStateFailed UpgradeState = "Upgrade-Failed"
+	// Node upgrade timed out
+	UpgradeStateTimedOut UpgradeState = "Upgrade-Timed-Out"
 	// Node cordon failed
 	UpgradeStateCordonFailed UpgradeState = "Cordon-Failed"
 	// Node uncordon failed
@@ -337,6 +345,10 @@ type DrainSpec struct {
 	// +kubebuilder:default:=300
 	// +kubebuilder:validation:Minimum:=0
 	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
+	// GracePeriodSeconds indicates the time kubernetes waits for a pod to shut down gracefully after receiving a termination signal
+	// +optional
+	// +kubebuilder:default:=-1
+	GracePeriodSeconds int `json:"gracePeriodSeconds,omitempty"`
 }
 
 type PodDeletionSpec struct {
@@ -349,6 +361,10 @@ type PodDeletionSpec struct {
 	// +kubebuilder:default:=300
 	// +kubebuilder:validation:Minimum:=0
 	TimeoutSeconds int `json:"timeoutSeconds,omitempty"`
+	// GracePeriodSeconds indicates the time kubernetes waits for a pod to shut down gracefully after receiving a termination signal
+	// +optional
+	// +kubebuilder:default:=-1
+	GracePeriodSeconds int `json:"gracePeriodSeconds,omitempty"`
 }
 
 type ImageSignSpec struct {
@@ -770,7 +786,7 @@ type NetworkConfigStatus struct {
 //+kubebuilder:subresource:status
 
 // NetworkConfig describes how to enable AMD Network device
-// +operator-sdk:csv:customresourcedefinitions:displayName="NetworkConfig",resources={{Module,v1beta1,modules.kmm.sigs.x-k8s.io},{Daemonset,v1,apps}, {services,v1,core}}
+// +operator-sdk:csv:customresourcedefinitions:displayName="NetworkConfig",resources={{Module,v1beta1,modules.kmm.sigs.x-k8s.io},{Daemonset,v1,apps}, {services,v1,core},{Pod,v1,core}}
 type NetworkConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
