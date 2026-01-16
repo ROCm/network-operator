@@ -51,7 +51,7 @@ Kubernetes: `>= 1.29.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controllerManager.affinity | object | `{"nodeAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"preference":{"matchExpressions":[{"key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]},"weight":1}]}}` | Deployment affinity configs for controller manager |
-| controllerManager.manager.image.repository | string | `"registry.test.pensando.io:5000/amd-network-operator"` | AMD Network operator controller manager image repository |
+| controllerManager.manager.image.repository | string | `"docker.io/rocm/amd-network-operator"` | AMD Network operator controller manager image repository |
 | controllerManager.manager.image.tag | string | `"dev"` | AMD Network operator controller manager image tag |
 | controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD Network operator controller manager pod |
 | controllerManager.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image |
@@ -66,11 +66,11 @@ Kubernetes: `>= 1.29.0-0`
 | kmm.controller.manager.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
 | kmm.controller.manager.env.relatedImageBuild | string | `"gcr.io/kaniko-project/executor:v1.23.2"` | KMM kaniko builder image for building driver image within cluster |
 | kmm.controller.manager.env.relatedImageBuildPullSecret | string | `""` | Image pull secret name for pulling KMM kaniko builder image if registry needs credential to pull image |
-| kmm.controller.manager.env.relatedImageSign | string | `"registry.test.pensando.io:5000/kernel-module-management-signimage:latest"` | KMM signer image for signing driver image's kernel module with given key pairs within cluster |
+| kmm.controller.manager.env.relatedImageSign | string | `"docker.io/rocm/kernel-module-management-signimage:latest"` | KMM signer image for signing driver image's kernel module with given key pairs within cluster |
 | kmm.controller.manager.env.relatedImageSignPullSecret | string | `""` | Image pull secret name for pulling KMM signer image if registry needs credential to pull image |
-| kmm.controller.manager.env.relatedImageWorker | string | `"registry.test.pensando.io:5000/kernel-module-management-worker:latest"` | KMM worker image for loading / unloading driver kernel module on worker nodes |
+| kmm.controller.manager.env.relatedImageWorker | string | `"docker.io/rocm/kernel-module-management-worker:latest"` | KMM worker image for loading / unloading driver kernel module on worker nodes |
 | kmm.controller.manager.env.relatedImageWorkerPullSecret | string | `""` | Image pull secret name for pulling KMM worker image if registry needs credential to pull image |
-| kmm.controller.manager.image.repository | string | `"registry.test.pensando.io:5000/kernel-module-management-operator"` | KMM controller manager image repository |
+| kmm.controller.manager.image.repository | string | `"docker.io/rocm/kernel-module-management-operator"` | KMM controller manager image repository |
 | kmm.controller.manager.image.tag | string | `"latest"` | KMM controller manager image tag |
 | kmm.controller.manager.imagePullPolicy | string | `"Always"` | Image pull policy for KMM controller manager pod |
 | kmm.controller.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling KMM controller manager image if registry needs credential to pull image |
@@ -104,7 +104,7 @@ Kubernetes: `>= 1.29.0-0`
 | kmm.webhookServer.webhookServer.args[2] | string | `"--enable-namespace"` |  |
 | kmm.webhookServer.webhookServer.args[3] | string | `"--enable-preflightvalidation"` |  |
 | kmm.webhookServer.webhookServer.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
-| kmm.webhookServer.webhookServer.image.repository | string | `"registry.test.pensando.io:5000/kernel-module-management-webhook-server"` | KMM webhook image repository |
+| kmm.webhookServer.webhookServer.image.repository | string | `"docker.io/rocm/kernel-module-management-webhook-server"` | KMM webhook image repository |
 | kmm.webhookServer.webhookServer.image.tag | string | `"latest"` | KMM webhook image tag |
 | kmm.webhookServer.webhookServer.imagePullPolicy | string | `"Always"` | Image pull policy for KMM webhook pod |
 | kmm.webhookServer.webhookServer.imagePullSecrets | string | `""` | Image pull secret name for pulling KMM webhook image if registry needs credential to pull image |

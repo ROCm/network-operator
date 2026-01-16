@@ -56,7 +56,7 @@ controllerManager:
       # -- AMD Network operator controller manager image repository
       repository: docker.io/rocm/amd-network-operator
       # -- AMD Network operator controller manager image tag
-      tag: dev 
+      tag: dev
     # -- Image pull policy for AMD Network operator controller manager pod
     imagePullPolicy: Always
     # -- Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image
