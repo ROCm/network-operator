@@ -171,7 +171,6 @@ help: ## Display this help.
 .PHONY: update-registry
 update-registry: ## Update all image URLs based on the image variables
 	# updating registry information in yaml files
-	## TODO ## sed -i -e 's|image:.*$$|image: ${IMG}|' bundle/manifests/amd-network-operator.clusterserviceversion.yaml
 	sed -i -e 's|repository:.*$$|repository: ${IMAGE_TAG_BASE}|' \
 	hack/k8s-patch/metadata-patch/values.yaml \
 	hack/openshift-patch/metadata-patch/values.yaml
@@ -180,7 +179,6 @@ update-registry: ## Update all image URLs based on the image variables
 	config/manager-base/kustomization.yaml config/manager/kustomization.yaml \
 	hack/k8s-patch/metadata-patch/values.yaml helm-charts-k8s/values.yaml \
 	example/networkconfig.yaml
-	## TODO ## hack/openshift-patch/metadata-patch/values.yaml helm-charts-openshift/values.yaml \
 	sed -i -e 's|tag:.*$$|tag: ${KMM_IMAGE_TAG}|' \
 	-e 's|repository:.*operator.*$$|repository: ${KMM_OPERATOR_IMG_NAME}|' \
 	-e 's|repository:.*webhook.*$$|repository: ${KMM_WEBHOOK_IMG_NAME}|' \
@@ -196,11 +194,6 @@ update-version: ## Update the Project version in helm charts based on ${PROJECT_
 	sed -i '0,/version:/s|version:.*|version: ${HELM_CHARTS_VERSION}|' hack/k8s-patch/metadata-patch/Chart.yaml
 	sed -i -e 's|appVersion:.*$$|appVersion: ${IMAGE_TAG}|' hack/openshift-patch/metadata-patch/Chart.yaml
 	sed -i '0,/version:/s|version:.*|version: ${HELM_CHARTS_VERSION}|' hack/openshift-patch/metadata-patch/Chart.yaml
-	# updating project version in CI job config
-	## TODO ## sed -i -e 's|PROJECT_VERSION=[^ ]*|PROJECT_VERSION=${PROJECT_VERSION}|' .job.yml
-	## TODO ## sed -i 's|network-operator-helm-k8s-[^$$].*\.tgz|network-operator-helm-k8s-${HELM_CHARTS_VERSION}.tgz|' .job.yml
-	## TODO ## sed -i 's|network-operator-helm-openshift-.*\.tgz|network-operator-helm-openshift-${HELM_CHARTS_VERSION}.tgz|' .job.yml
-	## TODO ## sed -i 's|PROJECT_VERSION:-.*$$|PROJECT_VERSION:-${PROJECT_VERSION}\}|' asset-build/networkoperator-asset-push.sh
 
 .PHONY: manifests
 manifests: controller-gen update-registry update-version ## Generate ClusterRole and CustomResourceDefinition objects.
