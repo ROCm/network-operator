@@ -204,20 +204,6 @@ func (mr *MocknetworkConfigReconcilerHelperAPIMockRecorder) handleBuildConfigMap
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "handleBuildConfigMap", reflect.TypeOf((*MocknetworkConfigReconcilerHelperAPI)(nil).handleBuildConfigMap), ctx, nwConfig, nodes)
 }
 
-// handleConfigManager mocks base method.
-func (m *MocknetworkConfigReconcilerHelperAPI) handleConfigManager(ctx context.Context, nwConfig *v1alpha1.NetworkConfig) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "handleConfigManager", ctx, nwConfig)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// handleConfigManager indicates an expected call of handleConfigManager.
-func (mr *MocknetworkConfigReconcilerHelperAPIMockRecorder) handleConfigManager(ctx, nwConfig any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "handleConfigManager", reflect.TypeOf((*MocknetworkConfigReconcilerHelperAPI)(nil).handleConfigManager), ctx, nwConfig)
-}
-
 // handleDevicePlugin mocks base method.
 func (m *MocknetworkConfigReconcilerHelperAPI) handleDevicePlugin(ctx context.Context, nwConfig *v1alpha1.NetworkConfig) error {
 	m.ctrl.T.Helper()

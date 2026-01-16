@@ -40,7 +40,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ROCm/common-infra-operator/pkg/configmanager"
 	"github.com/ROCm/common-infra-operator/pkg/deviceplugin"
 	"github.com/ROCm/common-infra-operator/pkg/metricsexporter"
 	"github.com/ROCm/common-infra-operator/pkg/nodelabeller"
@@ -52,7 +51,6 @@ import (
 	amdv1alpha1 "github.com/ROCm/network-operator/api/v1alpha1"
 	utils "github.com/ROCm/network-operator/internal"
 	"github.com/ROCm/network-operator/internal/conditions"
-	cminternal "github.com/ROCm/network-operator/internal/configmanager"
 	"github.com/ROCm/network-operator/internal/controllers/watchers"
 	dpinternal "github.com/ROCm/network-operator/internal/deviceplugin"
 	"github.com/ROCm/network-operator/internal/kmmmodule"
@@ -103,10 +101,9 @@ func NewNetworkConfigReconciler(
 	devicepluginHandler deviceplugin.DevicePluginAPI,
 	secondaryNetworkHandler secondarynetwork.SecondaryNetworkAPI,
 	workerMgr workermgr.WorkerMgrAPI,
-	configmanagerHandler configmanager.ConfigManager,
 	isOpenShift bool) *NetworkConfigReconciler {
 	upgradeMgrHandler := newUpgradeMgrHandler(client, k8sConfig, isOpenShift, workerMgr)
-	helper := newNetworkConfigReconcilerHelper(client, kmmHandler, nlHandler, upgradeMgrHandler, metricsHandler, devicepluginHandler, secondaryNetworkHandler, workerMgr, configmanagerHandler)
+	helper := newNetworkConfigReconcilerHelper(client, kmmHandler, nlHandler, upgradeMgrHandler, metricsHandler, devicepluginHandler, secondaryNetworkHandler, workerMgr)
 	podEventHandler := watchers.NewPodEventHandler(client, workerMgr)
 	return &NetworkConfigReconciler{
 		helper:          helper,
@@ -315,12 +312,12 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	  	if err := r.helper.handleTestRunner(ctx, nwConfig, nodes); err != nil {
 	          return res, fmt.Errorf("failed to handle test runner for NetworkConfig %s: %v", req.NamespacedName, err)
 	  	}
-		---*/
-	logger.Info("start config manager reconciliation", "enable", nwConfig.Spec.ConfigManager.Enable)
-	if err := r.helper.handleConfigManager(ctx, nwConfig); err != nil {
-		return res, fmt.Errorf("failed to handle config manager for NetworkConfig %s: %v", req.NamespacedName, err)
-	}
 
+	    logger.Info("start config manager reconciliation", "enable", nwConfig.Spec.ConfigManager.Enable)
+	    if err := r.helper.handleConfigManager(ctx, nwConfig); err != nil {
+		    return res, fmt.Errorf("failed to handle config manager for NetworkConfig %s: %v", req.NamespacedName, err)
+	    }
+	  ---*/
 	err = r.helper.buildNetworkConfigStatus(ctx, nwConfig, nodes)
 	if err != nil {
 		return res, fmt.Errorf("failed to build status for NetworkConfig %s: %v", req.NamespacedName, err)
@@ -358,7 +355,6 @@ type networkConfigReconcilerHelperAPI interface {
 	handleBuildConfigMap(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error
 	handleNodeLabeller(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList, isOpenShift bool) error
 	handleMetricsExporter(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error
-	handleConfigManager(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error
 	handleSecondaryNetwork(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error
 	setCondition(ctx context.Context, condition string, nwConfig *amdv1alpha1.NetworkConfig, status metav1.ConditionStatus, reason string, message string) error
 	deleteCondition(ctx context.Context, condition string, nwConfig *amdv1alpha1.NetworkConfig) error
@@ -372,7 +368,6 @@ type networkConfigReconcilerHelper struct {
 	nlHandler               nodelabeller.NodeLabeller
 	metricsHandler          metricsexporter.MetricsExporter
 	devicepluginHandler     deviceplugin.DevicePluginAPI
-	configmanagerHandler    configmanager.ConfigManager
 	secondaryNetworkHandler secondarynetwork.SecondaryNetworkAPI
 	nodeAssignments         map[string]string
 	conditionUpdater        conditions.ConditionUpdater
@@ -389,8 +384,7 @@ func newNetworkConfigReconcilerHelper(client client.Client,
 	metricsHandler metricsexporter.MetricsExporter,
 	devicepluginHandler deviceplugin.DevicePluginAPI,
 	secondaryNetworkHandler secondarynetwork.SecondaryNetworkAPI,
-	workerMgr workermgr.WorkerMgrAPI,
-	configmanagerHandler configmanager.ConfigManager) networkConfigReconcilerHelperAPI {
+	workerMgr workermgr.WorkerMgrAPI) networkConfigReconcilerHelperAPI {
 	conditionUpdater := conditions.NewNetworkConfigConditionMgr()
 	validator := validator.NewValidator()
 	return &networkConfigReconcilerHelper{
@@ -399,7 +393,6 @@ func newNetworkConfigReconcilerHelper(client client.Client,
 		nlHandler:               nlHandler,
 		metricsHandler:          metricsHandler,
 		devicepluginHandler:     devicepluginHandler,
-		configmanagerHandler:    configmanagerHandler,
 		secondaryNetworkHandler: secondaryNetworkHandler,
 		nodeAssignments:         make(map[string]string),
 		conditionUpdater:        conditionUpdater,
@@ -928,8 +921,6 @@ func (dcrh *networkConfigReconcilerHelper) finalizeTestRunner(ctx context.Contex
 	return nil
 }
 
----*/
-
 func (dcrh *networkConfigReconcilerHelper) finalizeConfigManager(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error {
 	logger := log.FromContext(ctx)
 
@@ -952,14 +943,15 @@ func (dcrh *networkConfigReconcilerHelper) finalizeConfigManager(ctx context.Con
 
 	return nil
 }
+---*/
 
 func (dcrh *networkConfigReconcilerHelper) finalizeNetworkConfig(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error {
 
-	// finalize config manager before metrics exporter
-	if err := dcrh.finalizeConfigManager(ctx, nwConfig); err != nil {
-		return err
-	}
 	/*---- To be enabled later
+	    // finalize config manager before metrics exporter
+	    if err := dcrh.finalizeConfigManager(ctx, nwConfig); err != nil {
+		    return err
+	    }
 		// finalize test runner before metrics exporter
 		if err := dcrh.finalizeTestRunner(ctx, nwConfig, nodes); err != nil {
 			return err
@@ -1370,8 +1362,7 @@ func (dcrh *networkConfigReconcilerHelper) handleSecondaryNetwork(ctx context.Co
 	return nil
 }
 
-/*
----- To be enabled later
+/*---- To be enabled later
 
 	func (dcrh *networkConfigReconcilerHelper) handleTestRunner(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error {
 		logger := log.FromContext(ctx)
@@ -1398,8 +1389,6 @@ func (dcrh *networkConfigReconcilerHelper) handleSecondaryNetwork(ctx context.Co
 		return nil
 	}
 
----
-*/
 func (dcrh *networkConfigReconcilerHelper) handleConfigManager(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error {
 	logger := log.FromContext(ctx)
 	ds := &appsv1.DaemonSet{
@@ -1427,6 +1416,7 @@ func (dcrh *networkConfigReconcilerHelper) handleConfigManager(ctx context.Conte
 
 	return nil
 }
+---*/
 
 func (dcrh *networkConfigReconcilerHelper) updateNodeLabels(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList, isFinalizer bool) error {
 	logger := log.FromContext(ctx)

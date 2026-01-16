@@ -9,7 +9,7 @@ patches:
 
 images:
 - name: controller
-  newName: registry.test.pensando.io:5000/amd-network-operator
+  newName: docker.io/rocm/amd-network-operator
   newTag: dev
 
 configurations:

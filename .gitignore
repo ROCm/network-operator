@@ -1,5 +1,6 @@
 /bin/
 /manager
+*.tgz
 network-operator*.tgz
 /*network-operator*.tgz
 /helm-charts-k8s/charts/*.tgz

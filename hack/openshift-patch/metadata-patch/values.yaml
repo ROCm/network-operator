@@ -11,7 +11,7 @@ controllerManager:
     containerSecurityContext:
       allowPrivilegeEscalation: false
     image:
-      repository: registry.test.pensando.io:5000/amd-network-operator
+      repository: docker.io/rocm/amd-network-operator
       tag: dev 
     imagePullPolicy: Always
     imagePullSecrets: ""

@@ -47,7 +47,6 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"github.com/ROCm/common-infra-operator/pkg/configmanager"
 	"github.com/ROCm/common-infra-operator/pkg/deviceplugin"
 	"github.com/ROCm/common-infra-operator/pkg/metricsexporter"
 	"github.com/ROCm/common-infra-operator/pkg/nodelabeller"
@@ -118,7 +117,6 @@ func main() {
 	kmmHandler := kmmmodule.NewKMMModule(client, scheme, isOpenShift)
 	nlHandler := nodelabeller.NewNodeLabeller(scheme, isOpenShift)
 	metricsHandler := metricsexporter.NewMetricsExporter(scheme)
-	configmanagerHandler := configmanager.NewConfigManager(scheme)
 	devicepluginHandler := deviceplugin.NewDevicePlugin(client, scheme, isOpenShift)
 	secondarynetworkHandler := secondarynetwork.NewSecondaryNetwork(scheme, isOpenShift)
 	workerMgr := workermgr.NewWorkerMgr(client, scheme)
@@ -131,7 +129,6 @@ func main() {
 		devicepluginHandler,
 		secondarynetworkHandler,
 		workerMgr,
-		configmanagerHandler,
 		isOpenShift)
 	if err = dcr.SetupWithManager(mgr); err != nil {
 		cmd.FatalError(setupLogger, err, "unable to create controller", "name", controllers.NetworkConfigReconcilerName)

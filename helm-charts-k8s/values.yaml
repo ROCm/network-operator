@@ -54,7 +54,7 @@ controllerManager:
       allowPrivilegeEscalation: false
     image:
       # -- AMD Network operator controller manager image repository
-      repository: registry.test.pensando.io:5000/amd-network-operator
+      repository: docker.io/rocm/amd-network-operator
       # -- AMD Network operator controller manager image tag
       tag: dev 
     # -- Image pull policy for AMD Network operator controller manager pod
