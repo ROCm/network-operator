@@ -1,0 +1,15 @@
+{{- if .Values.config }}
+{{- $configData := fromJson .Values.config -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-multus-cni-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    tier: node
+    app: multus
+    {{- include "multus.labels" . | nindent 4 }}
+data:
+  cni-conf.json: |-
+{{ .Values.config | indent 4 }}
+{{- end}}
