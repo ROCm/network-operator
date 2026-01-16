@@ -35,7 +35,7 @@ spec:
     enable: True
     port: 5001
     serviceType: "NodePort"
-    nodePort: 32500
+    nodePort: 32501
     hostNetwork: true
     image: docker.io/rocm/device-metrics-exporter:nic-v1.0.0
   

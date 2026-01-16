@@ -33,7 +33,6 @@ limitations under the License.
 package test
 
 import (
-	_ "github.com/ROCm/common-infra-operator/pkg/test"
 	hubv1beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api-hub/v1beta1"
 	kmmv1beta1 "github.com/rh-ecosystem-edge/kernel-module-management/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"

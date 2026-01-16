@@ -32,6 +32,12 @@ spec:
         name: privateKeySecret
       certSecret:
         name: publicKeySecret
+    # (Optional) specify driver toleration so operator can manage out-of-tree drivers on tainted nodes
+    tolerations:
+      - key: "example-key"
+        operator: "Equal"
+        value: "example-value"
+        effect: "NoSchedule"
     upgradePolicy:
       # -- enable/disable automatic driver upgrade feature 
       enable: false
@@ -88,7 +94,7 @@ spec:
     enable: True
     port: 5001
     serviceType: "NodePort"
-    nodePort: 32500
+    nodePort: 32501
     image: docker.io/rocm/device-metrics-exporter:nic-v1.0.0
     imagePullPolicy: "Always"
     imageRegistrySecret:
