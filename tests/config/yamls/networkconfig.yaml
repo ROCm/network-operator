@@ -1,0 +1,25 @@
+apiVersion: amd.com/v1alpha1
+kind: NetworkConfig
+metadata:
+  name: test-networkconfig
+  namespace: kube-amd-network
+spec:
+  devicePlugin:
+    enableNodeLabeller: True
+    nodeLabellerImage: registry.test.pensando.io:5000/k8s-network-node-labeller:latest
+    devicePluginImage: registry.test.pensando.io:5000/k8s-network-device-plugin:v0.1        
+  metricsExporter:
+    enable: True
+    port: 5001
+    serviceType: "NodePort"
+    nodePort: 32501
+    image: registry.test.pensando.io:5000/device-metrics-exporter:latest  
+  secondaryNetwork:
+    cniPlugins:
+      enable: True
+      image: registry.test.pensando.io:5000/k8s-cni-plugins:v0.1
+      imagePullPolicy: "Always"
+  commonConfig:
+    initContainerImage: registry.test.pensando.io:5000/busybox:1.36
+  selector:
+    feature.node.kubernetes.io/amd-nic: "true"
