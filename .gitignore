@@ -10,7 +10,6 @@ network-operator*.tgz
 .vscode/
 .idea/
 cni/build/amd-host-device
-to-be-deleted
 
 # node app for e2e test
 id_rsa*
