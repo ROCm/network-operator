@@ -5,6 +5,7 @@ The AMD Host Device CNI plugin is a specialized Container Network Interface (CNI
 ## Key Features
 
 ### Interface Movement and IP Preservation
+
 - **Direct PF/VF Movement**: Moves entire Physical or Virtual Function interfaces from host to pod namespace
 - **IP Address Preservation**: Captures and preserves existing IP addresses (both IPv4 and IPv6) from the host interface
 - **Interface Name Retention**: Maintains the original host interface name within the pod
@@ -16,7 +17,7 @@ The AMD Host Device CNI plugin is a specialized Container Network Interface (CNI
 
 Separate NAD should be created for each resource type: `nic` and `vnic`
 
-#### NAD for `nic`:
+#### NAD for `nic`
 
 ```yaml
 apiVersion: k8s.cni.cncf.io/v1
@@ -33,7 +34,7 @@ spec:
   }'
 ```
 
-### NAD for `vnic`:
+### NAD for `vnic`
 
 ```yaml
 apiVersion: k8s.cni.cncf.io/v1
@@ -59,6 +60,7 @@ This section demonstrates how to verify that a RoCE (RDMA over Converged Etherne
 ### On the host (Before Allocation)
 
 Check the RoCE device using `rdma` and `ibv_devices`:
+
 ```bash
 root@genoa4:~# rdma link show rocep68s0/1
 link rocep68s0/1 state ACTIVE physical_state LINK_UP netdev enp68s0
@@ -68,6 +70,7 @@ root@genoa4:~#
 ```
 
 Check the associated Ethernet interface:
+
 ```bash
 root@genoa4:~# ifconfig enp68s0
 enp68s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
@@ -109,6 +112,7 @@ enp68s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 ```
 
 ### On the Host (After Allocation)
+
 After allocation, the ethernet interface is no longer present in the host namespace:
 
 ```bash

@@ -1,11 +1,10 @@
 # Upgrades
 
-
-### 1. Verify Cluster Readiness
+## 1. Verify Cluster Readiness
 
 Ensure the cluster is healthy and ready for the upgrade. A typical system will look like this before an upgrade:
 
-```
+```yaml
 root@genoa4:~# kubectl get pods -A
 NAMESPACE          NAME                                                              READY   STATUS    RESTARTS      AGE
 kube-amd-network   amd-network-operator-multus-multus-d6pft                          1/1     Running   14s
@@ -28,17 +27,15 @@ kube-system        kube-scheduler-genoa4                                        
 
 All pods should be in the `Running` state. Resolve any issues such as restarts or errors before proceeding.
 
+## 2. Understand Upgrade Safeguards
 
-### 2. Understand Upgrade Safeguards
-
-**Pre-Upgrade Hook**
+### Pre-Upgrade Hook
 
 * ```upgrade-crd```: This hook helps users to patch the new version Custom Resource Definition (CRD) to the helm deployment. Helm by default doesn't support automatic upgrade of CRD so we implemented this hook for auto-upgrade the CRDs.
 
-- **Skipping the Hook:** If necessary, you can bypass the pre-upgrade hook (not recommended) by adding ```--no-hooks```, you would have to manually use new version's CRD to upgrade then in cluster.
+* **Skipping the Hook:** If necessary, you can bypass the pre-upgrade hook (not recommended) by adding ```--no-hooks```, you would have to manually use new version's CRD to upgrade then in cluster.
 
-
-### 3. Perform the Upgrade
+## 3. Perform the Upgrade
 
 Upgrade the operator using the following command:
 
@@ -69,7 +66,7 @@ Upgrade Options:
 * **Error Scenario**: In case there is chart name or release name mismatch happened, you can use `--set fullnameOverride=amd-network-operator-network-operator-charts --set nameOverride=network-operator-charts` to resolve the conflict. The ```fullnameOverride``` and ```nameOverride``` parameters are used to ensure consistent naming between the previous and new chart deployments, avoiding conflicts caused by name mismatches during the upgrade process. The ```fullnameOverride``` explicitly sets the fully qualified name of the resources created by the chart, such as service accounts and deployments. The ```nameOverride``` adjusts the base name of the chart without affecting resource-specific names.
 ```
 
-### 4. Verify Post-Upgrade State
+## 4. Verify Post-Upgrade State
 
 After the upgrade, ensure all components are running:
 
@@ -85,10 +82,11 @@ kubectl get nodes -oyaml | grep "amd.com/vnic"
 kubectl get networkconfigs -n kube-amd-network -oyaml
 ```
 
-#### **Notes**
+## **Notes**
 
-- Use `--no-hooks` only if necessary and after assessing the potential impact.
-- For additional troubleshooting, check operator logs:
+* Use `--no-hooks` only if necessary and after assessing the potential impact.
+* For additional troubleshooting, check operator logs:
+
   ```bash
   kubectl logs -f -n kube-amd-network amd-network-operator-network-operator-charts-controller-mav4rn9
   ```

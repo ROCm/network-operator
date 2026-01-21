@@ -16,7 +16,7 @@
 
 4. Start the workload pods by specifying the roce image in [Workload.yaml](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/workload.html#deploy-the-workload)
 
-5. In [Workload.yaml](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/workload.html#deploy-the-workload), if `command:` is needed to be used when starting the container, do not forget to include SSH service restart. For ex: 
+5. In [Workload.yaml](https://instinct.docs.amd.com/projects/network-operator/en/latest/installation/workload.html#deploy-the-workload), if `command:` is needed to be used when starting the container, do not forget to include SSH service restart. For ex:
 
     ```bash
     command: ["sh", "-c", "service ssh restart && sleep infinity"]

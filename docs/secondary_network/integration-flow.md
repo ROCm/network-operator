@@ -29,7 +29,7 @@ The process involves four main phases:
 
 ### 1. Resource Allocation
 
-```
+```text
 Pod Request → Scheduler → Device Plugin → NIC Assignment
 ```
 
@@ -39,7 +39,7 @@ Pod Request → Scheduler → Device Plugin → NIC Assignment
 
 ### 2. Network Setup Initiation
 
-```
+```text
 Kubelet → Multus CNI (from /etc/cni/net.d) → Primary/Cluster Network + Secondary Networks
 ```
 
@@ -67,6 +67,7 @@ spec:
 ```
 
 **Multus Process**:
+
 - Reads `k8s.v1.cni.cncf.io/networks` annotation from pod
 - Fetches corresponding NetworkAttachmentDefinition
 - Maps device allocation to CNI configuration using resource annotation
@@ -75,6 +76,7 @@ spec:
 ### 4. AMD Host Device CNI Execution
 
 **CNI Configuration**:
+
 ```json
 {
   "name": "amd-host-device-nad",
@@ -85,6 +87,7 @@ spec:
 ```
 
 **Execution Steps**:
+
 1. **IP Capture**: Extract existing IP addresses from host interface
 2. **Interface Movement**: Delegate to `host-device` plugin to move interface to pod with the extracted IP addresses
 3. **State Persistence**: Store interface-to-IP mapping for lifecycle management
@@ -92,11 +95,13 @@ spec:
 ## Key Integration Points
 
 ### Device Plugin ↔ CNI Communication
+
 - Device Plugin allocates PCI device ID
 - Multus extracts device ID from environment variables
 - Device ID passed to CNI for interface identification
 
 ### Resource Annotation Mapping
+
 - `k8s.v1.cni.cncf.io/resourceName` links NetworkAttachmentDefinition to Device Plugin resource
 - Enables automatic device allocation to CNI parameter mapping
 - Provides resource-aware network attachment
@@ -104,4 +109,5 @@ spec:
 ## Result
 
 Upon successful completion:
+
 - Pod has direct access to physical/virtual NIC hardware

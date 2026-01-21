@@ -35,7 +35,7 @@ spec:
 
 ### Out-of-tree driver installation by AMD Network Operator
 
-To install the ionic driver by using AMD Network Operator, please prepare an image registry to store the compiled driver images, then specify corresponding fields in the driver spec of `NetworkConfig`. 
+To install the ionic driver by using AMD Network Operator, please prepare an image registry to store the compiled driver images, then specify corresponding fields in the driver spec of `NetworkConfig`.
 
 ```{note}
 Some Operating System may contain an inbox `ionic` kernel module. That inbox kernel module could be old versions and affect the installation of desired version out-of-tree kernel module. To blacklist the inbox `ionic` driver please specify `spec.driver.blacklist` as true. After that the worker nodes may need to these to apply the blacklist and avoid the usage of inbox `ionic` kernel module:

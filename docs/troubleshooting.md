@@ -32,22 +32,22 @@ Options:
 - `-o yaml/json`: output format (default: json)
 - `-k kubeconfig`: path to kubeconfig (default: ~/.kube/config)
 
-### TechSupport Collects:
+### TechSupport Collects
 
 1. **Kubernetes resources** from the `network-operator`, `nfd`, and `kmm` namespaces, including:
-   * Pods
-   * DaemonSets
-   * Deployments
-   * ConfigMaps
-   * `NetworkConfig` resources
+   - Pods
+   - DaemonSets
+   - Deployments
+   - ConfigMaps
+   - `NetworkConfig` resources
 
 2. **Pod logs** from components such as:
 
-   * Node Feature Discovery (NFD)
-   * Kernel Module Management (KMM)
-   * Network Operator (Data Plane, Metrics Exporter, CNI plugins)
+   - Node Feature Discovery (NFD)
+   - Kernel Module Management (KMM)
+   - Network Operator (Data Plane, Metrics Exporter, CNI plugins)
 
 3. **System-level diagnostics**:
 
-   * `lsmod` output (loaded kernel modules)
-   * `dmesg` output (kernel ring buffer)
+   - `lsmod` output (loaded kernel modules)
+   - `dmesg` output (kernel ring buffer)

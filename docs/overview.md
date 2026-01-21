@@ -34,10 +34,10 @@ The components work together in the following sequence:
 
 1. NFD identifies worker nodes with AMD NICs
 2. Controller Manager processes `NetworkConfig` custom resources
-4. Device Plugin registers `amd.com/nic` or `amd.com/vnic` allocatable resources to node
-5. Node Labeller adds detailed NIC information to node labels
-6. Metrics Exporter provides ongoing monitoring
-7. Multus and CNIs ensure the requested network device is available for workloads
+3. Device Plugin registers `amd.com/nic` or `amd.com/vnic` allocatable resources to node
+4. Node Labeller adds detailed NIC information to node labels
+5. Metrics Exporter provides ongoing monitoring
+6. Multus and CNIs ensure the requested network device is available for workloads
 
 ### K8s Cluster with AMD Network Operator
 
@@ -74,6 +74,7 @@ The [Device Metrics Exporter](https://github.com/ROCm/device-metrics-exporter) p
 #### CNI Plugins
 
 The CNI Plugins is responsible for loading all the CNIs(host-device, amd-host-device, sriov, etc.) in the worker nodes.
+
 - NetworkAttachmentDefinitions (NADs) reference these CNI plugins to define how additional networks should be attached to a pod.
 - Multus meta-plugin reads the NADs and invokes the specified CNI plugins to attach secondary network interfaces to the pod.
 

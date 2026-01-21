@@ -56,17 +56,18 @@ spec:
 | **rbacConfig**          | Optional RBAC proxy configuration                            | -                  |
 
 **Note:**
+
 - The `ImagePullPolicy` field defaults to `Always` if the image tag is `:latest`, or to `IfNotPresent` for other tags. This follows the default Kubernetes behavior for `ImagePullPolicy`.
 - For the exporter pod to be able to fetch all metrics, we recommend running the pod with `hostNetwork` set to `true`, which is the default behavior.
 
-The Metrics Exporter is deployed as a DaemonSet, which means one pod runs on each node that matches the specified `selector`. 
+The Metrics Exporter is deployed as a DaemonSet, which means one pod runs on each node that matches the specified `selector`.
 
 ### Node Selection Behavior
 
 The NetworkConfig CR has a global `spec.selector` field that controls deployment of all operands (like device plugin, node labeller and metrics exporter) under the NetworkConfig. However, you can override this with component-specific selectors:
 
 - **Global selector**: Controls all operands when no component-specific selector is set
-- **Component selector**: When `metricsExporter.selector` is specified, it provides fine-grained control and overrides the global NetworkConfig selector for the Metrics Exporter component only 
+- **Component selector**: When `metricsExporter.selector` is specified, it provides fine-grained control and overrides the global NetworkConfig selector for the Metrics Exporter component only
 
 ## Deployment
 
@@ -91,6 +92,7 @@ test-networkconfig-metrics-exporter-htdew                         1/1     Runnin
 The Metrics Exporter creates a Kubernetes service to expose metrics. For more information about Kubernetes services, see the [official kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/service/).
 
 ### From Within the Cluster (ClusterIP)
+
 Access metrics from within the cluster using the ClusterIP:
 
 ```bash
@@ -101,6 +103,7 @@ curl http://<cluster-ip>:<port>/metrics
 **Note**: The `<cluster-ip>` can be obtained by running `kubectl get svc -n kube-amd-network` and finding the metrics exporter service,  the cluster IP is listed in the CLUSTER-IP column. The `<port>` is configured in your [NetworkConfig](#configure-metrics-exporter) (default: 5001).
 
 ### From Outside the Cluster (NodePort)
+
 To access metrics from outside the cluster, you must enable NodePort by setting `serviceType: "NodePort"` in your [NetworkConfig](#configure-metrics-exporter).
 
 ```bash
@@ -121,6 +124,7 @@ kubectl apply -f path/to/your/configmap.yaml
 An example ConfigMap is available here: [configmap.yaml](https://github.com/ROCm/device-metrics-exporter/blob/main/example/configmap.yaml)
 
 **Note:** When the Metrics Exporter is deployed through the Network Operator, GPU metrics are automatically disabled via the `monitor-gpu=false` argument (not user-configurable). This means:
+
 - Only NIC-related metrics are exported
 - Including GPU fields in your ConfigMap will not enable GPU metrics collection  
 - The example ConfigMap is a generic configuration that works with both GPU and Network operators - each operator exports only its relevant metrics

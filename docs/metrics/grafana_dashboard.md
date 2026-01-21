@@ -5,7 +5,6 @@ If this label is not present, the dashboard will render **blank**.
 
 There are **two ways** to resolve this issue.
 
-
 ## Option 1: Remove the `CLUSTER_NAME` Dependency from the Dashboard
 
 This option updates the dashboard configuration directly to remove the dependency on the `CLUSTER_NAME` label.
@@ -19,7 +18,6 @@ This option updates the dashboard configuration directly to remove the dependenc
 5. Save the dashboard.
 
 The dashboard will start displaying metrics without requiring the `CLUSTER_NAME` label.
-
 
 ## Option 2: Add the `CLUSTER_NAME` Label (Recommended for Multi-Cluster Setups)
 

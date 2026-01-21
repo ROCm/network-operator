@@ -1,10 +1,10 @@
 # Custom Resource Guide
 
-### Prerequisite
+## Prerequisite
 
 For bare metal setups, AMD AINIC drivers must be pre-installed on the worker nodes, whereas in VM environments, the Network Operator can automatically handle the driver installation and management. The list of available AINIC drivers can be found here: https://repo.radeon.com/amdainic
 
-### 1. Create DeviceConfig Resource
+## 1. Create DeviceConfig Resource
 
 By deploying the following custom resource, the operator will directly deploy the device plugin, node labeller, metrics exporter, and CNI plugins on all worker nodes with AMD NICs.
 
@@ -52,7 +52,7 @@ spec:
 
 Refer to this [NetworkConfig CR example](networkconfig-full.md) for a comprehensive list of available configuration options.
 
-#### Configuration Reference
+### Configuration Reference
 
 To list existing `NetworkConfig` resources, run `kubectl get networkconfigs -A`
 
@@ -66,6 +66,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 | `namespace` | Namespace where the operator is running |
 
 #### `spec.driver` Parameters
+
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `enable` | Enable/disable driver installation | `true` |
@@ -123,7 +124,7 @@ kubectl create secret docker-registry mysecret \
 
 If you are using DockerHub to host images, you don't need to specify the ```--docker-server``` parameter when creating the secret.
 
-### 2. Monitor Installation Status
+## 2. Monitor Installation Status
 
 Check the deployment status:
 
@@ -156,7 +157,7 @@ status:
   observedGeneration: 1
 ```
 
-### Custom Resource Installation Validation
+## Custom Resource Installation Validation
 
 After applying configuration:
 
@@ -179,6 +180,3 @@ curl http://<node-ip>:<nodePort>/metrics
 ```bash
 kubectl get nodes -l feature.node.kubernetes.io/amd-nic=true
 ```
-
-
-

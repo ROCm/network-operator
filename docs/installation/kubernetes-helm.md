@@ -91,10 +91,9 @@ cert-manager-cainjector-7477d56b47-v8nq8  1/1     Running   0          2m
 cert-manager-webhook-6d5cb854fc-h6vbk     1/1     Running   0          2m
 ```
 
-3. ## Installing Network Operator
+## Installing Network Operator
 
 > **Warning**
->
 > If you are trying to install AMD GPU Operator and AMD Network Operator together within the same Kubernetes cluster, please jump to this section [Installation of GPU Operator and Network Operator together](#installation-of-gpu-operator-and-network-operator-together)
 
 ### 1. Add the AMD Helm Repository
@@ -136,6 +135,7 @@ helm install amd-network-operator rocm/network-operator-charts \
 ```
 
 The following parameters are able to be configured when using the Helm Chart. In order to view all available options, please refer to this section or run the command:
+
 ```bash
 helm show values rocm/network-operator-charts
 ```
@@ -242,9 +242,9 @@ helm upgrade amd-network-operator rocm/network-operator-charts \
 ## Install Custom Resource
 
 After the installation of AMD Network Operator:
-  * For the network operator to begin working and orchestrate its operands, a `NetworkConfig` custom resource must be created. This can be accomplished by preparing a YAML manifest and applying it by running ```kubectl apply -f networkconfig.yaml```.
-  * For custom resource definition and more detailed information, please refer to [Custom Resource Installation Guide](./networkconfig.md). Here are some examples for common deployment scenarios.
 
+- For the network operator to begin working and orchestrate its operands, a `NetworkConfig` custom resource must be created. This can be accomplished by preparing a YAML manifest and applying it by running ```kubectl apply -f networkconfig.yaml```.
+- For custom resource definition and more detailed information, please refer to [Custom Resource Installation Guide](./networkconfig.md). Here are some examples for common deployment scenarios.
 
 ## Post-Installation Verification
 
@@ -304,11 +304,11 @@ Please refer to the [Uninstallation](../uninstallation/uninstallation.md) docume
 
 AMD GPU Operator and AMD Network Operator could co-exist in the same Kubernetes cluster, here are the instructions to do the installation and uninstallation for the use case where 2 operators are working together.
 
-### K8s Cluster with AMD Network and AMD GPU Operators
+## K8s Cluster with AMD Network and AMD GPU Operators
 
 ![Architecture diagram](./../_static/amd-network-and-amd-gpu-operators-diagram.jpg)
 
-## Installation 
+## Installation
 
 ### 1. Install Cert-Manager
 
@@ -316,13 +316,13 @@ If cert-manager is already installed in your cluster, you can skip this step.
 
 The Kubernetes `cert-manager` is a pre-requisite required by both AMD GPU and Network Operator to do the TLS certificate management.
 
-* Add the cert-manager repository:
+- Add the cert-manager repository:
 
 ```bash
 helm repo add jetstack https://charts.jetstack.io --force-update
 ```
 
-* Install cert-manager:
+- Install cert-manager:
 
 ```bash
 helm install cert-manager jetstack/cert-manager \
@@ -332,11 +332,14 @@ helm install cert-manager jetstack/cert-manager \
   --set crds.enabled=true
 ```
 
-* Verify the installation:
+- Verify the installation:
+
 ```bash
 kubectl get pods -n cert-manager
 ```
+
 Expected output:
+
 ```bash
 NAME                                       READY   STATUS    RESTARTS   AGE
 cert-manager-84489bc478-qjwmw             1/1     Running   0          2m
@@ -351,6 +354,7 @@ If AMD GPU Operator is already installed in your cluster, you can skip this step
 Please refer to [AMD GPU Operator official documentation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/installation/kubernetes-helm.html#installing-operator) for detailed installation and configuration instructions. Here are the quick start instructions:
 
 2.1 Add ROCm helm chart repository
+
 ```bash
 # Add AMD GPU Operator helm repository
 helm repo add rocm https://rocm.github.io/gpu-operator
@@ -366,10 +370,11 @@ helm install amd-gpu-operator rocm/gpu-operator-charts \
       --namespace kube-amd-gpu --create-namespace \
       --version=v1.4.0
 ```
+
 Different users may have various deployment scenarios, please consider configuring these helm options when installing the helm chart:
 
-* If you are using a VM based worker node:
-  * case 1: Using AMD GPU in a Virtual Machine with VF-Passthrough, please set `amd-vgpu` in the selector:
+- If you are using a VM based worker node:
+  - case 1: Using AMD GPU in a Virtual Machine with VF-Passthrough, please set `amd-vgpu` in the selector:
 
     ```bash
     helm install amd-gpu-operator rocm/gpu-operator-charts \
@@ -378,7 +383,7 @@ Different users may have various deployment scenarios, please consider configuri
           --set-json 'deviceConfig.spec.selector={"feature.node.kubernetes.io/amd-gpu":null,"feature.node.kubernetes.io/amd-vgpu":"true"}'
     ```
 
-  * case 2: Using AMD GPU in a Virtual Machine with PF-Passthrough, please set `amd-gpu` in the selector:
+  - case 2: Using AMD GPU in a Virtual Machine with PF-Passthrough, please set `amd-gpu` in the selector:
 
     ```bash
     helm install amd-gpu-operator rocm/gpu-operator-charts \
@@ -387,13 +392,13 @@ Different users may have various deployment scenarios, please consider configuri
           --set-json 'deviceConfig.spec.selector={"feature.node.kubernetes.io/amd-gpu":"true"}'
     ```
 
-* If your worker node doesn't have inbox / pre-installed amdgpu kernel module loaded:
-    Use GPU Operator to install specific version of out-of-tree `amdgpu-dkms` kernel module.
+- If your worker node doesn't have inbox / pre-installed amdgpu kernel module loaded:
+  Use GPU Operator to install specific version of out-of-tree `amdgpu-dkms` kernel module.
 
-    If you want to use AMD GPU Operator to install kernel module, you need to prepare an image registry and create corresponding secret to access your image registry if needed:
+  If you want to use AMD GPU Operator to install kernel module, you need to prepare an image registry and create corresponding secret to access your image registry if needed:
 
-    * case 1: For the secure registry which requires credential:
-    
+  - case 1: For the secure registry which requires credential:
+
     ```bash
     # 1. prepare image registry to store driver image (e.g. dockerHub)
     # 2. setup image registry secret:
@@ -408,7 +413,7 @@ Different users may have various deployment scenarios, please consider configuri
           --set deviceConfig.spec.driver.imageRegistrySecret.name=mySecret
     ```
 
-    * case 2: For the insecure image registry:
+  - case 2: For the insecure image registry:
 
     ```bash
     # prepare insecure image registry to store driver image
@@ -422,7 +427,9 @@ Different users may have various deployment scenarios, please consider configuri
           --set deviceConfig.spec.driver.imageRegistryTLS.insecure=true \
           --set deviceConfig.spec.driver.imageRegistryTLS.insecureSkipTLSVerify=true
     ```
+
     then the driver builder pod will be triggered to build the amdgpu driver for your worker node
+
     ```bash
     kube-amd-gpu   default-build-lsnkw                                               1/1     Running    0          3s
     ```
@@ -436,6 +443,7 @@ kube-amd-gpu   default-device-plugin-h7rhq                                      
 kube-amd-gpu   default-metrics-exporter-qhx8s                                    1/1     Running   0          25s
 kube-amd-gpu   default-node-labeller-zx4ww                                       1/1     Running   0          10m
 ```
+
 ```bash
 $ kubectl get node -oyaml | grep amd.com/gpu
 amd.com/gpu: "8"
@@ -459,6 +467,7 @@ kube-amd-gpu   amd-gpu-operator-node-feature-discovery-worker-6c66c             
 After installing AMD GPU Operator you can start to install AMD Network Operator. Remember that we already installed `NFD` and `KMM` during installation of AMD GPU Operator, so you shouldn't install them again when installing AMD Network Operator. Please disable the deployment of those 2 dependent operators when installing AMD Network Operator.
 
 3.1.1 Add ROCm helm chart repository
+
 ```bash
 # Add AMD Network Operator helm repository
 helm repo add rocm-network https://rocm.github.io/network-operator
@@ -466,6 +475,7 @@ helm repo update
 ```
 
 3.1.2 Install AMD Network Operator helm chart
+
 ```bash
 helm install amd-network-operator rocm-network/network-operator-charts \
   -n kube-amd-network \
@@ -474,6 +484,7 @@ helm install amd-network-operator rocm-network/network-operator-charts \
   --set node-feature-discovery.enabled=false \
   --version=v1.0.0
 ```
+
 Then during this step only the network operator and multus CNI pods would be brought up in the new namespace `kube-amd-network`:
 
 ```bash
@@ -483,8 +494,7 @@ kube-amd-network   amd-network-operator-network-operator-charts-controller-ma2s7
 
 3.2 (Optional) Install the IONIC kernel module
 
-If your worker nodes don't have inbox / pre-installed ionic kernel module and you want to re-use te existing KMM deployment to install ionic kernel module for AI NIC, you can follow the [drivers installation section](../drivers/drivers.md) to install ionic kernel module for your worker nodes. 
-
+If your worker nodes don't have inbox / pre-installed ionic kernel module and you want to re-use te existing KMM deployment to install ionic kernel module for AI NIC, you can follow the [drivers installation section](../drivers/drivers.md) to install ionic kernel module for your worker nodes.
 
 > **Note**
 >
