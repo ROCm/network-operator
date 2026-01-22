@@ -1,0 +1,20 @@
+/bin/
+/manager
+*.tgz
+network-operator*.tgz
+/*network-operator*.tgz
+/helm-charts-k8s/charts/*.tgz
+/helm-charts-openshift/charts/*.tgz
+*.out
+*.log
+.vscode/
+.idea/
+cni/build/amd-host-device
+
+# node app for e2e test
+id_rsa*
+nodeapp
+
+# Sphinx documentation
+_build/
+.venv/

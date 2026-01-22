@@ -1,0 +1,21 @@
+apiVersion: amd.com/v1alpha1
+kind: DeviceConfig
+metadata:
+  name: test-deviceconfig
+  namespace: kube-amd-gpu
+spec:
+  driver:
+    enable: false
+  devicePlugin:
+    devicePluginImage: registry.test.pensando.io:5000/k8s-device-plugin:latest
+    nodeLabellerImage: registry.test.pensando.io:5000/k8s-device-plugin:labeller-latest
+    enableNodeLabeller: True
+  metricsExporter:
+    enable: true
+    serviceType: "NodePort"
+    nodePort: 32500
+    image: registry.test.pensando.io:5000/device-metrics-exporter:v1.4.1
+  commonConfig:
+    initContainerImage: registry.test.pensando.io:5000/busybox:1.36
+  selector:
+    feature.node.kubernetes.io/amd-gpu: "true"

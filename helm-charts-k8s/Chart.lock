@@ -9,4 +9,4 @@ dependencies:
   repository: file://./charts/multus
   version: 1.0.0
 digest: sha256:04b5697c8fd25d5cb6cac27cf0248a255fd8a31e9cd3c9b7b8f114eedf788eab
-generated: "2025-10-22T21:04:09.321388752Z"
+generated: "2026-01-16T06:16:48.34156701Z"

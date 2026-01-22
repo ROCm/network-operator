@@ -1,0 +1,72 @@
+FROM ubuntu:$$VERSION as builder
+
+ARG KERNEL_FULL_VERSION
+
+ARG DRIVERS_VERSION
+
+ARG REPO_URL
+
+RUN apt-get update && apt-get install -y bc \
+    bison \
+    flex \
+    libelf-dev \
+    gnupg \
+    wget \
+    git \
+    make \
+    zstd \
+    gcc \
+    linux-headers-${KERNEL_FULL_VERSION} \
+    linux-modules-extra-${KERNEL_FULL_VERSION}
+
+RUN mkdir --parents --mode=0755 /etc/apt/keyrings && \
+    wget ${REPO_URL}/rocm/rocm.gpg.key -O - | \
+    gpg --dearmor | tee /etc/apt/keyrings/rocm.gpg > /dev/null
+
+RUN echo "Types: deb" > /etc/apt/sources.list.d/amdainic.sources && \
+    echo "URIs: ${REPO_URL}/amdainic/pensando/ubuntu/${DRIVERS_VERSION}" >> /etc/apt/sources.list.d/amdainic.sources && \
+    echo "Suites: $$DRIVER_LABEL" >> /etc/apt/sources.list.d/amdainic.sources && \
+    echo "Components: main" >> /etc/apt/sources.list.d/amdainic.sources && \
+    echo "Signed-By: /etc/apt/keyrings/rocm.gpg" >> /etc/apt/sources.list.d/amdainic.sources
+
+# install ionic kernel module and decompress in preparation of module signing
+RUN apt-get update && \
+    apt-get install -y ionic-dkms pds-dkms tawk-ipc-dkms && \
+    depmod ${KERNEL_FULL_VERSION} && \
+    find /lib/modules/${KERNEL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
+    find /lib/modules/${KERNEL_VERSION} -name "*.ko.zst" -exec zstd -d -f --rm {} \; && \
+    depmod ${KERNEL_VERSION}
+
+# Build minimal module tree with ionic modules + only required dependencies
+# put them into /staging folder (later copied to final stage container)
+# then regenerate dep map
+RUN mods_dir=/lib/modules/${KERNEL_FULL_VERSION}; \
+    staging=/staging/lib/modules/${KERNEL_FULL_VERSION}; \
+    mkdir -p "$staging/updates/dkms"; \
+    # Copy all dkms-built ionic modules (could be more than ionic_rdma.ko)
+    cp -a "$mods_dir/updates/dkms/." "$staging/updates/dkms/"; \
+    # Resolve direct dependencies of ionic_rdma.ko from modules.dep
+    line="$(grep '^updates/dkms/ionic_rdma\.ko:' "$mods_dir/modules.dep" || true)"; \
+    if [ -n "$line" ]; then \
+      deps="$(printf '%s\n' "$line" | cut -d: -f2)"; \
+      for dep in $deps; do \
+        case "$dep" in updates/dkms/*) continue ;; esac; \
+        src="$mods_dir/$dep"; \
+        if [ -f "$src" ]; then \
+          mkdir -p "$staging/$(dirname "$dep")"; \
+          cp "$src" "$staging/$dep"; \
+        fi; \
+      done; \
+    fi; \
+    # Regenerate dependency maps only for staged modules
+    depmod -b /staging ${KERNEL_FULL_VERSION}
+
+FROM ubuntu:$$VERSION
+
+ARG KERNEL_FULL_VERSION
+
+RUN apt-get update && \
+    apt-get install -y kmod && \
+    mkdir -p /opt/lib/modules/${KERNEL_FULL_VERSION}/updates/dkms/
+# Copy trimmed module set with regenerated modules.dep, modules.alias, etc.
+COPY --from=builder /staging/lib/modules/${KERNEL_FULL_VERSION}/ /opt/lib/modules/${KERNEL_FULL_VERSION}/

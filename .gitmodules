@@ -1,0 +1,4 @@
+[submodule "external/common-infra-operator"]
+	path = external/common-infra-operator
+	url = git@github.com:ROCm/common-infra-operator.git
+	branch = main
