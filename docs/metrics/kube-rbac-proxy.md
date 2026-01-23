@@ -36,7 +36,7 @@ In mutual TLS authentication, clients authenticate themselves using TLS certific
 
 In certificate-based RBAC authorization, kube-rbac-proxy validates the client's TLS certificate against the provided CA and then performs a standard **SubjectAccessReview** using the certificate's Common Name (CN) as the username. This method combines the security benefits of certificate-based authentication with Kubernetes' native RBAC system.
 
-The client must present a valid certificate isigned by the configured CA, and the CN from this certificate is used to determine if the client has the necessary RBAC permissions to access the metrics endpoint. This approach provides stronger authentication than token-based methods while still leveraging your existing Kubernetes RBAC policies for authorization decisions.
+The client must present a valid certificate signed by the configured CA, and the CN from this certificate is used to determine if the client has the necessary RBAC permissions to access the metrics endpoint. This approach provides stronger authentication than token-based methods while still leveraging your existing Kubernetes RBAC policies for authorization decisions.
 
 #### Static Authorization
 
@@ -63,6 +63,7 @@ kubectl create configmap my-client-ca --from-file=ca.crt=path/to/ca.crt -n kube-
 ## NetworkConfig Configuration Examples
 
 Token-Based Authorization:
+
 ```yaml
 metricsExporter:
   rbacConfig:
@@ -74,6 +75,7 @@ metricsExporter:
 ```
 
 mTLS with Certificate based RBAC Authorization:
+
 ```yaml
 metricsExporter:
   rbacConfig:
@@ -86,6 +88,7 @@ metricsExporter:
 ```
 
 mTLS with Static Authorization:
+
 ```yaml
 metricsExporter:
   rbacConfig:

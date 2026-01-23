@@ -1,0 +1,5 @@
+# .markdownlint-cli2.yaml at the root of the repo
+ignores:
+  - "vendor/**"
+  - "cni/plugins/amd-host-device/vendor/**"
+  - "helm-charts-k8s/README.md"

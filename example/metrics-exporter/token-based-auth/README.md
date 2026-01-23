@@ -1,4 +1,5 @@
 # Metrics Exporter with TLS & Token Authentication
+
 This example demonstrates how to securely expose the AMD AINIC Metrics Exporter using kube-rbac-proxy with TLS enabled and access control enforced via Kubernetes Bearer Tokens. This setup includes both:
 
 - Curl-based scraping (from inside and outside the cluster)
@@ -21,6 +22,7 @@ openssl req -x509 -new -nodes -key ca.key -subj "/CN=my-ca" -days 3650 -out ca.c
 ```
 
 Prometheus requires the certificates to include a Subject Alternative Name (SAN) field. We'll first create an SAN file to define the SAN extension, then generate the certificate.
+
 ```bash
 # Create a SAN config file
 cat <<EOF > san-server.cnf
@@ -58,6 +60,7 @@ rules:
 ```
 
 Bind the clusterrole to the default ServiceAccount in the metrics-reader namespace:
+
 ```yaml
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -76,7 +79,9 @@ kubectl create namespace metrics-reader
 kubectl apply -f clusterrole.yaml
 kubectl apply -f clusterrolebinding.yaml
 ```
+
 ## 3. Generate ServiceAccount token
+
 Get the token for the `default` service account in the metrics-reader namespace:
 
 ```bash
@@ -86,16 +91,19 @@ TOKEN=$(kubectl create token default -n metrics-reader --duration=24h | tr -d '\
 ## 4. Create Kubernetes Secrets and ConfigMaps
 
 Server TLS Secret (for kube-rbac-proxy):
+
 ```bash
 kubectl create secret tls server-metrics-tls --cert=server.crt --key=server.key -n kube-amd-network
 ```
 
 Client Token Secret (for Prometheus, in Network Operator namespace):
+
 ```bash
 kubectl create secret generic prom-token --from-literal=token="$TOKEN" -n kube-amd-network
 ```
 
 Client CA Certificate ConfigMap (for Prometheus, in Network Operator namespace):
+
 ```bash
 kubectl create configmap prom-server-ca --from-file=ca.crt=ca.crt -n kube-amd-network
 ```
@@ -103,10 +111,12 @@ kubectl create configmap prom-server-ca --from-file=ca.crt=ca.crt -n kube-amd-ne
 ## 5. Apply NetworkConfig
 
 This NetworkConfig enables:
+
 - kube-rbac-proxy serving https over TLS
 - Automatic ServiceMonitor creation with token-based auth and TLS
 
 kube-rbac-proxy config (part of NetworkConfig):
+
 ```yaml
 rbacConfig:
   enable: true
@@ -115,6 +125,7 @@ rbacConfig:
 ```
 
 ServiceMonitor Config (part of NetworkConfig):
+
 ```yaml
 prometheus:
       serviceMonitor:
@@ -140,11 +151,13 @@ prometheus:
 ```
 
 Apply the `NetworkConfig`:
+
 ```bash
 kubectl apply -f NetworkConfig.yaml
 ```
 
 ## 6. Scraping the metrics
+
 ### Scraping using `curl`
 
 Get the metrics endpoint IP and port. You can use either:

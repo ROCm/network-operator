@@ -38,7 +38,6 @@ By default, the helm uninstall command triggers a pre-delete hook that removes a
 The pre-delete hook is using the operator controller image to run kubectl for checking existing `NetworkConfig`, if you want to skip the pre-delete hook, you can run helm uninstall command with ```--no-hooks``` option, in that way the Helm Charts will be immediately uninstalled but may have risk that some `NetworkConfig` resources still remain in the cluster.
 ```
 
-
 ## Uninstall Custom Resource Definition
 
 By default Helm Charts are using a post-delete hook to uninstall the CRDs for users. If the Helm Charts uninstallation was running with ```--no-hooks``` you may need to manually clean up CRDs after uninstalling the Helm Charts. To list all existing CRDs, run this command:

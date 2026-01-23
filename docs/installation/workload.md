@@ -1,8 +1,9 @@
 ## Deploy a Workload with a Network Device
 
-### 1. Create a NetworkAttachmentDefinition 
+### 1. Create a NetworkAttachmentDefinition
 
 Create a Network Attachment Definition to assign requested device to a workload
+
 ```bash
 cat <<EOF > amd-host-device-nad.yaml
 apiVersion: k8s.cni.cncf.io/v1
@@ -19,11 +20,13 @@ spec:
 }'
 EOF
 ```
+
 This step defines a secondary network using a NetworkAttachmentDefinition, which ensures the requested NIC or vNIC device is assigned to the workload pod via Multus.
 
 ### 2. Deploy the Workload
 
 Create a workload requesting for a nic/vnic
+
 ```bash
 cat <<EOF > workload.yaml
 apiVersion: apps/v1 
@@ -68,7 +71,8 @@ EOF
 ### 3. Run IB and RCCL Tests
 
 #### 3.1 Run IB between the nodes
-Exec into the workload pods and run IB and RCCL tests between the nodes. 
+
+Exec into the workload pods and run IB and RCCL tests between the nodes.
 
 On node1, start the write bandwidth test using the local RoCE device:
 
@@ -77,6 +81,7 @@ root@app:/tmp# ib_write_bw -d roce_ai1 -i 1 -n 1000 -F -a -x 1 -q 1
 ```
 
 On node2, run the write bandwidth test targeting node1's IP address, specifying its local RoCE device:
+
 ```bash
 root@app:/tmp# ib_write_bw -d ionic_0 -i 1 -n 1000 -F -a -x 1 -q 1  55.1.1.56
 ```

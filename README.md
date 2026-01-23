@@ -15,4 +15,3 @@ For detailed component information, see [Component Overview](docs/overview.md).
 ## License
 
 The AMD Network Operator is licensed under the [Apache License 2.0](LICENSE).
-
