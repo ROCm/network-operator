@@ -192,7 +192,7 @@ kube-amd-network   amd-network-operator-network-operator-charts-controller-ma2s7
 
 3.2 (Optional) Install the IONIC kernel module
 
-If your worker nodes don't have inbox / pre-installed ionic kernel module and you want to re-use te existing KMM deployment to install ionic kernel module for AI NIC, you can follow the [drivers installation section](../drivers/drivers.md) to install ionic kernel module for your worker nodes.
+If your worker nodes don't have inbox / pre-installed ionic kernel module and you want to re-use the existing KMM deployment to install ionic kernel module for AI NIC, you can follow the [drivers installation section](../drivers/drivers.md) to install ionic kernel module for your worker nodes.
 
 > **Note**
 >

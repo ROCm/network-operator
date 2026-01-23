@@ -1,4 +1,4 @@
-# Upgrading Components of Network Operator (Device Plugin, Node labeller, Metrics Exporter and CNI Pluins)
+# Upgrading Components of Network Operator (Device Plugin, Node labeller, Metrics Exporter and CNI Plugins)
 
 This guide outlines the steps to upgrade the Device Plugin, Node labeller, Metrics Exporter and CNI Plugins Daemonsets managed by the AMD Network Operator on a Kubernetes cluster.
 

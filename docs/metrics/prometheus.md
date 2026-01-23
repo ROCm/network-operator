@@ -87,12 +87,12 @@ These options allow secure metrics collection from AMD Device Metrics Exporter e
 Upon applying the NetworkConfig with the correct settings, the Network Operator automatically:
 
 - Deploys the ServiceMonitor resource in the Network Operator namespace.
-- Sets the required labels and namespace selectors in ServiecMonitor CR for Prometheus discovery.
+- Sets the required labels and namespace selectors in ServiceMonitor CR for Prometheus discovery.
 
 After the **ServiceMonitor** is deployed, Prometheus automatically begins scraping metrics. Verify the integration by accessing the Prometheus UI and navigating to the "Targets" page. Your Device Metrics Exporter should appear as a healthy target. The ServiceMonitor object is deployed in the operator namespace and Prometheus must be configured to look for ServiceMonitor objects in this namespace. These two options in the Prometheus CR control ServiceMonitor discovery:
 
 - **serviceAccountNamespaceSelector**: Allows selecting namespaces to search for ServiceMonitor objects. An empty value selects all namespaces.
-- **serviceAccountSelector**: Specifies which ServiceAccounts to select in the selected namesapace. The `labels` in NetworkConfig CR is added to the ServiceMonitor metadata and can be selected here.
+- **serviceAccountSelector**: Specifies which ServiceAccounts to select in the selected namespace. The `labels` in NetworkConfig CR is added to the ServiceMonitor metadata and can be selected here.
 
 These selectors help Prometheus identify the correct ServiceMonitor to use in the AMD Network Operator namespace and begin metrics scraping.
 

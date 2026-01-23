@@ -144,7 +144,7 @@ helm show values rocm/network-operator-charts
 |-----|------|---------|-------------|
 | controllerManager.manager.image.repository | string | `"docker.io/rocm/network-operator"` | AMD Network operator controller manager image repository |
 | controllerManager.manager.image.tag | string | `"v1.0.0"` | AMD Network operator controller manager image tag |
-| controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD GNetworkPU operator controller manager pod |
+| controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD Network operator controller manager pod |
 | controllerManager.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image |
 | controllerManager.manager.resources.limits.cpu | string | `"1000m"` | CPU limits for the controller manager. Consider increasing for large clusters |
 | controllerManager.manager.resources.limits.memory | string | `"1Gi"` | Memory limits for the controller manager. Consider increasing if experiencing OOM issues |
