@@ -94,7 +94,7 @@ cert-manager-webhook-6d5cb854fc-h6vbk     1/1     Running   0          2m
 ## Installing Network Operator
 
 > **Warning**
-> If you are trying to install AMD GPU Operator and AMD Network Operator together within the same Kubernetes cluster, please jump to this section [Installation of GPU Operator and Network Operator together](./kubernetes-helm-operators.md)
+> If you are trying to install AMD GPU Operator and AMD Network Operator together within the same Kubernetes cluster, please refer to [Installation of GPU Operator and Network Operator together](./kubernetes-helm-operators.md)
 
 ### 1. Add the AMD Helm Repository
 
