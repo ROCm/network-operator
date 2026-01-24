@@ -15,7 +15,6 @@ For detailed component information, see [Component Overview](docs/overview.md).
 ## License
 
 The AMD Network Operator is licensed under the [Apache License 2.0](LICENSE).
-
 # network-operator-charts
 
 ![Version: v1.0.0](https://img.shields.io/badge/Version-v1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: dev](https://img.shields.io/badge/AppVersion-dev-informational?style=flat-square)
