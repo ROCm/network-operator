@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+env:
+  GOFLAGS: "-mod=mod"
+  CONTAINER_ENGINE: docker
+
+jobs:
+  # =========================
+  # Build + Generate + Manifests
+  # =========================
+  build:
+    name: Build & Generate
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make gcc git curl
+
+      - name: Vendor dependencies
+        run: make vendor
+
+      - name: Generate code
+        run: make generate
+
+      - name: Build manager binary
+        run: make manager
+
+      - name: Generate manifests
+        run: make manifests
+
+  # =========================
+  # Unit tests
+  # =========================
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run unit tests
+        run: make unit-test
+
+  # =========================
+  # Helm build (k8s)
+  # =========================
+  helm-build:
+    name: Helm Build (k8s)
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make curl
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Generate Helm charts (k8s)
+        run: make helm-k8s
+
+  # =========================
+  # Docker image build
+  # =========================
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build Docker image
+        run: make docker-build
+

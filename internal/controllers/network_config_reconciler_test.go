@@ -94,7 +94,7 @@ var _ = Describe("getLabelsPerModules", func() {
 	BeforeEach(func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = mock_client.NewMockClient(ctrl)
-		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil, nil)
+		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil)
 	})
 
 	ctx := context.Background()
@@ -139,7 +139,7 @@ var _ = Describe("setFinalizer", func() {
 	BeforeEach(func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = mock_client.NewMockClient(ctrl)
-		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil, nil)
+		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil)
 	})
 
 	ctx := context.Background()
@@ -175,7 +175,7 @@ var _ = PDescribe("finalizeNetworkConfig", func() {
 	BeforeEach(func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = mock_client.NewMockClient(ctrl)
-		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil, nil)
+		dcrh = newNetworkConfigReconcilerHelper(kubeClient, nil, nil, nil, nil, nil, nil, nil)
 	})
 
 	ctx := context.Background()
@@ -345,7 +345,7 @@ var _ = PDescribe("handleKMMModule", func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = mock_client.NewMockClient(ctrl)
 		kmmHelper = kmmmodule.NewMockKMMModuleAPI(ctrl)
-		dcrh = newNetworkConfigReconcilerHelper(kubeClient, kmmHelper, nil, nil, nil, nil, nil, nil, nil)
+		dcrh = newNetworkConfigReconcilerHelper(kubeClient, kmmHelper, nil, nil, nil, nil, nil, nil)
 	})
 
 	ctx := context.Background()
@@ -413,7 +413,7 @@ var _ = Describe("handleBuildConfigMap", func() {
 		ctrl := gomock.NewController(GinkgoT())
 		kubeClient = mock_client.NewMockClient(ctrl)
 		kmmHelper = kmmmodule.NewMockKMMModuleAPI(ctrl)
-		dcrh = newNetworkConfigReconcilerHelper(kubeClient, kmmHelper, nil, nil, nil, nil, nil, nil, nil)
+		dcrh = newNetworkConfigReconcilerHelper(kubeClient, kmmHelper, nil, nil, nil, nil, nil, nil)
 	})
 
 	ctx := context.Background()
