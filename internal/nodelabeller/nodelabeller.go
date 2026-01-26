@@ -75,8 +75,6 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 	nlOut.MainContainer.IsPrivileged = true
 
 	hostPathDirectory := v1.HostPathDirectory
-	hostPathFileOrCreate := v1.HostPathFileOrCreate
-	hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
 
 	nlOut.MainContainer.Envs = []v1.EnvVar{
 		{
@@ -110,16 +108,6 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 		{
 			Name:      "lib-modules",
 			MountPath: "/lib/modules",
-		},
-	}
-	nonSimMounts := []v1.VolumeMount{
-		{
-			Name:      "nicctl",
-			MountPath: "/usr/sbin/nicctl",
-		},
-		{
-			Name:      "opt-amd",
-			MountPath: "/opt/amd",
 		},
 	}
 
@@ -160,30 +148,6 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 				},
 			},
 		},
-	}
-	nonSimVolumes := []v1.Volume{
-		{
-			Name: "nicctl",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/usr/sbin/nicctl",
-					Type: &hostPathFileOrCreate,
-				},
-			},
-		},
-		{
-			Name: "opt-amd",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/opt/amd",
-					Type: &hostPathDirectoryOrCreate,
-				},
-			},
-		},
-	}
-	if !simEnabled {
-		nlOut.MainContainer.VolumeMounts = append(nlOut.MainContainer.VolumeMounts, nonSimMounts...)
-		nlOut.Volumes = append(nlOut.Volumes, nonSimVolumes...)
 	}
 
 	return &nlOut
