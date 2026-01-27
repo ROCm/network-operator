@@ -106,7 +106,6 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos
 
 	hostPathDirectory := v1.HostPathDirectory
 	hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
-	hostPathFileOrCreate := v1.HostPathFileOrCreate
 	dpOut.MainContainer.Envs = []v1.EnvVar{
 		{
 			Name: "DS_NODE_NAME",
@@ -143,12 +142,6 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos
 		{
 			Name:      "health",
 			MountPath: "/var/lib/amd-metrics-exporter",
-		},
-	}
-	nonSimMounts := []v1.VolumeMount{
-		{
-			Name:      "nicctl",
-			MountPath: "/usr/sbin/nicctl",
 		},
 	}
 	dpOut.Volumes = []v1.Volume{
@@ -225,21 +218,6 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos
 				},
 			},
 		},
-	}
-	nonSimVolumes := []v1.Volume{
-		{
-			Name: "nicctl",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: "/usr/sbin/nicctl",
-					Type: &hostPathFileOrCreate,
-				},
-			},
-		},
-	}
-	if !simEnabled {
-		dpOut.MainContainer.VolumeMounts = append(dpOut.MainContainer.VolumeMounts, nonSimMounts...)
-		dpOut.Volumes = append(dpOut.Volumes, nonSimVolumes...)
 	}
 	return &dpOut
 }
