@@ -28,6 +28,7 @@ data:
   # RVS: ROCm Validation Suite. For a full list of supported recipes and arguments, refer to https://instinct.docs.amd.com/projects/gpu-operator/en/latest/test/appendix-test-recipe.html  
   # AGFHC: AMD GPU Field Health Check. For a full list of supported recipes and arguments, refer to https://instinct.docs.amd.com/projects/gpu-operator/en/latest/test/agfhc.html
   # Refer to the above links for other available test frameworks and recipes, and configure the wait time accordingly.
+  SKIP_GPU_VALIDATION: "false" # Set to "true" to skip GPU validation tests, directly start the RCCL tests
   TEST_RUNNER_JOB_WAIT_TIME: "1200"
   TEST_RUNNER_SUCCESS_LABEL: "amd.com/gpu-validation-test=passed"
   TEST_RUNNER_FAILURE_LABEL: "amd.com/gpu-validation-test=failed"
@@ -277,3 +278,135 @@ data:
       echo "ValidatorExitCode: 1" > /shared/validator_result.txt
       exit 1
     fi
+
+  # === GPU Validation Test Script ===
+  GPU_VALIDATION_TEST_SCRIPT: |
+    #!/bin/bash
+    # Step 2: GPU Validation Test Script
+    # Expected input variables (from parent scope):
+    #   - nodes
+    #   - SKIP_GPU_VALIDATION
+    #   - GPU_PER_WORKER
+    #   - TEST_RUNNER_IMAGE
+    #   - TEST_RUNNER_JOB_WAIT_TIME
+    #   - TEST_RUNNER_SUCCESS_LABEL
+    #   - TEST_RUNNER_FAILURE_LABEL
+    #   - CANDIDATE_LABEL
+    #   - FAILURE_LABEL
+    #   - MIN_MPI_NODES
+    #   - DEBUG_DELAY
+    # 
+    # Expected variables to be defined in parent scope:
+    #   - job_names (will be populated)
+    #   - job_to_node (will be populated)
+    #   - passed_nodes (will be populated)
+    #   - failed_nodes (will be populated)
+    
+    if [[ "${SKIP_GPU_VALIDATION,,}" == "true" ]]; then
+      echo "SKIP_GPU_VALIDATION is set to true. Skipping test runner jobs."
+      passed_nodes="$nodes"
+      failed_nodes=""
+    else
+      for node in $nodes; do
+        ts=$(date +%Y%m%d-%H%M%S)
+        job_name="cluster-validation-test-runner-job-${node}-${ts}"
+        job_names="$job_names $job_name"
+        job_to_node[$job_name]=$node
+        echo "Submitting test runner job for node: $node (job: $job_name)"
+        sed "s|\$\$NODE|${node}|g; \
+          s/^  name: cluster-validation-test-runner-job/  name: ${job_name}/; \
+          s|\$\$GPU_PER_WORKER|${GPU_PER_WORKER}|g; \
+          s|\$\$TEST_RUNNER_IMAGE|${TEST_RUNNER_IMAGE}|g" \
+          /test-runner-configs/cluster-validation-test-runner-job-config.yaml | kubectl apply -f -
+        sleep 1
+      done
+      echo "[Test Runner Jobs: Submitted for all candidate nodes]"
+      echo -e "\n$(date): Waiting for test runner jobs to complete..."
+      
+      for job_name in $job_names; do
+        node=${job_to_node[$job_name]}
+        echo "Waiting for job $job_name (node: $node)..."
+        
+        start_time=$(date +%s)
+        timeout=${TEST_RUNNER_JOB_WAIT_TIME}
+        job_succeeded=false
+        
+        while true; do
+          elapsed=$(($(date +%s) - start_time))
+          if [ $elapsed -ge $timeout ]; then
+            echo "Job $job_name timed out after ${timeout}s ❌"
+            break
+          fi
+          
+          status=$(kubectl get job "$job_name" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null || echo "")
+          if [[ "$status" == "True" ]]; then
+            echo "Job $job_name completed successfully ✅ (node: $node)"
+            job_succeeded=true
+            break
+          fi
+          
+          failed_status=$(kubectl get job "$job_name" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null || echo "")
+          if [[ "$failed_status" == "True" ]]; then
+            echo "Job $job_name failed ❌ (node: $node)"
+            break
+          fi
+          sleep 5
+        done
+        
+        if [ "$job_succeeded" = true ]; then
+          passed_nodes="$passed_nodes $node"
+        else
+          failed_nodes="$failed_nodes $node"
+        fi
+      done
+    fi
+    
+    # Count and report results
+    passed_count=$(echo $passed_nodes | wc -w)
+    failed_count=$(echo $failed_nodes | wc -w)
+    echo "=================================================================="
+    echo "Test Runner Jobs Summary:"
+    echo "  Passed: $passed_count node(s)"
+    if [ $passed_count -gt 0 ]; then
+      echo "    Nodes: $passed_nodes"
+    fi
+    echo "  Failed: $failed_count node(s)"
+    if [ $failed_count -gt 0 ]; then
+      echo "    Nodes: $failed_nodes"
+    fi
+    echo "=================================================================="
+    
+    if [[ "${SKIP_GPU_VALIDATION,,}" == "true" ]]; then
+      echo "SKIP_GPU_VALIDATION is set to true. Skip labelling nodes."
+    else
+      if [ $passed_count -gt 0 ]; then
+        echo "Labeling passed test runner nodes..."
+        for n in $passed_nodes; do
+          echo "  - Node $n: Adding test runner success label"
+          kubectl label node "$n" "${TEST_RUNNER_SUCCESS_LABEL}" --overwrite
+        done
+      fi
+      if [ $failed_count -gt 0 ]; then
+        echo "Processing failed nodes..."
+        CANDIDATE_LABEL_KEY=${CANDIDATE_LABEL%%=*}
+        for n in $failed_nodes; do
+          echo "  - Node $n: Adding test runner failure label"
+          kubectl label node "$n" "${TEST_RUNNER_FAILURE_LABEL}" --overwrite
+          echo "  - Node $n: Removing candidate label and marking as failed"
+          kubectl label node "$n" "${CANDIDATE_LABEL_KEY}-" --overwrite
+          kubectl label node "$n" "${FAILURE_LABEL}" --overwrite
+        done
+      fi
+    fi
+    
+    # Check if minimum nodes passed
+    min_nodes=${MIN_MPI_NODES}
+    if [ $passed_count -lt $min_nodes ]; then
+      echo "❌ Insufficient nodes passed test runner jobs. Required: $min_nodes, Passed: $passed_count"
+      echo "Skipping MPI job submission."
+      sleep ${DEBUG_DELAY}
+      exit 1
+    fi
+    
+    echo "[Test Runner Jobs: $passed_count node(s) passed, proceeding with RCCL tests]"
+    echo "=================================================================="
