@@ -305,113 +305,16 @@ spec:
                   nodes=$(kubectl get nodes -l "${CANDIDATE_LABEL}" -o name | sed 's|node/||')
 
                   echo -e "\n$(date): ===Step 2: Submitting test runner jobs for each candidate node==="
+                  # Define variables BEFORE calling the modularized script
                   job_names=""
                   declare -A job_to_node
-                  for node in $nodes; do
-                    ts=$(date +%Y%m%d-%H%M%S)
-                    job_name="cluster-validation-test-runner-job-${node}-${ts}"
-                    job_names="$job_names $job_name"
-                    job_to_node[$job_name]=$node
-                    echo "Submitting test runner job for node: $node (job: $job_name)"
-                    sed "s|\$\$NODE|${node}|g; \
-                      s/^  name: cluster-validation-test-runner-job/  name: ${job_name}/; \
-                      s|\$\$GPU_PER_WORKER|${GPU_PER_WORKER}|g; \
-                      s|\$\$TEST_RUNNER_IMAGE|${TEST_RUNNER_IMAGE}|g" \
-                      /test-runner-configs/cluster-validation-test-runner-job-config.yaml | kubectl apply -f -
-                    sleep 1
-                  done
-                  echo "[Test Runner Jobs: Submitted for all candidate nodes]"
-                  
-                  echo -e "\n$(date): Waiting for test runner jobs to complete..."
                   passed_nodes=""
                   failed_nodes=""
                   
-                  # Process each job
-                  for job_name in $job_names; do
-                    node=${job_to_node[$job_name]}
-                    echo "Waiting for job $job_name (node: $node)..."
-                    
-                    start_time=$(date +%s)
-                    timeout=${TEST_RUNNER_JOB_WAIT_TIME}
-                    job_succeeded=false
-                    
-                    while true; do
-                      elapsed=$(($(date +%s) - start_time))
-                      if [ $elapsed -ge $timeout ]; then
-                        echo "Job $job_name timed out after ${timeout}s ❌"
-                        break
-                      fi
-                      
-                      status=$(kubectl get job "$job_name" -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' 2>/dev/null || echo "")
-                      if [[ "$status" == "True" ]]; then
-                        echo "Job $job_name completed successfully ✅ (node: $node)"
-                        job_succeeded=true
-                        break
-                      fi
-                      
-                      failed_status=$(kubectl get job "$job_name" -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' 2>/dev/null || echo "")
-                      if [[ "$failed_status" == "True" ]]; then
-                        echo "Job $job_name failed ❌ (node: $node)"
-                        break
-                      fi
-                      sleep 5
-                    done
-                    
-                    if [ "$job_succeeded" = true ]; then
-                      passed_nodes="$passed_nodes $node"
-                    else
-                      failed_nodes="$failed_nodes $node"
-                    fi
-                  done
-                  
-                  # Count and report results
-                  passed_count=$(echo $passed_nodes | wc -w)
-                  failed_count=$(echo $failed_nodes | wc -w)
-                  echo "=================================================================="
-                  echo "Test Runner Jobs Summary:"
-                  echo "  Passed: $passed_count node(s)"
-                  if [ $passed_count -gt 0 ]; then
-                    echo "    Nodes: $passed_nodes"
-                  fi
-                  echo "  Failed: $failed_count node(s)"
-                  if [ $failed_count -gt 0 ]; then
-                    echo "    Nodes: $failed_nodes"
-                  fi
-                  echo "=================================================================="
-
-                  # Handle passed nodes
-                  if [ $passed_count -gt 0 ]; then
-                    echo "Labeling passed test runner nodes..."
-                    for n in $passed_nodes; do
-                      echo "  - Node $n: Adding test runner success label"
-                      kubectl label node "$n" "${TEST_RUNNER_SUCCESS_LABEL}" --overwrite
-                    done
-                  fi
-                  
-                  # Handle failed nodes
-                  if [ $failed_count -gt 0 ]; then
-                    echo "Processing failed nodes..."
-                    CANDIDATE_LABEL_KEY=${CANDIDATE_LABEL%%=*}
-                    for n in $failed_nodes; do
-                      echo "  - Node $n: Adding test runner failure label"
-                      kubectl label node "$n" "${TEST_RUNNER_FAILURE_LABEL}" --overwrite
-                      echo "  - Node $n: Removing candidate label and marking as failed"
-                      kubectl label node "$n" "${CANDIDATE_LABEL_KEY}-" --overwrite
-                      kubectl label node "$n" "${FAILURE_LABEL}" --overwrite
-                    done
-                  fi
-                  
-                  # Check if minimum nodes passed
-                  min_nodes=${MIN_MPI_NODES}
-                  if [ $passed_count -lt $min_nodes ]; then
-                    echo "Insufficient nodes passed test runner jobs. Required: $min_nodes, Passed: $passed_count"
-                    echo "Skipping MPI job submission."
-                    sleep ${DEBUG_DELAY}
-                    exit 1
-                  fi
-                  
-                  echo "[Test Runner Jobs: $passed_count node(s) passed, proceeding with RCCL tests]"
-                  echo "=================================================================="
+                  # Call the modularized GPU validation script
+                  echo "$GPU_VALIDATION_TEST_SCRIPT" > /tmp/gpu-validation-test.sh
+                  chmod +x /tmp/gpu-validation-test.sh
+                  source /tmp/gpu-validation-test.sh
 
                   echo -e "\n$(date): ===Step 3: Submitting MPIJob==="
                   ts=$(date +%Y%m%d-%H%M)
