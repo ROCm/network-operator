@@ -9,10 +9,10 @@ AMD_GPUS="gfx90a;gfx942;gfx950"
 REPO_URL="https://repo.radeon.com"
 DRIVER_LABEL="noble"
 DRIVERS_VERSION="$2"
-RCCL_DROP_TAG="drop/2025-06-J13A-1"
-ANP_DROP_TAG="tags/v1.1.0-4D"
+RCCL_DROP_TAG="rocm-7.0.2"
+ANP_DROP_TAG="tags/v1.2.0"
 
-rocm_base_image=${3:-docker.io/rocm/dev-ubuntu-24.04:7.0}
+rocm_base_image=${3:-docker.io/rocm/dev-ubuntu-24.04:7.0.2}
 
 docker build \
     --build-arg ROCM_BASE_IMAGE="${rocm_base_image}" \
