@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y openssh-server \
     net-tools \
     iproute2 \
     ethtool \
-    ethtool \
     sshpass \
     libpci-dev \
     isc-dhcp-client \
