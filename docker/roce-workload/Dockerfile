@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y openssh-server \
     net-tools \
     iproute2 \
     ethtool \
+    ethtool \
     sshpass \
     libpci-dev \
     isc-dhcp-client \
@@ -102,16 +103,14 @@ RUN sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config &&
    mkdir /var/run/sshd -p
 
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
-RUN ssh-keygen -t rsa -b 4096 -N '' -f /root/.ssh/id_rsa
-RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/authorized_keys
 RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
 # User Scripts
 WORKDIR /tmp
-COPY run_rccl.sh /tmp/
 COPY show_gid /usr/sbin/show_gid
-RUN chmod +x /tmp/run_rccl.sh /usr/sbin/show_gid
+COPY run_rccl.sh /tmp/
+COPY entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /tmp/run_rccl.sh /usr/sbin/show_gid /root/entrypoint.sh
 
 # ENV setup
 ENV LD_LIBRARY_PATH=$WORK_DIR/amd-anp/build:$WORK_DIR/rccl/build/release/build/lib:/opt/rocm/lib:/opt/rocm/lib64:$WORK_DIR/ompi/install/lib:$LD_LIBRARY_PATH
@@ -128,7 +127,7 @@ ENV IMAGE_NAME=$IMAGE_NAME
 ENV IMAGE_VER=$IMAGE_VER
 ENV DRIVER_LABEL=$DRIVER_LABEL
 ENV DRIVERS_VERSION=$DRIVERS_VERSION
-ENV DOCKERFILE_VER="roce-workload-10dec"
+ENV DOCKERFILE_VER="roce-workload-01feb"
 
 LABEL image.version.name=$IMAGE_NAME
 LABEL image.version.bldver=$IMAGE_VER
@@ -142,7 +141,7 @@ LABEL image.driver.version=$DRIVERS_VERSION
 LABEL base_image=$ROCM_BASE_IMAGE \
       name="roce-workload" \
       maintainer="sundaramurthy.gurunathan@amd.com" \
-      version="v1.0.0" \
+      version="v1.0.2" \
       description="Create RoCE workload docker image with ROCm, RCCL, RCCL-Tests, AMD Network Plugin, AMD AINIC drivers and libraries"
 
-ENTRYPOINT ["sh", "-c", "service ssh restart && sleep infinity"]
+ENTRYPOINT ["/root/entrypoint.sh"]
