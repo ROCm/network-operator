@@ -33,9 +33,9 @@ RUN echo "Types: deb" > /etc/apt/sources.list.d/amdainic.sources && \
 RUN apt-get update && \
     apt-get install -y ionic-dkms pds-dkms tawk-ipc-dkms && \
     depmod ${KERNEL_FULL_VERSION} && \
-    find /lib/modules/${KERNEL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
-    find /lib/modules/${KERNEL_VERSION} -name "*.ko.zst" -exec zstd -d -f --rm {} \; && \
-    depmod ${KERNEL_VERSION}
+    find /lib/modules/${KERNEL_FULL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
+    find /lib/modules/${KERNEL_FULL_VERSION} -name "*.ko.zst" -exec zstd -d -f --rm {} \; && \
+    depmod ${KERNEL_FULL_VERSION}
 
 # Build minimal module tree with ionic modules + only required dependencies
 # put them into /staging folder (later copied to final stage container)
