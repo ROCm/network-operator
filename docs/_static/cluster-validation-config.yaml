@@ -36,7 +36,7 @@ data:
       ]
     }
 
-  RCCL_WORKLOAD_IMAGE: "docker.io/rocm/roce-workload:ubuntu24_rocm-7.0.2_rccl-7.0.2_anp-v1.2.0_ainic-1.117.1-a-63"
+  RCCL_WORKLOAD_IMAGE: "docker.io/rocm/roce-workload:ubuntu24_rocm-7.0.2_rccl-7.0.2_anp-v1.2.0_ainic-1.117.5-a-56"
   MPIJOB_WAIT_TIME: "240"
   DEBUG_DELAY: "20"
   WAIT_FOR_WORKERS: "true"
