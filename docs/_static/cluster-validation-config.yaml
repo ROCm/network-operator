@@ -8,9 +8,11 @@ data:
   LAUNCHER_REPLICAS: "1"                # Number of Launcher Pods for the MPIJob, which coordinates workers
   SLOTS_PER_WORKER: "8"                 # MPI ranks per Worker pod
   GPU_PER_WORKER: "8"                   # Number of GPUs to request per Worker pod
-  NIC_PER_WORKER: "8"                   # Number of NICs to request per Worker pod
-  MIN_MPI_NODES: "2"                    # Minimum number of nodes required to run the MPI job
-  CLUSTER_VALIDATION_MIN_INTERVAL_MINS: "10"     # minimum interval between cluster validation runs on a given worker node
+  PF_NIC_PER_WORKER: "0"                # Number of PF-NICs to request per Worker pod
+  VF_NIC_PER_WORKER: "8"                # Number of VF-NICs to request per Worker pod
+  NODE_VALIDATION_INTERVAL_MINS: "10"   # minimum interval in minutes between cluster validation runs on a given worker node
+  PF_NIC_NAD_NAME: "amd-host-device-nad"
+  VF_NIC_NAD_NAME: "vf-amd-host-device-nad"
 
   # === Node Selection Labels for candidates ===
   # NOTE:
@@ -18,11 +20,58 @@ data:
   # For virtual function (VF) based NIC in a VM, use amd-vnic=true instead of amd-nic=true
   NODE_SELECTOR_LABELS: |
     - feature.node.kubernetes.io/amd-gpu=true
-    - feature.node.kubernetes.io/amd-nic=true
+    - feature.node.kubernetes.io/amd-vnic=true
   CANDIDATE_LABEL: "amd.com/cluster-validation-candidate=true"
   SUCCESS_LABEL: "amd.com/cluster-validation-status=passed"
   FAILURE_LABEL: "amd.com/cluster-validation-status=failed"
   TIMESTAMP_ANNOTATION: "amd.com/cluster-validation-last-run-timestamp"
+
+  # === RCCL Tests Definitions ===
+  TESTS_JSON: |
+    {
+      "tests": [
+        { "name": "all_reduce_perf", "threshold": 5 },
+        { "name": "broadcast_perf", "threshold": 5 },
+        { "name": "reduce_scatter_perf", "threshold": 5.0 }
+      ]
+    }
+
+  RCCL_WORKLOAD_IMAGE: "docker.io/rocm/roce-workload:ubuntu24_rocm-7.0.2_rccl-7.0.2_anp-v1.2.0_ainic-1.117.5-a-56"
+  MPIJOB_WAIT_TIME: "240"
+  DEBUG_DELAY: "20"
+  WAIT_FOR_WORKERS: "true"
+  ENABLE_SSH_CHECK: "true"
+  WORKER_READY_TIMEOUT: "300"
+  SSH_CHECK_INTERVAL: "4"
+  SSH_CHECK_TIMEOUT: "60"
+
+  RCCL_ENV_VARS: |
+    #!/bin/bash
+    RCCL_ENV="$RCCL_ENV -x NCCL_IB_GID_INDEX=1"
+    RCCL_ENV="$RCCL_ENV -x NCCL_NET_OPTIONAL_RECV_COMPLETION=0"
+    RCCL_ENV="$RCCL_ENV -x NCCL_GDR_FLUSH_DISABLE=1"
+    RCCL_ENV="$RCCL_ENV -x RCCL_GDR_FLUSH_GPU_MEM_NO_RELAXED_ORDERING=0"
+    RCCL_ENV="$RCCL_ENV -x NCCL_IB_USE_INLINE=1"
+    RCCL_ENV="$RCCL_ENV -x IONIC_LOCKFREE=all"
+    RCCL_ENV="$RCCL_ENV -x NCCL_NET_PLUGIN=librccl-anp.so"
+    RCCL_ENV="$RCCL_ENV -x NCCL_TOPO_DUMP_FILE=/tmp/topo_all.txt"
+    RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=INFO"
+    RCCL_ENV="$RCCL_ENV -x NCCL_DMABUF_ENABLE=0"
+    echo "$RCCL_ENV" > /shared/rccl_env.txt
+
+  # MPIJob documentation: https://www.kubeflow.org/docs/components/trainer/legacy-v1/user-guides/mpi/
+  MPI_LAUNCHER_ENV_VARS: |
+    export MPIRUN_SSH_PORT=22
+    export OMPI_DIR=/root/ompi/install
+    export PERF_TEST_DIR=/root/rccl-tests/build
+    export MCA_IF=eth0
+    export START_MSG_SIZE="1K"
+    export END_MSG_SIZE="2G"
+    export STEP_FACTOR="2"
+    export THREADS_PER_GPU="1"
+    export ITER_COUNT="6"
+    export WARMUP_ITER_COUNT="20"
+    export CHECK_ITER_COUNT="0"
 
   # === GPU Validation Tests Definitions ===
   # RVS: ROCm Validation Suite. For a full list of supported recipes and arguments, refer to https://instinct.docs.amd.com/projects/gpu-operator/en/latest/test/appendix-test-recipe.html  
@@ -59,66 +108,6 @@ data:
       }
     }
 
-  # === RCCL Tests Definitions ===
-  TESTS_JSON: |
-    {
-      "tests": [
-        { "name": "all_reduce_perf", "threshold": 5 },
-        { "name": "broadcast_perf", "threshold": 5 },
-        { "name": "reduce_scatter_perf", "threshold": 5.0 }
-      ]
-    }
-
-  RCCL_WORKLOAD_IMAGE: "docker.io/rocm/roce-workload:ubuntu24_rocm7_rccl-J13A-1_anp-v1.1.0-4D_ainic-1.117.1-a-63"
-  MPIJOB_WAIT_TIME: "240"
-  DEBUG_DELAY: "20"
-  WAIT_FOR_WORKERS: "true"
-  ENABLE_SSH_CHECK: "true"
-  WORKER_READY_TIMEOUT: "300"
-  SSH_CHECK_INTERVAL: "4"
-  SSH_CHECK_TIMEOUT: "60"
-  
-  # MPIJob documentation: https://www.kubeflow.org/docs/components/trainer/legacy-v1/user-guides/mpi/
-  MPI_LAUNCHER_ENV_VARS: |
-    export MPIRUN_SSH_PORT=22
-    export OMPI_DIR=/root/ompi/install
-    export PERF_TEST_DIR=/root/rccl-tests/build
-    export MCA_IF=eth0
-    export START_MSG_SIZE="1K"
-    export END_MSG_SIZE="2G"
-    export STEP_FACTOR="2"
-    export THREADS_PER_GPU="1"
-    export ITER_COUNT="6"
-    export WARMUP_ITER_COUNT="20"
-    export CHECK_ITER_COUNT="0"
-
-
-  RCCL_ENV_VARS: |
-    #!/bin/bash
-    RCCL_ENV=""
-    RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=INFO"
-    RCCL_ENV="$RCCL_ENV -x AMD_ANP_CONFIG_FILE=/tmp/anp_config.json"
-    RCCL_ENV="$RCCL_ENV -x HSA_NO_SCRATCH_RECLAIM=1"
-    RCCL_ENV="$RCCL_ENV -x IONIC_SQ_SIGALL_HACK=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_GDRCOPY_ENABLE=0"
-    RCCL_ENV="$RCCL_ENV -x NCCL_GDR_FLUSH_DISABLE=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_GRAPH_DUMP_FILE=/tmp/graph_all.txt"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IB_GID_INDEX=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IB_HCA=ionic_0,ionic_1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IB_PCI_RELAXED_ORDERING=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IB_QPS_PER_CONNECTION=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IB_TC=96"
-    RCCL_ENV="$RCCL_ENV -x NCCL_IGNORE_CPU_AFFINITY=1"
-    RCCL_ENV="$RCCL_ENV -x NCCL_MAX_NCHANNELS=24"
-    RCCL_ENV="$RCCL_ENV -x NCCL_MIN_NCHANNELS=24"
-    RCCL_ENV="$RCCL_ENV -x NCCL_SOCKET_IFNAME=eth0"
-    RCCL_ENV="$RCCL_ENV -x NCCL_TOPO_DUMP_FILE=/tmp/topo_all.txt"
-    RCCL_ENV="$RCCL_ENV -x RCCL_GDR_FLUSH_GPU_MEM_NO_RELAXED_ORDERING=0"
-    RCCL_ENV="$RCCL_ENV -x RCCL_LL128_FORCE_ENABLE=1"
-    RCCL_ENV="$RCCL_ENV -x UCX_NET_DEVICES=eth0"
-    RCCL_ENV="$RCCL_ENV -x UCX_UNIFIED_MODE=true"
-
-    echo "$RCCL_ENV" > /shared/rccl_env.txt
 
   # === select-and-label-candidates.sh ===
   CRONJOB_CANDIDATE_NODES_SELECTION_SCRIPT: |
@@ -144,8 +133,8 @@ data:
       if [[ -n "$last_labeled" ]]; then
         last_labeled_epoch=$(date -d "$last_labeled" +%s 2>/dev/null || echo 0)
         age_mins=$(( (current_time_secs - last_labeled_epoch) / 60 ))
-        if (( age_mins < CLUSTER_VALIDATION_MIN_INTERVAL_MINS )); then
-          echo "[Node Selection] Skipping $node, tested recently ($age_mins mins ago, threshold ${CLUSTER_VALIDATION_MIN_INTERVAL_MINS} min)"
+        if (( age_mins < NODE_VALIDATION_INTERVAL_MINS )); then
+          echo "[Node Selection] Skipping $node, tested recently ($age_mins mins ago, threshold ${NODE_VALIDATION_INTERVAL_MINS} min)"
           skipped_recent_nodes+=("$node")
           continue
         fi
@@ -293,7 +282,7 @@ data:
     #   - TEST_RUNNER_FAILURE_LABEL
     #   - CANDIDATE_LABEL
     #   - FAILURE_LABEL
-    #   - MIN_MPI_NODES
+    #   - WORKER_REPLICAS
     #   - DEBUG_DELAY
     # 
     # Expected variables to be defined in parent scope:
@@ -400,7 +389,7 @@ data:
     fi
     
     # Check if minimum nodes passed
-    min_nodes=${MIN_MPI_NODES}
+    min_nodes=${WORKER_REPLICAS}
     if [ $passed_count -lt $min_nodes ]; then
       echo "❌ Insufficient nodes passed test runner jobs. Required: $min_nodes, Passed: $passed_count"
       echo "Skipping MPI job submission."
