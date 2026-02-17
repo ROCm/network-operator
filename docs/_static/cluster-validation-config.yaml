@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,6 +14,15 @@ data:
   NODE_VALIDATION_INTERVAL_MINS: "10"   # minimum interval in minutes between cluster validation runs on a given worker node
   PF_NIC_NAD_NAME: "amd-host-device-nad"
   VF_NIC_NAD_NAME: "vf-amd-host-device-nad"
+
+  # === To redirect logs, set FLUENT_LOG_OUTPUT to  one of below : ===
+  #  Regardless of fluent_log_output  setting, CronJob pod logs consistently capture Cron Task logs, MPIjob, and RCCL logs
+  #  a) cvf.file.logs   (host-mounted dir /var/log/cvf-fluent-logs on the node where CronJob executed)
+  #  b) cvf.stdout.logs (fluent container stdout)
+  #  c) cvf.null.logs   (fluent logging not enabled, refer CronJob's pod logs instead)
+  #  d) external loggers like http, elasticsearch, kafka etc.
+  #
+  FLUENT_LOG_OUTPUT: cvf.null.logs      # Sets the Fluent logging output type; set to null to disable external logging
 
   # === Node Selection Labels for candidates ===
   # NOTE:
@@ -44,6 +54,8 @@ data:
   WORKER_READY_TIMEOUT: "300"
   SSH_CHECK_INTERVAL: "4"
   SSH_CHECK_TIMEOUT: "60"
+  MPI_RUN_DIR: "/shared"
+  FLUENT_INPUT: "/cron-logs"
 
   RCCL_ENV_VARS: |
     #!/bin/bash
@@ -57,7 +69,7 @@ data:
     RCCL_ENV="$RCCL_ENV -x NCCL_TOPO_DUMP_FILE=/tmp/topo_all.txt"
     RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=INFO"
     RCCL_ENV="$RCCL_ENV -x NCCL_DMABUF_ENABLE=0"
-    echo "$RCCL_ENV" > /shared/rccl_env.txt
+    echo "$RCCL_ENV" > ${MPI_RUN_DIR}/rccl_env.txt
 
   # MPIJob documentation: https://www.kubeflow.org/docs/components/trainer/legacy-v1/user-guides/mpi/
   MPI_LAUNCHER_ENV_VARS: |
@@ -199,6 +211,17 @@ data:
     #!/bin/bash
     set -euo pipefail
 
+    MPI_WAIT=$((MPIJOB_WAIT_TIME + 60))
+    hold_on_error() {
+        rc=$?
+        if [[ $rc -ne 0 ]]; then
+            echo "MPI wait-for-workers failed. Holding for ${MPI_WAIT}s..."
+            sleep "${MPI_WAIT}"
+        fi
+        exit "$rc"
+    }
+    trap hold_on_error EXIT
+
     NAMESPACE=default
     TOTAL=${WORKER_REPLICAS}
     PREFIX=$(kubectl get mpijob -o jsonpath='{.items[*].metadata.name}' \
@@ -248,7 +271,7 @@ data:
     set -euo pipefail
     test_name=$1
     threshold=$2
-    logfile="/shared/${test_name}.log"
+    logfile="$MPI_RUN_DIR/${test_name}.log"
 
     if [ ! -f "$logfile" ]; then
       echo "ERROR: Log file $logfile not found!"
@@ -260,11 +283,11 @@ data:
 
     if awk "BEGIN{exit !($value > $threshold)}"; then
       echo "$test_name PASSED ✅"
-      echo "$test_name: PASS (actual=$value, expected>$threshold)" >> /shared/validation_summary.txt
+      echo "$test_name: PASS (actual=$value, expected>$threshold)" >> ${MPI_RUN_DIR}/validation_summary.txt
     else
       echo "$test_name FAILED ❌"
-      echo "$test_name: FAIL (actual=$value, expected>$threshold)" >> /shared/validation_summary.txt
-      echo "ValidatorExitCode: 1" > /shared/validator_result.txt
+      echo "$test_name: FAIL (actual=$value, expected>$threshold)" >> ${MPI_RUN_DIR}/validation_summary.txt
+      echo "ValidatorExitCode: 1" > ${MPI_RUN_DIR}/validator_result.txt
       exit 1
     fi
 
@@ -298,7 +321,15 @@ data:
     else
       for node in $nodes; do
         ts=$(date +%Y%m%d-%H%M%S)
-        job_name="cluster-validation-test-runner-job-${node}-${ts}"
+        prefix="cvf-test-runner"
+        max_len=63
+        job_name="${prefix}-${node}-${ts}"
+        if [ ${#job_name} -gt $max_len ]; then
+            # If hostname is too long, replace node with node-hash
+            echo "Truncating long job name.. $job_name"
+            node_hash=$(echo -n "$node" | sha1sum | cut -c1-6)
+            job_name="${prefix}-${node_hash}-${ts}"
+        fi
         job_names="$job_names $job_name"
         job_to_node[$job_name]=$node
         echo "Submitting test runner job for node: $node (job: $job_name)"
@@ -399,3 +430,42 @@ data:
     
     echo "[Test Runner Jobs: $passed_count node(s) passed, proceeding with RCCL tests]"
     echo "=================================================================="
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentbit-config
+data:
+  fluent-bit.conf: |
+
+    [SERVICE]
+        Flush        5
+        Daemon       Off
+        Log_Level    info
+
+    [INPUT]
+        Name tail
+        Path ${FLUENT_INPUT}/*.log
+        Refresh_Interval  5
+        Tag ${FLUENT_LOG_OUTPUT}
+
+    [OUTPUT]
+        Name null
+        Match cvf.null.*
+
+    [OUTPUT]
+        Name stdout
+        Match cvf.stdout.*
+        Format     json_lines
+        json_date_key false
+
+    [OUTPUT]
+        Name file
+        Match cvf.file.*
+        Path /var/log/cvf-fluent-logs
+        File ${HOSTNAME}.log
+        Format template
+        Template {log}
+        Mkdir On
+---
