@@ -14,9 +14,9 @@ data:
     spec:
       slotsPerWorker: $$SLOTS_PER_WORKER # Value is dynamically substituted from SLOTS_PER_WORKER at runtime
       runPolicy:
-        cleanPodPolicy: All
+        cleanPodPolicy: None
         backoffLimit: 0
-        ttlSecondsAfterFinished: 20     # <-update before deploy
+        ttlSecondsAfterFinished: $$MPIJOB_WAIT_TIME     # <-update before deploy
       mpiReplicaSpecs:
         Launcher:
           replicas: $$LAUNCHER_REPLICAS  # Value substituted at runtime from LAUNCHER_REPLICAS
@@ -28,7 +28,7 @@ data:
               serviceAccountName: cluster-validation-sa             # Must have permission to create MPIJobs
               restartPolicy: Never
               volumes:
-                - name: shared
+                - name: pod-shared
                   emptyDir: {}
               initContainers:
                 - name: wait-for-worker-pods
@@ -38,15 +38,15 @@ data:
                     - configMapRef:
                         name: cluster-validation-config
                   volumeMounts:
-                    - name: shared
-                      mountPath: /shared
+                    - name: pod-shared
+                      mountPath: $$MPI_RUN_DIR
                   command: ["/bin/bash", "-c"]
                   args:
                     - |
                       # Load wait-for-worker script from ConfigMap
-                      echo "$WAIT_FOR_WORKERS_SCRIPT" > /shared/wait-for-worker.sh
-                      chmod +x /shared/wait-for-worker.sh
-                      /shared/wait-for-worker.sh
+                      echo "$WAIT_FOR_WORKERS_SCRIPT" > $MPI_RUN_DIR/wait-for-worker.sh
+                      chmod +x $MPI_RUN_DIR/wait-for-worker.sh
+                      $MPI_RUN_DIR/wait-for-worker.sh
 
               containers:
               - name: rccl-launcher
@@ -56,33 +56,44 @@ data:
                   - configMapRef:
                       name: cluster-validation-config
                 volumeMounts:
-                  - name: shared
-                    mountPath: /shared
+                  - name: pod-shared
+                    mountPath: $$MPI_RUN_DIR
               
                 command: ["/bin/bash", "-c"]
                 args:
                   - |
                     set -euo pipefail
 
+                    MPI_WAIT=$((MPIJOB_WAIT_TIME + 60))
+                    hold_on_error() {
+                        rc=$?
+                        if [[ $rc -ne 0 ]]; then
+                            echo "MPI rccl-launcher failed. Holding for ${MPI_WAIT}s..."
+                            sleep "${MPI_WAIT}"
+                        fi
+                        exit "$rc"
+                    }
+                    trap hold_on_error EXIT
+
                     # --- prepare launcher env ---
-                    echo "$MPI_LAUNCHER_ENV_VARS" > /shared/launcher_env.sh
-                    chmod +x /shared/launcher_env.sh
-                    source /shared/launcher_env.sh
+                    echo "$MPI_LAUNCHER_ENV_VARS" > ${MPI_RUN_DIR}/launcher_env.sh
+                    chmod +x ${MPI_RUN_DIR}/launcher_env.sh
+                    source ${MPI_RUN_DIR}/launcher_env.sh
 
                     # --- prepare rccl env ---
-                    echo "$RCCL_ENV_VARS" > /shared/rccl_env.sh
-                    chmod +x /shared/rccl_env.sh
-                    /shared/rccl_env.sh
-                    RCCL_ENV=$(cat /shared/rccl_env.txt)
+                    echo "$RCCL_ENV_VARS" > ${MPI_RUN_DIR}/rccl_env.sh
+                    chmod +x ${MPI_RUN_DIR}/rccl_env.sh
+                    ${MPI_RUN_DIR}/rccl_env.sh
+                    RCCL_ENV=$(cat ${MPI_RUN_DIR}/rccl_env.txt)
 
                     # --- parse test list ---
-                    echo "$TESTS_JSON" > /shared/tests.json
-                    test_count=$(jq '.tests | length' /shared/tests.json)
+                    echo "$TESTS_JSON" > ${MPI_RUN_DIR}/tests.json
+                    test_count=$(jq '.tests | length' ${MPI_RUN_DIR}/tests.json)
                     echo "Found $test_count tests"
 
                     # --- prepare validation script ---
-                    echo "$VALIDATE_RCCL_TEST_SCRIPT" > /shared/validate-single-test.sh
-                    chmod +x /shared/validate-single-test.sh
+                    echo "$VALIDATE_RCCL_TEST_SCRIPT" > ${MPI_RUN_DIR}/validate-single-test.sh
+                    chmod +x ${MPI_RUN_DIR}/validate-single-test.sh
 
                     # -- mpi run start --- 
                     NP=$(( WORKER_REPLICAS * SLOTS_PER_WORKER ))
@@ -90,8 +101,8 @@ data:
                     failed=0
                     RSH_AGENT="ssh -p ${MPIRUN_SSH_PORT}"
                     for i in $(seq 0 $((test_count - 1))); do
-                      test=$(jq -r ".tests[$i].name" /shared/tests.json)
-                      threshold=$(jq -r ".tests[$i].threshold" /shared/tests.json)
+                      test=$(jq -r ".tests[$i].name" ${MPI_RUN_DIR}/tests.json)
+                      threshold=$(jq -r ".tests[$i].threshold" ${MPI_RUN_DIR}/tests.json)
                       echo "-------------------------------------------"
                       echo "Running $test (threshold: $threshold)..."
 
@@ -102,10 +113,10 @@ data:
                         ${RCCL_ENV} \
                         $PERF_TEST_DIR/${test} -b ${START_MSG_SIZE} -e ${END_MSG_SIZE} \
                         -n ${ITER_COUNT} -w ${WARMUP_ITER_COUNT} -c ${CHECK_ITER_COUNT} \
-                        -f ${STEP_FACTOR} -g ${THREADS_PER_GPU}  | tee /shared/${test}.log
+                        -f ${STEP_FACTOR} -g ${THREADS_PER_GPU}  | tee ${MPI_RUN_DIR}/${test}.log
 
                       echo "Validating $test result..."
-                      if ! /shared/validate-single-test.sh "$test" "$threshold"; then
+                      if ! ${MPI_RUN_DIR}/validate-single-test.sh "$test" "$threshold"; then
                         echo "$test failed validation."
                         failed=1
                       fi
@@ -113,9 +124,17 @@ data:
 
                     echo "All RCCL test runs done"
 
+                    if [[ -f $MPI_RUN_DIR/validation_summary.txt ]]; then
+                      echo "===== MPIJOB Validation Summary ============================"
+                      cat $MPI_RUN_DIR/validation_summary.txt
+                      echo "============================================================"
+                    else
+                      echo "WARNING: $MPI_RUN_DIR/validation_summary.txt not found"
+                    fi
+
                     if [ "$failed" -ne 0 ]; then
                       echo "Validation FAILED  for one or more tests ❌"
-                      echo "Sleeping ${DEBUG_DELAY} secs before exiting to debug failure"
+                      echo "Sleeping ${DEBUG_DELAY} secs before exiting on failure"
                       sleep ${DEBUG_DELAY}
                       echo "Launcher exiting with failure."
                       exit 1
@@ -123,9 +142,8 @@ data:
                       echo "Validation of all tests PASSED successfully ✅"
                     fi
 
-                    ## echo "Sleeping ${DEBUG_DELAY} secs before exiting on success"
-                    ## sleep ${DEBUG_DELAY}
-                    echo "Launcher exiting with success"
+                    echo "Launcher container exiting with success"
+                    echo "============================================================"
 
         Worker:
           replicas: $$WORKER_REPLICAS   # Dynamically set based on number of passed nodes
@@ -274,7 +292,7 @@ rules:
 
   # Allow listing pods by MPIJob controller wait steps
   - apiGroups: [""]
-    resources: ["pods", "pods/exec"]
+    resources: ["pods", "pods/exec", "pods/log"]
     verbs: ["get", "list", "watch"]
 
 ---
@@ -297,16 +315,36 @@ kind: CronJob
 metadata:
   name: cluster-validation-cron-job
 spec:
-  # schedule: "0 0 * * *"  
-  # schedule every 10 minutes (Change as needed)
-  schedule: "*/10 * * * *"                               # <-update before deploy
+  # schedule run at minute 0 of every hour
+  schedule: "0 * * * *"
   concurrencyPolicy: Forbid                             # Dont overlap runs    
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 5
   jobTemplate:
     spec:
       template:
         spec:
           serviceAccountName: cluster-validation-sa  # must have permission to create MPIJobs
+          #nodeName: "nodeA"  # Optional: Schedule the Cronjob on a specified node, and if fluent logging to FILE is enabled, 
+                              # Cluster validation logs are present in host-mounted volume on this node.
           restartPolicy: Never
+          initContainers:
+            - name: fluent-bit
+              image: fluent/fluent-bit:4.2.2
+              restartPolicy: Always
+              envFrom:
+                - configMapRef:
+                    name: fluentbit-config
+                - configMapRef:
+                    name: cluster-validation-config
+              volumeMounts:
+                - name: pod-shared
+                  mountPath: /cron-logs
+                - name: host-shared
+                  mountPath: /var/log/cvf-fluent-logs
+                - name: fluentbit-config
+                  mountPath: /fluent-bit/etc/
+              args: ['-c', '/fluent-bit/etc/fluent-bit.conf']
           containers:
             - name: submit-mpijob
               image: docker.io/rocm/network-operator-utils:v1.1.0
@@ -315,14 +353,35 @@ spec:
               envFrom:
                 - configMapRef:
                     name: cluster-validation-config
+              env:
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
               args:
                 - |
                   set -euo pipefail
+                  CRONJOB_WAIT=${DEBUG_DELAY}
+
+                  hold_on_error() {
+                      rc=$?
+                      if [[ $rc -ne 0 ]]; then
+                          echo "Cluster Validation cronJob failed. Holding for ${CRONJOB_WAIT}s..."
+                          sleep "${CRONJOB_WAIT}"
+                          echo "Cluster Validation cronJob failed. exiting with failure..."
+                      fi
+                      exit "$rc"
+                  }
+                  trap hold_on_error EXIT
+
+                  CRONJOB_LOG=/cron-logs/${POD_NAME}.log
+                  exec > >(tee -a "${CRONJOB_LOG}") 2>&1
 
                   echo -e "\n$(date): ===Step 1: Determining candidate nodes==="
                   echo "$CRONJOB_CANDIDATE_NODES_SELECTION_SCRIPT" > /tmp/select-and-label-candidate.sh
                   chmod +x /tmp/select-and-label-candidate.sh
                   if ! /tmp/select-and-label-candidate.sh; then
+                    sleep ${DEBUG_DELAY}
                     exit 0
                   fi
                   nodes=$(kubectl get nodes -l "${CANDIDATE_LABEL}" -o name | sed 's|node/||')
@@ -368,6 +427,8 @@ spec:
                       s|\$\$PF_NIC_PER_WORKER|${PF_NIC_PER_WORKER}|g; \
                       s|\$\$VF_NIC_PER_WORKER|${VF_NIC_PER_WORKER}|g; \
                       s|\$\$NAD_ANNOTATION|${NAD_ANNOTATION}|g; \
+                      s|\$\$MPI_RUN_DIR|${MPI_RUN_DIR}|g; \
+                      s|\$\$MPIJOB_WAIT_TIME|${MPIJOB_WAIT_TIME}|g; \
                       s|\$\$RCCL_WORKLOAD_IMAGE|${RCCL_WORKLOAD_IMAGE}|g" \
                       /mpi-configs/cluster-validation-mpijob-config.yaml | kubectl apply -f -   
                   echo "[MPIJob: Submitted for $actual_worker_replicas worker node(s)]"
@@ -376,19 +437,41 @@ spec:
                   echo -e "\n$(date): ===Step 4: Waiting for MPIJob completion==="
                   if kubectl wait mpijob "$new_job" --for=condition=Succeeded --timeout=${MPIJOB_WAIT_TIME}s; then
                     CLUSTER_VALIDATION_STATUS_LABEL=${SUCCESS_LABEL}
-                    job_status=passed
+                    mpijob_status=passed
                     echo "$(date): MPIJob $new_job succeeded ✅"
                     echo "[MPIJob Result: Passed]"
                   else
                     CLUSTER_VALIDATION_STATUS_LABEL=${FAILURE_LABEL}
-                    job_status=failed
+                    mpijob_status=failed
                     echo "$(date): MPIJob $new_job failed ❌"
                     echo "[MPIJob Result: Failed]"
-                    sleep ${DEBUG_DELAY}
                   fi
                   echo "=================================================================="
 
-                  echo -e "\n$(date): ===Step 5: Labeling nodes based on MPIJob result==="
+
+                  echo -e "\n$(date): === Step 5: Collecting MPIJob logs ==="
+                  # Try to get the launcher pod
+                  launcher_pod=$(kubectl get pods -l training.kubeflow.org/job-name=${new_job},training.kubeflow.org/job-role=launcher \
+                    -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+
+                  # Check if the launcher pod exists
+                  if [[ -z "$launcher_pod" ]]; then
+                    echo "$(date): WARNING: Launcher pod not found for MPIJob ${new_job}"
+                  else
+                    echo "===== LAUNCHER LOGS ====="
+                    kubectl logs "$launcher_pod" --all-containers=true || echo "Failed to fetch launcher logs"
+                  fi
+                  echo "=================================================================="
+
+                  echo "$(date): === Step 6: Cleaning up MPIJob ==="
+                  if [ "$CLUSTER_VALIDATION_STATUS_LABEL" = "$FAILURE_LABEL" ]; then
+                    echo "Sleeping ${DEBUG_DELAY} secs before exiting for debugging failure"
+                    sleep ${DEBUG_DELAY}
+                  fi
+                  kubectl delete mpijob "$new_job" || true
+                  echo "=================================================================="
+
+                  echo -e "\n$(date): ===Step 7: Labeling nodes based on MPIJob result==="
                   for n in $passed_nodes; do
                     echo "Labeling node $n with $CLUSTER_VALIDATION_STATUS_LABEL"
                     kubectl label node "$n" "$CLUSTER_VALIDATION_STATUS_LABEL" --overwrite
@@ -398,21 +481,10 @@ spec:
                     echo "Removing candidate label on node: $n"
                     kubectl label node "$n" "${CANDIDATE_LABEL_KEY}-" --overwrite
                   done
-                  echo "[CronJob Result: $CLUSTER_VALIDATION_STATUS_LABEL] Cluster Validation Status updated on Candidate Nodes"
                   echo "=================================================================="
-
-                  echo -e "\n$(date): ===Step 6: Cleaning up old MPIJobs==="
-                  mpijobs=$(kubectl get mpijobs -o jsonpath='{.items[*].metadata.name}' \
-                            | tr ' ' '\n' | grep '^cluster-validation-mpi-job-' | sort)
-                  count=$(echo "$mpijobs" | wc -l)
-                  keep=3                                        # <-update before deploy 
-                  if [ "$count" -gt "$keep" ]; then
-                    del=$(echo "$mpijobs" | head -n -"$keep")
-                    for job in $del; do
-                      echo "Deleting old MPIJob: $job"
-                      kubectl delete mpijob "$job" --ignore-not-found
-                    done
-                  fi
+                  echo "[CronJob Result: $CLUSTER_VALIDATION_STATUS_LABEL]"
+                  echo "     Candidate Nodes updated with above label"
+                  echo "=================================================================="
 
                   # Fail the overall cronjob if any test runner jobs failed
                   if [ $failed_count -gt 0 ]; then
@@ -422,13 +494,23 @@ spec:
                     exit 1
                   fi
 
+                  # Fail the overall cronjob if mpijob failed
+                  if [ "$mpijob_status" = "failed" ]; then
+                    echo "$(date): MPIJob $new_job failed ❌"
+                    echo "[CronJob Result: FAILED] ❌"
+                    sleep ${DEBUG_DELAY}
+                    exit 1
+                  fi
                   echo "[CronJob Completed] $(date)"
                   echo "=================================================================="
+
               volumeMounts:
                 - name: mpi-configs
                   mountPath: /mpi-configs
                 - name: test-runner-configs
                   mountPath: /test-runner-configs
+                - name: pod-shared
+                  mountPath: /cron-logs
           volumes:
             - name: mpi-configs
               configMap:
@@ -436,3 +518,12 @@ spec:
             - name: test-runner-configs
               configMap:
                 name: cluster-validation-test-runner-job-config
+            - name: fluentbit-config
+              configMap:
+                name: fluentbit-config
+            - name: pod-shared
+              emptyDir: {}
+            - name: host-shared
+              hostPath:
+                path: /var/log/cvf-fluent-logs
+                type: DirectoryOrCreate
