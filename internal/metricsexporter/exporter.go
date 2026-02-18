@@ -201,6 +201,10 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 			Name:      "slurm",
 			MountPath: "/var/run/exporter",
 		},
+		{
+			Name:      "lib-modules",
+			MountPath: "/lib/modules",
+		},
 	}
 	nonSimMounts := []v1.VolumeMount{
 		{
@@ -223,6 +227,15 @@ func GenerateCommonExporterSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.Met
 		})
 	}
 	specOut.DsSpec.Volumes = []v1.Volume{
+		{
+			Name: "lib-modules",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/lib/modules",
+					Type: &hostPathDirectory,
+				},
+			},
+		},
 		{
 			Name: "dev-volume",
 			VolumeSource: v1.VolumeSource{

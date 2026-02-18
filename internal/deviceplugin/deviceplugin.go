@@ -143,8 +143,21 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos
 			Name:      "health",
 			MountPath: "/var/lib/amd-metrics-exporter",
 		},
+		{
+			Name:      "lib-modules",
+			MountPath: "/lib/modules",
+		},
 	}
 	dpOut.Volumes = []v1.Volume{
+		{
+			Name: "lib-modules",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/lib/modules",
+					Type: &hostPathDirectory,
+				},
+			},
+		},
 		{
 			Name: "kubelet-device-plugins",
 			VolumeSource: v1.VolumeSource{
