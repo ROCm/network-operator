@@ -154,9 +154,11 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 ## Notes for Operators
 
 * Update image tags (**roce-workload**, **network-operator-utils**) as needed before deployment.
-* `slotsPerWorker` and resource limits must match the underlying GPU/NIC configuration.  
-* Modify `schedule` under `CronJob.spec` to change job frequency.  
-* Use `DEBUG_DELAY` to pause after job completion for debugging failed runs.  
+* Modify `cluster-validation-config.yaml` to align with your deployment environment.
+* Ensure `slotsPerWorker` and resource limits correspond to the underlying GPU and NIC configuration.
+* Adjust `CronJob.spec` to set the job frequency.
+* Set `debug_delay` to pause after job completion for debugging.
+* Configure `fluent_log_output` to define the log destination for Fluent sidecar-based centralized logging
 
 ---
 
@@ -170,5 +172,7 @@ kubectl delete -f cluster-validation-config.yaml
 kubectl delete jobs --selector amd.com/cluster-validation-created=true
 kubectl delete mpijobs --selector amd.com/cluster-validation-created=true
 ```
+
+If `fluent_log_output` is set to cvf.file.logs, ensure log rotation and cleanup are configured to prevent disk space exhaustion on  the nodes where the CronJobs execute.
 
 ---
