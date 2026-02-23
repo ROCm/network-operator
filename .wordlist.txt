@@ -101,6 +101,7 @@ NetworkConfig
 networkconfigs
 NFD
 nic
+NICCTL
 nodeAffinity
 NodeLabeller
 Nodelabeller
