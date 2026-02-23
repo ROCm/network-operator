@@ -19,7 +19,7 @@ AMD Network Operator simplifies the use of AMD AINICs in Kubernetes environments
 |-----------|---------|
 | AMD Pensando™ Pollara AI NIC | ✅ Supported |
 
-## OS & Platform Support Matrix
+### OS & Platform Support Matrix
 
 Below is a list of operating systems and Kubernetes versions validated with the AMD Network Operator and Metrics Exporter.  
 Additional versions will be added in future releases.
@@ -28,6 +28,14 @@ Additional versions will be added in future releases.
 |------------------|---------------------|
 | Ubuntu 22.04 LTS | 1.29 – 1.34 |
 | Ubuntu 24.04 LTS | 1.29 – 1.34 |
+
+### Software Version Compatibility Matrix
+
+| Network Operator | AINIC Firmware | Supported NICs |
+|------------------|----------------|----------------|
+| v1.0.0           | 1.117.1-a-63   | Pollara 400    |
+| v1.0.1           | 1.117.1-a-63   | Pollara 400    |
+| v1.1.0           | 1.117.5-a-56   | Pollara 400    |
 
 ## Prerequisites
 

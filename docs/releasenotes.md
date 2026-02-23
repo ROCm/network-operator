@@ -1,5 +1,21 @@
 # Release Notes
 
+## v1.1.0
+
+This release introduces major enhancements, including a Cluster Validation Framework and Network Operator images redesigned for deployment independent of the host OS version.
+
+### Release Highlights
+
+- **Network Operator**
+  - Introduced support for the Cluster Validation Framework, enabling validation of newly added worker nodes in the Kubernetes cluster before scheduling distributed training or inference workloads
+  - Added support for Fluent sidecar-based logging, providing centralized logging of cluster validation runs.
+
+- **Device Plugin, Metrics Exporter and Node Labeller**
+  - The NICCTL tool is now bundled within the Device Plugin, Metrics Exporter and Node Labeller images, allowing these Operator components to run independently of host OS versions
+
+- **RoCE Workload Image**
+  - Ubuntu-based workload image with supported AINIC firmware 1.117.5-a-56 has been uploaded to ROCm Docker Hub for running RCCL and InfiniBand tests
+
 ## v1.0.1
 
 This release introduces support for user-defined tolerations in KMM modules and includes significant latency improvements for RDMA statistics in the Device Metrics Exporter.

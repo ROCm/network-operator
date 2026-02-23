@@ -34,7 +34,7 @@ const (
 	exporterSAName                    = "amd-network-operator-metrics-exporter"
 	kubeRBACSAName                    = "amd-network-operator-metrics-exporter-rbac-proxy"
 	StaticAuthSecretName              = ExporterName + "-static-auth-config"
-	defaultMetricsExporterImage       = "docker.io/rocm/device-metrics-exporter:nic-v1.0.1"
+	defaultMetricsExporterImage       = "docker.io/rocm/device-metrics-exporter:nic-v1.1.0"
 	defaultInitContainerImage         = "busybox:1.36"
 	svcLabel                          = "app.kubernetes.io/service"
 )

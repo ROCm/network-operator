@@ -16,14 +16,14 @@ spec:
         # Enable the Node Labeller component (default: true)
         enableNodeLabeller: true
 
-        # Specify the Node Labeller image (default: docker.io/rocm/k8s-network-node-labeller:v1.0.0)
-        nodeLabellerImage: "docker.io/rocm/k8s-network-node-labeller:v1.0.0"
+        # Specify the Node Labeller image (default: docker.io/rocm/k8s-network-node-labeller:v1.1.0)
+        nodeLabellerImage: "docker.io/rocm/k8s-network-node-labeller:v1.1.0"
 
         # Node labeller image pull policy
         nodeLabellerImagePullPolicy: Always
 
-        # Specify the Device Plugin image (default: docker.io/rocm/k8s-network-device-plugin:v1.0.0)
-        devicePluginImage: "docker.io/rocm/k8s-network-device-plugin:v1.0.0"
+        # Specify the Device Plugin image (default: docker.io/rocm/k8s-network-device-plugin:v1.1.0)
+        devicePluginImage: "docker.io/rocm/k8s-network-device-plugin:v1.1.0"
 
         # Device plugin image pull policy
         devicePluginImagePullPolicy: Always

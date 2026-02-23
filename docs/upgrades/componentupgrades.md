@@ -56,7 +56,7 @@ The current image the Device Plugin Daemonset is using can be checked by using `
 ```yaml
 device-plugin:
     Container ID:   containerd://b1aaa67ebdd87d4ef0f2a32b76b428068d24c28ced3e86c3c5caba39bb5689a4
-    Image:          rocm/k8s-network-device-plugin:v1.0.0
+    Image:          rocm/k8s-network-device-plugin:v1.1.0
 ```
 
 ### 3. Upgrade the Image of Device Plugin Daemonset
@@ -71,7 +71,7 @@ Old CR:
 
 ```yaml
     devicePlugin:
-        devicePluginImage: rocm/k8s-network-device-plugin:v1.0.0
+        devicePluginImage: rocm/k8s-network-device-plugin:v1.1.0
 ```
 
 Updated CR:
@@ -109,7 +109,7 @@ Old CR:
     enable: True
     serviceType: "ClusterIP"
     port: 5001
-    image: rocm/device-metrics-exporter:nic-v1.0.0
+    image: rocm/device-metrics-exporter:nic-v1.1.0
 ```
 
 Updated CR:
@@ -119,7 +119,7 @@ Updated CR:
     enable: True
     serviceType: "ClusterIP"
     port: 5001
-    image: rocm/device-metrics-exporter:nic-v1.0.0
+    image: rocm/device-metrics-exporter:nic-v1.1.0
     upgradePolicy:
       upgradeStrategy: OnDelete
 ```

@@ -180,7 +180,7 @@ helm install amd-network-operator rocm-network/network-operator-charts \
   --create-namespace \
   --set kmm.enabled=false \
   --set node-feature-discovery.enabled=false \
-  --version=v1.0.0
+  --version=v1.1.0
 ```
 
 Then during this step only the network operator and multus CNI pods would be brought up in the new namespace `kube-amd-network`:

@@ -111,7 +111,7 @@ Basic installation:
 helm install amd-network-operator rocm-network/network-operator-charts \
   --namespace kube-amd-network \
   --create-namespace \
-  --version=v1.0.0
+  --version=v1.1.0
 ```
 
 ```{note}
@@ -143,7 +143,7 @@ helm show values rocm/network-operator-charts
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controllerManager.manager.image.repository | string | `"docker.io/rocm/network-operator"` | AMD Network operator controller manager image repository |
-| controllerManager.manager.image.tag | string | `"v1.0.0"` | AMD Network operator controller manager image tag |
+| controllerManager.manager.image.tag | string | `"v1.1.0"` | AMD Network operator controller manager image tag |
 | controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD Network operator controller manager pod |
 | controllerManager.manager.imagePullSecrets | string | `""` | Image pull secret name for pulling AMD Network operator controller manager image if registry needs credential to pull image |
 | controllerManager.manager.resources.limits.cpu | string | `"1000m"` | CPU limits for the controller manager. Consider increasing for large clusters |
@@ -235,7 +235,7 @@ You can apply resource changes by updating your values.yaml file and upgrading t
 helm upgrade amd-network-operator rocm/network-operator-charts \
   --debug \
   --namespace kube-amd-network \
-  --version=v1.0.0
+  --version=v1.1.0
   -f values.yaml
 ```
 
