@@ -42,7 +42,7 @@ Upgrade the operator using the following command:
 ```bash
 helm upgrade amd-network-operator rocm/network-operator-charts \
     -n kube-amd-network \
-    --version=v1.0.0 \
+    --version=v1.1.0 \
     --recreate-pods \
     --debug
 ```
@@ -54,10 +54,10 @@ helm upgrade amd-network-operator rocm/network-operator-charts \
 # Perform helm upgrade
 helm upgrade amd-network-operator rocm/network-operator-charts \
   -n kube-amd-network \
-  --version=v1.0.0 \
+  --version=v1.1.0 \
   --debug \
   --set controllerManager.manager.image.repository=docker.io/rocm/network-operator \
-  --set controllerManager.manager.image.tag=v1.0.0 
+  --set controllerManager.manager.image.tag=v1.1.0 
 ```
 
 ```{note}

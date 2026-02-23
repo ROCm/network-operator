@@ -16,7 +16,7 @@ spec:
         enable: true
 
         # Specify the Metrics Exporter image
-        image: "docker.io/rocm/k8s-network-metrics-exporter:nic-v1.0.0"
+        image: "docker.io/rocm/device-metrics-exporter:nic-v1.1.0"
 
         # Image pull policy (default: IfNotPresent, or Always if tag is :latest)
         imagePullPolicy: "IfNotPresent"
