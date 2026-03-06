@@ -34,8 +34,10 @@ CRD
 crds
 CRDs
 CronJob
+CronJobs
 CRs
 cryptographic
+cvf
 DaemonSet
 DaemonSets
 Daemonsets
