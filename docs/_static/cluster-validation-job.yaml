@@ -33,7 +33,7 @@ data:
               initContainers:
                 - name: wait-for-worker-pods
                   image: docker.io/rocm/network-operator-utils:v1.1.0
-                  imagePullPolicy: IfNotPresent
+                  imagePullPolicy: Always
                   envFrom:
                     - configMapRef:
                         name: cluster-validation-config
@@ -348,7 +348,7 @@ spec:
           containers:
             - name: submit-mpijob
               image: docker.io/rocm/network-operator-utils:v1.1.0
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               command: ["/bin/bash", "-c"]
               envFrom:
                 - configMapRef:
