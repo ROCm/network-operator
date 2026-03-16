@@ -180,26 +180,37 @@ func getSimCommand(blacklist bool) []string {
 	}
 }
 
+const waitScript = `if grep -qi hypervisor /proc/cpuinfo; then
+  IS_VM=true;
+  echo "Running on VM"
+else
+  IS_VM=false;
+  echo "Running on bare metal"
+fi
+
+drivers_not_ready() {
+  if [ "$IS_VM" = "true" ]; then
+    [ ! -d /sys/class/infiniband ] || \
+    [ ! -d /sys/class/infiniband_verbs ] || \
+    [ ! -d /sys/module/ionic/drivers ]
+  else
+    [ ! -d /sys/class/infiniband ] || \
+    [ ! -d /sys/class/infiniband_verbs ] || \
+    [ ! -d /sys/module/ionic/drivers ] || \
+    ([ ! -d /sys/module/tawk_ipc/drivers ] && [ ! -d /sys/module/pds_core/drivers ])
+  fi
+}
+
+while drivers_not_ready; do
+  echo "waiting for drivers"
+  sleep 2
+done`
+
 func getOpenShiftWaitCommand() []string {
-	return []string{
-		"sh", "-c",
-		`while [ ! -d /sys/class/infiniband ] || 
-		       [ ! -d /sys/class/infiniband_verbs ] || 
-		       [ ! -d /sys/module/ionic/drivers ]; do 
-	        echo "amd ionic driver is not loaded " 
-		    sleep 2 
-		done`,
-	}
+	return []string{"sh", "-c", waitScript}
 }
 
 func getNonSimCommand(blacklist bool) []string {
-	waitScript := `while [ ! -d /sys/class/infiniband ] || 
-		[ ! -d /sys/class/infiniband_verbs ] || 
-		[ ! -d /sys/module/ionic/drivers ]; do 
-          echo "amd ionic driver is not loaded " 
-        sleep 2 
-        done`
-
 	var modprobeAction string
 	if blacklist {
 		modprobeAction = fmt.Sprintf(`echo "blacklist ionic" > /host-etc/modprobe.d/%v`, defaultBlacklistFileName)
