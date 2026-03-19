@@ -249,6 +249,10 @@ for node in "${nodeList[@]}"; do
 	DEVICE_PLUGIN_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i device-plugin- || true)
 	pod_logs $NETWORKOPER_NS "device-plugin" $node $DEVICE_PLUGIN_PODS
 
+	# node labeller pod logs
+	NODE_LABELLER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i node-labeller- || true)
+	pod_logs $NETWORKOPER_NS "node-labeller" $node $NODE_LABELLER_PODS
+
 	# cni plugins pod logs
 	CNI_PLUGINS_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i cni-plugins- || true)
 	pod_logs $NETWORKOPER_NS "cni-plugins" $node $CNI_PLUGINS_PODS
