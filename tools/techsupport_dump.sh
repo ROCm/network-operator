@@ -57,7 +57,7 @@ pod_logs() {
 	PODS=("$@")  # Remaining args are the pods
 
 	if [ ${#PODS[@]} -eq 0 ]; then
-		log "No pods provided."
+		log "No pods found for ${FEATURE} on ${NODE}."
 		return
 	fi
 
@@ -220,9 +220,9 @@ for node in "${nodeList[@]}"; do
 	# nfd pod logs
 	if [ -n "$NFD_NS" ]; then
 		KNS="${KUBECTL} -n ${NFD_NS}"
-		NFD_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=node-feature-discovery" || continue)
+		NFD_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=node-feature-discovery" || true)
 		if [ -z "$NFD_PODS" ]; then
-			NFD_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i nfd- || continue)
+			NFD_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i nfd- || true)
 		fi
 		pod_logs $NFD_NS "nfd" $node $NFD_PODS
 	fi
@@ -230,33 +230,33 @@ for node in "${nodeList[@]}"; do
 	# kmm pod logs	
 	if [ -n "${KMM_NS}" ]; then
 		KNS="${KUBECTL} -n ${KMM_NS}"
-		KMM_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=kmm" || continue)
+		KMM_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=kmm" || true)
 		if [ -z "$KMM_PODS" ]; then
-			KMM_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i kmm-operator- || continue)
+			KMM_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i kmm-operator- || true)
 		fi
 		pod_logs $KMM_NS "kmm" $node $KMM_PODS
 	fi
 
 	# metrics exporter pod logs
 	KNS="${KUBECTL} -n ${NETWORKOPER_NS}"
-	EXPORTER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=metrics-exporter" || continue)
+	EXPORTER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=metrics-exporter" || true)
 	if [ -z "$EXPORTER_PODS" ]; then
-		EXPORTER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i metrics-exporter- || continue)
+		EXPORTER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i metrics-exporter- || true)
 	fi
 	pod_logs $NETWORKOPER_NS "metrics-exporter" $node $EXPORTER_PODS
 	
 	# device plugin pod logs
-	DEVICE_PLUGIN_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i device-plugin- || continue)
+	DEVICE_PLUGIN_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i device-plugin- || true)
 	pod_logs $NETWORKOPER_NS "device-plugin" $node $DEVICE_PLUGIN_PODS
 
 	# cni plugins pod logs
-	CNI_PLUGINS_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i cni-plugins- || continue)
+	CNI_PLUGINS_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i cni-plugins- || true)
 	pod_logs $NETWORKOPER_NS "cni-plugins" $node $CNI_PLUGINS_PODS
 
 	# operator pod logs
-	NETWORKOPER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=network-operator-charts" || continue)
+	NETWORKOPER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} -l "app.kubernetes.io/name=network-operator-charts" || true)
 	if [ -z "$NETWORKOPER_PODS" ]; then
-		NETWORKOPER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i amd-network-operator-controller-manager || continue)
+		NETWORKOPER_PODS=$(${KNS} get pods -o name --field-selector spec.nodeName=${node} | grep -i amd-network-operator-controller-manager || true)
 	fi
 	pod_logs $NETWORKOPER_NS "network-operator" $node $NETWORKOPER_PODS
 
