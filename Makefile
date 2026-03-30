@@ -122,7 +122,8 @@ DOCKER_BUILDER_TAG := v1.2
 DOCKER_BUILDER_IMAGE := $(DOCKER_REGISTRY)/network-operator-build:$(DOCKER_BUILDER_TAG)
 CONTAINER_WORKDIR := /network-operator
 BUILD_BASE_IMG ?= ubuntu:22.04
-GOLANG_BASE_IMG ?= golang:1.23
+GOLANG_BASE_IMG ?= golang:1.25.8
+OPERATOR_CONTROLLER_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi-minimal:9.7
 
 ##################
 # Makefile targets
@@ -285,7 +286,7 @@ manager: $(shell find -name "*.go") go.mod go.sum  ## Build manager binary.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	DOCKER_BUILDKIT=1 $(CONTAINER_ENGINE) build -t $(IMG) --label HOURLY_TAG=$(HOURLY_TAG_LABEL) --build-arg TARGET=manager --build-arg GOLANG_BASE_IMG=$(GOLANG_BASE_IMG) .
+	DOCKER_BUILDKIT=1 $(CONTAINER_ENGINE) build -t $(IMG) --label HOURLY_TAG=$(HOURLY_TAG_LABEL) --build-arg TARGET=manager --build-arg GOLANG_BASE_IMG=$(GOLANG_BASE_IMG) --build-arg OPERATOR_CONTROLLER_BASE_IMAGE=$(OPERATOR_CONTROLLER_BASE_IMAGE) .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

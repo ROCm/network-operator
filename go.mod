@@ -1,8 +1,9 @@
 module github.com/ROCm/network-operator
 
-go 1.23.0
+go 1.25.8
 
-toolchain go1.23.4
+// Note: the cni/plugins/amd-host-device submodule intentionally remains on go 1.23.4
+// for compatibility; ensure the appropriate Go toolchain is used when building it.
 
 replace github.com/ROCm/common-infra-operator => ./external/common-infra-operator
 
