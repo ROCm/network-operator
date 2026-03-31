@@ -1,14 +1,13 @@
 # AMD Host Device CNI Plugin
 
-The AMD Host Device CNI plugin is a specialized Container Network Interface (CNI) plugin that moves Physical Function (PF) or Virtual Function (VF) network interfaces from the host directly into pod network namespaces while preserving their IP addresses and interface names. This approach provides pods with direct access to high-performance network interfaces while maintaining network configuration consistency.
+The AMD Host Device CNI plugin is a specialized Container Network Interface (CNI) plugin that moves Physical Function (PF) or Virtual Function (VF) network interfaces from the host directly into pod network namespaces while preserving their IP addresses. This approach provides pods with direct access to high-performance network interfaces while maintaining network configuration consistency.
 
 ## Key Features
 
 ### Interface Movement and IP Preservation
 
 - **Direct PF/VF Movement**: Moves entire Physical or Virtual Function interfaces from host to pod namespace
-- **IP Address Preservation**: Captures and preserves existing IP addresses (both IPv4 and IPv6) from the host interface
-- **Interface Name Retention**: Maintains the original host interface name within the pod
+- **IP Address Preservation**: Captures and preserves existing IP addresses (both IPv4 and IPv6 addresses) from the host interface and passes them to the static IPAM configuration. For point-to-point /31 IPv4 networks, it automatically computes and adds the gateway.
 - **IP Address and State Persistence**: IP addresses and the interface state are retained on the host interface even after workload deletion
 
 ## Configuration

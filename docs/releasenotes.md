@@ -1,5 +1,15 @@
 # Release Notes
 
+## v1.2.0
+
+### Release Highlights
+
+- **AMD Host Device CNI**
+  - Removed file-based logging in favor of standard output logging, eliminating the need for log rotation management. CNI logs can now be accessed via `journalctl` (e.g., `journalctl -f | grep amd-host-device`), aligning with standard CNI logging practices
+  - Automatically compute and configure gateway information via static IPAM configuration for /31 IPv4 networks, enabling seamless integration with source-based routing (SBR) CNI plugin for multi-homed pod scenarios
+  - Interface naming now follows CNI standard conventions (e.g., `net1`, `net2`) within pods rather than preserving the host interface name, ensuring compatibility when chaining with other CNI plugins and avoiding naming conflicts
+  - **Backwards Compatibility**: Automatic fallback mechanism handles pod deletion for workloads created with previous versions. If the DEL operation fails with the standard interface name, the plugin automatically retries with the legacy host interface name, ensuring seamless upgrades without manual intervention
+
 ## v1.1.0
 
 This release introduces major enhancements, including a Cluster Validation Framework and Network Operator images redesigned for deployment independent of the host OS version.

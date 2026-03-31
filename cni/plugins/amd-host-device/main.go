@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -51,7 +52,6 @@ func cmdAdd(args *skel.CmdArgs) error {
 		return err
 	}
 	// 1. Get the IP from the host device.
-	args.IfName = hostInterfaceName
 	devLink, err := netlink.LinkByName(hostInterfaceName)
 	if err != nil {
 		log.Printf("cannot find link %s, err: %v", hostInterfaceName, err)
@@ -67,14 +67,30 @@ func cmdAdd(args *skel.CmdArgs) error {
 	if errV4 != nil {
 		log.Printf("error getting IPv4 address for %s: %v", hostInterfaceName, errV4)
 	} else {
-		if len(addrsV4) > 0 {
-			for _, a := range addrsV4 {
-				addr := a.IPNet.String()
-				addresses = append(addresses, map[string]interface{}{
-					"address": addr,
-				})
-				addrs = append(addrs, addr)
+		for _, a := range addrsV4 {
+			addr := a.IPNet.String()
+			gwStr := ""
+			ones, bits := a.Mask.Size()
+
+			if bits == 32 && ones == 31 {
+				// For point-to-point /31, the gateway is always the "other" bit.
+				peerIP := make(net.IP, len(a.IP))
+				copy(peerIP, a.IP)
+				peerIP[len(peerIP)-1] ^= 1 // XOR last bit
+				gwStr = peerIP.String()
+				log.Printf("P2P /31 detected: computed gateway %s for %s", gwStr, hostInterfaceName)
 			}
+
+			entry := map[string]interface{}{
+				"address": addr,
+			}
+
+			if gwStr != "" {
+				entry["gateway"] = gwStr
+			}
+
+			addresses = append(addresses, entry)
+			addrs = append(addrs, addr)
 		}
 	}
 
@@ -142,6 +158,14 @@ func cmdAdd(args *skel.CmdArgs) error {
 		return err
 	}
 
+	// 6. Return the result from host-device plugin execution.
+	data, err := json.Marshal(executeResult)
+	if err != nil {
+		log.Printf("amd-host-device plugin executed successfully, but result marshal failed: %v", err)
+	} else {
+		log.Printf("amd-host-device plugin executed successfully, result: %s", data)
+	}
+
 	return types.PrintResult(executeResult, cniConf["cniVersion"].(string))
 }
 
@@ -158,38 +182,43 @@ func cmdDel(args *skel.CmdArgs) error {
 		return err
 	}
 
-	// get the IP from the mapping file for the interface
-	var interfaceMappingFound bool
-	var m *Mapping
-	if err := amdHostDeviceCNI.loadInterfaceIPMappings(); err == nil {
-		if m, interfaceMappingFound = amdHostDeviceCNI.getInterfaceIPMapping(deviceID); interfaceMappingFound {
-			args.IfName = m.HostInterfaceName
-		} else {
-			// This scenario occurs when a NAD is updated to use the amd-host-device CNI
-			// after a workload has already started. During deletion, the amd-host-device CNI will be invoked,
-			// but it won't find the expected mapping that would have been created during the ADD phase if it had been used initially.
-			// As a result, the delete operation may repeatedly fail and trigger retries.
-			// To prevent this, allow the flow to proceed so that the actual CNI delete operation can complete.
-			log.Printf("interface mapping not found for %s", args.IfName)
-		}
-	} else {
-		log.Printf("failed to load mappings file, err: %v", err)
-		return err
-	}
+	// 1. Load context (Best effort)
+	_ = amdHostDeviceCNI.loadInterfaceIPMappings()
+	m, interfaceMappingFound := amdHostDeviceCNI.getInterfaceIPMapping(deviceID)
 
+	// 2. Primary DEL Attempt
 	_, err = execPlugin("host-device", "DEL", args.StdinData, args, false)
-	if err != nil {
-		log.Printf("failed to execute host-device plugin %v: %v", string(args.StdinData), err)
-		return err
+
+	// 3. Backward compatibility: Fallback Attempt (if primary failed and we have a different host name)
+	if err != nil && interfaceMappingFound && m != nil && m.HostInterfaceName != args.IfName {
+		log.Printf("Retrying DEL with host interface %s", m.HostInterfaceName)
+
+		originalIfName := args.IfName
+		args.IfName = m.HostInterfaceName
+		_, err = execPlugin("host-device", "DEL", args.StdinData, args, false)
+		args.IfName = originalIfName
+		if err != nil {
+			log.Printf("Fallback DEL attempt also failed for interface %s: %v", m.HostInterfaceName, err)
+		}
 	}
 
-	// Restore the IP address on the host interface if it was found in the mapping
-	if interfaceMappingFound {
-		amdHostDeviceCNI.configureHostInterface(m.HostInterfaceName, m.State, m.HostInterfaceIPs)
-		amdHostDeviceCNI.removeInterfaceIPMapping(deviceID)
+	// 4. Cleanup & Restore (If mapping exists, we must clean it up regardless of DEL success)
+	if interfaceMappingFound && m != nil {
+		var errs []error
+		if err := amdHostDeviceCNI.configureHostInterface(m.HostInterfaceName, m.State, m.HostInterfaceIPs); err != nil {
+			errs = append(errs, fmt.Errorf("failed to restore host interface %s: %w", m.HostInterfaceName, err))
+		}
+
+		if err := amdHostDeviceCNI.removeInterfaceIPMapping(deviceID); err != nil {
+			errs = append(errs, fmt.Errorf("failed to remove IP mapping for device %s: %w", deviceID, err))
+		}
+
+		if len(errs) > 0 {
+			log.Printf("Restore failed with errors: %v", errors.Join(errs...))
+		}
 	}
 
-	return nil
+	return nil // CNI DEL should almost always return nil to allow pod teardown
 }
 
 func cmdCheck(args *skel.CmdArgs) error {
@@ -197,26 +226,6 @@ func cmdCheck(args *skel.CmdArgs) error {
 	var cniConf map[string]interface{}
 	if err := json.Unmarshal(args.StdinData, &cniConf); err != nil {
 		log.Printf("failed to unmarshal original CNI config, err: %v", err)
-		return err
-	}
-
-	deviceID, err := getDeviceIDFromArgs(cniConf)
-	if err != nil {
-		log.Printf("failed to get deviceID, err: %v", err)
-		return err
-	}
-
-	// update the request ifName to the host interface name before calling the plugin
-	var found bool
-	var m *Mapping
-	if err := amdHostDeviceCNI.loadInterfaceIPMappings(); err == nil {
-		if m, found = amdHostDeviceCNI.getInterfaceIPMapping(deviceID); found {
-			args.IfName = m.HostInterfaceName
-		} else {
-			log.Printf("interface mapping not found for %s", args.IfName)
-		}
-	} else {
-		log.Printf("failed to load mappings file, err: %v", err)
 		return err
 	}
 
@@ -234,25 +243,6 @@ func cmdStatus(args *skel.CmdArgs) error {
 	var cniConf map[string]interface{}
 	if err := json.Unmarshal(args.StdinData, &cniConf); err != nil {
 		log.Printf("failed to unmarshal original CNI config, err: %v", err)
-		return err
-	}
-	deviceID, err := getDeviceIDFromArgs(cniConf)
-	if err != nil {
-		log.Printf("failed to get deviceID, err: %v", err)
-		return err
-	}
-
-	// update the request ifName to the host interface name before calling the plugin
-	var found bool
-	var m *Mapping
-	if err := amdHostDeviceCNI.loadInterfaceIPMappings(); err == nil {
-		if m, found = amdHostDeviceCNI.getInterfaceIPMapping(deviceID); found {
-			args.IfName = m.HostInterfaceName
-		} else {
-			log.Printf("interface mapping not found for %s", args.IfName)
-		}
-	} else {
-		log.Printf("failed to load mappings file, err: %v", err)
 		return err
 	}
 
