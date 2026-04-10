@@ -214,3 +214,19 @@ PING 192.168.1.14 (192.168.1.14) from 192.168.3.8 : 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.167/0.176/0.185/0.009 ms
 root@workload-app-647dc5f6fc-pvpw2:/tmp#
 ```
+
+### Using RDMA Tools with SBR
+
+When using RDMA performance testing tools (such as `ib_write_bw`, `ib_read_bw`, etc.) in environments with SBR configured, you must bind to the correct source IP address to ensure traffic uses the appropriate routing table. Use the `-B` or `--bind_source_ip` flag to specify the source IP address.
+
+For example, to run `ib_write_bw` with source IP binding:
+
+```bash
+# On the server side (node1)
+root@workload-app:/tmp# ib_write_bw -d roce_ai1 -B 192.168.4.8
+
+# On the client side (node2) - connecting to node1
+root@workload-app:/tmp# ib_write_bw -d ionic_0 -B 192.168.2.8 192.168.4.8
+```
+
+- **Important**: Without the `-B` flag, RDMA tools may not correctly utilize the source-based routing rules, which can result in connectivity issues or traffic being routed through the wrong interface. Always specify the source IP address when working with SBR-configured secondary networks.
