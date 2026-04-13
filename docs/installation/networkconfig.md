@@ -27,8 +27,8 @@ spec:
   # Device plugin and Node labeller config
   devicePlugin:
     enableNodeLabeller: True
-    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.1.0
-    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.1.0
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.2.0
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.2.0
 
   # Metrics exporter config
   metricsExporter:
@@ -37,13 +37,13 @@ spec:
     serviceType: "NodePort"
     nodePort: 32501
     hostNetwork: true
-    image: docker.io/rocm/device-metrics-exporter:nic-v1.1.0
-  
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
+
   # Secondary network config
   secondaryNetwork:
     cniPlugins:
       enable: True
-      image: docker.io/rocm/k8s-cni-plugins:v1.1.0
+      image: docker.io/rocm/k8s-cni-plugins:v1.2.0
   
   # Specify the node to be managed by this NetworkConfig Custom Resource
   selector:
@@ -80,8 +80,8 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `devicePluginImage` | AMD Network device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.1.0` |
-| `nodeLabellerImage` | Node labeller image | `docker.io/rocm/k8s-network-node-labeller:v1.1.0` |
+| `devicePluginImage` | AMD Network device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.2.0` |
+| `nodeLabellerImage` | Node labeller image | `docker.io/rocm/k8s-network-node-labeller:v1.2.0` |
 | `imageRegistrySecret.name` | Name of registry credentials secret<br> to pull device plugin / node labeller image | |
 | `enableNodeLabeller` | enable / disable node labeller | `true` |
 
@@ -101,7 +101,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `cniPlugins.enable` | Enable/disable CNI plugins | `false` |
-| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/cni-plugins:v1.1.0`|
+| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/k8s-cni-plugins:v1.2.0`|
 | `cniPlugins.imageRegistrySecret.name` | Name of registry credentials secret<br> to pull metrics exporter image | |
 
 #### `spec.selector` Parameters

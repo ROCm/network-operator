@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	defaultCNIPluginsImage = "docker.io/rocm/k8s-cni-plugins:v1.1.0"
+	defaultCNIPluginsImage = "docker.io/rocm/k8s-cni-plugins:v1.2.0"
 	CNIPluginsName         = "cni-plugins"
 	cniPluginsSAName       = "amd-network-operator-cni-plugins"
 )

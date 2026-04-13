@@ -64,7 +64,7 @@ import (
 )
 
 const (
-	defaultUtilsImage          = "docker.io/rocm/network-operator-utils:v1.1.0"
+	defaultUtilsImage          = "docker.io/rocm/network-operator-utils:v1.2.0"
 	defaultOcUtilsImage        = "docker.io/rocm/network-operator-utils:rhubi-latest"
 	defaultSAName              = "amd-network-operator-utils-container"
 	driverUpgradeStateLabelKey = "operator.amd.com/network-driver-upgrade-state"

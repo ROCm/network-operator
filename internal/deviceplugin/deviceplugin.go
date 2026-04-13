@@ -30,7 +30,7 @@ import (
 
 const (
 	defaultInitContainerImage    = "busybox:1.36"
-	defaultDevicePluginImage     = "docker.io/rocm/k8s-network-device-plugin:v1.1.0"
+	defaultDevicePluginImage     = "docker.io/rocm/k8s-network-device-plugin:v1.2.0"
 	defaultDevicePluginConfigMap = "amd-network-operator-device-plugin-config"
 	devicePluginSAName           = "amd-network-operator-device-plugin"
 	DevicePluginName             = "device-plugin"
