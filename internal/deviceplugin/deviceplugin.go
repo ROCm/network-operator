@@ -35,7 +35,16 @@ const (
 	DevicePluginName          = "device-plugin"
 )
 
-func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos.DevicePluginSpec {
+// buildMultusCheckCommand returns a shell command that checks if Multus config exists.
+// Returns true (waits) when config is missing, false (exits loop) when config is found.
+func buildMultusCheckCommand(isOpenShift bool) string {
+	if isOpenShift {
+		return "( ! ls /host/etc/cni/net.d/*multus*.conf >/dev/null 2>&1 && ! ls /host/etc/cni/net.d/*multus*.conflist >/dev/null 2>&1 && ! ls /host/etc/kubernetes/cni/net.d/*multus*.conf >/dev/null 2>&1 && ! ls /host/etc/kubernetes/cni/net.d/*multus*.conflist >/dev/null 2>&1 )"
+	}
+	return "( ! ls /host/etc/cni/net.d/*multus*.conf >/dev/null 2>&1 && ! ls /host/etc/cni/net.d/*multus*.conflist >/dev/null 2>&1 )"
+}
+
+func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenShift bool) *protos.DevicePluginSpec {
 	var dpOut protos.DevicePluginSpec
 	specIn := &nwConfig.Spec.DevicePlugin
 	simEnabled, _ := strconv.ParseBool(os.Getenv("SIM_ENABLE"))
@@ -68,24 +77,27 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig) *protos
 			},
 		},
 	}
+
+	multusCheck := buildMultusCheckCommand(isOpenShift)
+
 	if !simEnabled {
 		initContainer.Command = []string{
 			"sh", "-c",
-			`while [ ! -d /sys/class/infiniband ] ||
+			fmt.Sprintf(`while [ ! -d /sys/class/infiniband ] ||
 				[ ! -d /sys/class/infiniband_verbs ] ||
 				[ ! -d /sys/module/ionic/drivers ] ||
-				! ls /host/etc/cni/net.d/*multus*.conf >/dev/null 2>&1; do
+				%s; do
 					echo "Waiting for AMD ionic driver and Multus CNI config to be ready"
 					sleep 2
-			done`,
+			done`, multusCheck),
 		}
 	} else {
 		initContainer.Command = []string{
 			"sh", "-c",
-			`while [ ! -f /host/etc/cni/net.d/*multus*.conf ]; do
-				echo "Waiting for Multus CNI config to be present in /etc/cni/net.d"
+			fmt.Sprintf(`while %s; do
+				echo "Waiting for Multus CNI config to be present"
 				sleep 2
-			done`,
+			done`, multusCheck),
 		}
 	}
 

@@ -8,4 +8,5 @@ rbac:
 cniBinDir: /opt/cni/bin
 multusConfig:
   confDir: /etc/cni/net.d
-  fileName: 00-multus.conf
+  # Note: Multus auto-detects config format and creates either 00-multus.conf or 00-multus.conflist
+  # based on the existing primary CNI plugin configuration (e.g., Flannel uses .conflist in K3s)

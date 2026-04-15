@@ -128,7 +128,6 @@ Kubernetes: `>= 1.29.0-0`
 | multus.image.repository | string | `"ghcr.io/k8snetworkplumbingwg/multus-cni"` |  |
 | multus.image.tag | string | `"v4.2.2"` |  |
 | multus.multusConfig.confDir | string | `"/etc/cni/net.d"` |  |
-| multus.multusConfig.fileName | string | `"00-multus.conf"` |  |
 | multus.rbac.create | bool | `true` |  |
 | multus.serviceAccountName | string | `"multus"` |  |
 
