@@ -550,7 +550,7 @@ helm-k8s: helmify manifests kustomize clean-helm-k8s gen-kmm-charts-k8s
 	cp $(shell pwd)/hack/k8s-patch/k8s-kmm-patch/template-patch/*.yaml $(shell pwd)/helm-charts-k8s/charts/kmm/templates/
 	# patch multus
 	cp -r $(shell pwd)/hack/multus $(shell pwd)/helm-charts-k8s/charts/multus
-	cd $(shell pwd)/helm-charts-k8s; helm dependency update; helm lint; cd ..;
+	cd $(shell pwd)/helm-charts-k8s; helm dependency update; helm lint .; cd ..;
 	mkdir $(shell pwd)/helm-charts-k8s/crds
 	echo "moving crd yaml files to crds folder"
 	@for file in $(CRD_YAML_FILES); do \
@@ -559,7 +559,7 @@ helm-k8s: helmify manifests kustomize clean-helm-k8s gen-kmm-charts-k8s
 	rm $(shell pwd)/helm-charts-k8s/templates/*crd.yaml
 	$(MAKE) helm-docs
 	echo "dependency update, lint and pack charts"
-	cd $(shell pwd)/helm-charts-k8s; helm dependency update; helm lint; cd ..; helm package helm-charts-k8s/ --destination ./helm-charts-k8s
+	cd $(shell pwd)/helm-charts-k8s; helm dependency update; helm lint .; cd ..; helm package helm-charts-k8s/ --destination ./helm-charts-k8s
 	mv $(shell pwd)/helm-charts-k8s/network-operator-charts-$(HELM_CHARTS_VERSION).tgz $(shell pwd)/helm-charts-k8s/network-operator-helm-k8s-$(HELM_CHARTS_VERSION).tgz
 
 .PHONY: helm-openshift
@@ -579,7 +579,7 @@ helm-openshift: helmify manifests kustomize clean-helm-openshift gen-nfd-charts-
 	rm $(shell pwd)/helm-charts-openshift/charts/kmm/templates/device-plugin-rbac.yaml
 	# opeartor already has module-loader rbac yaml, removing the redundant rbac yaml from subchart
 	rm $(shell pwd)/helm-charts-openshift/charts/kmm/templates/module-loader-rbac.yaml
-	cd $(shell pwd)/helm-charts-openshift; helm dependency update; helm lint; cd ..;
+	cd $(shell pwd)/helm-charts-openshift; helm dependency update; helm lint .; cd ..;
 	mkdir $(shell pwd)/helm-charts-openshift/crds
 	echo "moving crd yaml files to crds folder"
 	@for file in $(CRD_YAML_FILES); do \
@@ -587,7 +587,7 @@ helm-openshift: helmify manifests kustomize clean-helm-openshift gen-nfd-charts-
 	done
 	rm $(shell pwd)/helm-charts-openshift/templates/*crd.yaml
 	echo "dependency update, lint and pack charts"
-	cd $(shell pwd)/helm-charts-openshift; helm dependency update; helm lint; cd ..; helm package helm-charts-openshift/ --destination ./helm-charts-openshift
+	cd $(shell pwd)/helm-charts-openshift; helm dependency update; helm lint .; cd ..; helm package helm-charts-openshift/ --destination ./helm-charts-openshift
 	mv $(shell pwd)/helm-charts-openshift/network-operator-charts-$(HELM_CHARTS_VERSION).tgz $(shell pwd)/helm-charts-openshift/network-operator-helm-openshift-$(HELM_CHARTS_VERSION).tgz
 
 .PHONY: helm-install
