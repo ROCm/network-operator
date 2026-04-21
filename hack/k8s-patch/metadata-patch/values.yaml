@@ -129,6 +129,9 @@ configManager:
 utilsContainer:
   serviceAccount:
     annotations: {}
+cniPlugins:
+  serviceAccount:
+    annotations: {}
 global:
   proxy:
     env: {}
