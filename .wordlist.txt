@@ -12,6 +12,7 @@ bearerTokenFile
 bool
 Bringup
 caFile
+cardinality
 certFile
 clientCAConfigMap
 clientName
@@ -30,6 +31,7 @@ controllerManager
 CoreOS
 coredns
 cpu
+CRI
 CRD
 crds
 CRDs
@@ -37,6 +39,7 @@ CronJob
 CronJobs
 CRs
 cryptographic
+CVEs
 cvf
 DaemonSet
 DaemonSets
@@ -52,6 +55,8 @@ disableHttps
 DockerHub
 EnableNodeLabeller
 etcd
+ethtool
+FEC
 Frontend
 Grafana
 gRPC
@@ -88,6 +93,7 @@ kubectl
 Labeller
 labeller
 lifecycle
+LIF
 MaxUnavailable
 MetricsExporter
 MetricsExporterSpec
@@ -120,6 +126,7 @@ oyaml
 pci
 Pensando
 Pollara
+QP
 rbac
 rbacConfig
 RCCL
