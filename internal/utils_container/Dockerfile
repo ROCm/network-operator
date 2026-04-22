@@ -3,8 +3,8 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
 LABEL name="amd-network-operator-utils"
 LABEL maintainer="sriram.ravishankar@amd.com,yan.sun3@amd.com"
 LABEL vendor="Advanced Micro Devices, Inc."
-LABEL version="v1.1.0"
-LABEL release="v1.1.0"
+LABEL version="v1.2.0"
+LABEL release="v1.2.0"
 LABEL summary="AMD Network Operator Utility Image"
 LABEL description="The AMD Network Operator utils image is a utility image used by the AMD Network Operator. The operator controller employs this image as the container's base layer to automate tasks on target worker nodes."
 
