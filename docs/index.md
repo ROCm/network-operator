@@ -36,6 +36,7 @@ Additional versions will be added in future releases.
 | v1.0.0           | 1.117.1-a-63   | Pollara 400    |
 | v1.0.1           | 1.117.1-a-63   | Pollara 400    |
 | v1.1.0           | 1.117.5-a-56   | Pollara 400    |
+| v1.2.0           | 1.117.5-a-56<br>1.117.5-a-77 | Pollara 400    |
 
 ## Prerequisites
 
