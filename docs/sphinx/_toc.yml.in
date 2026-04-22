@@ -35,8 +35,6 @@ subtrees:
     entries:
       - file: drivers/drivers
         title: Installation Guide
-      - file: drivers/
-        title: Uninstallation
       - file: drivers/upgrading
         title: Upgrade Drivers
   - caption: Metrics
