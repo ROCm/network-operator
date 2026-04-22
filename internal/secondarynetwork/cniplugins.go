@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	defaultCNIPluginsImage = "docker.io/rocm/k8s-cni-plugins:v1.0.0"
+	defaultCNIPluginsImage = "docker.io/rocm/k8s-cni-plugins:v1.1.0"
 	CNIPluginsName         = "cni-plugins"
+	cniPluginsSAName       = "amd-network-operator-cni-plugins"
 )
 
 var cniPluginsLabelPair = []string{"app.kubernetes.io/name", CNIPluginsName}
@@ -57,6 +58,8 @@ func (s *secondaryNetwork) SetCNIPluginsAsDesired(nwConfigName string, ds *appsv
 		cniPluginsImage = cniPluginsSpec.Image
 	}
 
+	// Container always expects /host/opt/cni/bin (from entrypoint.sh)
+	// This gets mapped to the appropriate host path via the volume
 	volumeMounts := []corev1.VolumeMount{
 		{
 			Name:      "cni-bin",           // The name of the volume mount
@@ -65,12 +68,17 @@ func (s *secondaryNetwork) SetCNIPluginsAsDesired(nwConfigName string, ds *appsv
 	}
 
 	hostPathDirectoryOrCreate := corev1.HostPathDirectoryOrCreate
+	// On RHEL/CoreOS, use /var/lib/cni/bin which is writable (not /usr/lib which is read-only)
+	cniPath := "/opt/cni/bin"
+	if s.isOpenshift {
+		cniPath = "/var/lib/cni/bin"
+	}
 	volumes := []corev1.Volume{
 		{
 			Name: "cni-bin", // This name must match the one used in the volumeMount
 			VolumeSource: corev1.VolumeSource{
 				HostPath: &corev1.HostPathVolumeSource{
-					Path: "/opt/cni/bin",             // The path on the host node
+					Path: cniPath,                    // The path on the host node
 					Type: &hostPathDirectoryOrCreate, // creates the directory if it does not exist
 				},
 			},
@@ -83,12 +91,17 @@ func (s *secondaryNetwork) SetCNIPluginsAsDesired(nwConfigName string, ds *appsv
 		utils.CRNameLabel:      nwConfigName,
 	}
 
+	// Container needs privileged mode to write to /var/lib/cni/bin on OpenShift
+	privileged := s.isOpenshift
 	containers := []corev1.Container{
 		{
 			Name:         CNIPluginsName + "-container",
 			WorkingDir:   "/root",
 			Image:        cniPluginsImage,
 			VolumeMounts: volumeMounts,
+			SecurityContext: &corev1.SecurityContext{
+				Privileged: &privileged,
+			},
 		},
 	}
 	if cniPluginsSpec.ImagePullPolicy != "" {
@@ -101,19 +114,24 @@ func (s *secondaryNetwork) SetCNIPluginsAsDesired(nwConfigName string, ds *appsv
 	}
 
 	gracePeriod := int64(1)
+	podSpec := corev1.PodSpec{
+		Containers:                    containers,
+		Volumes:                       volumes,
+		ImagePullSecrets:              imagePullSecrets,
+		NodeSelector:                  nodeSelector,
+		TerminationGracePeriodSeconds: &gracePeriod,
+	}
+
+	// Set ServiceAccount for privileged SCC usage
+	podSpec.ServiceAccountName = cniPluginsSAName
+
 	ds.Spec = appsv1.DaemonSetSpec{
 		Selector: &metav1.LabelSelector{MatchLabels: matchLabels},
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: matchLabels,
 			},
-			Spec: corev1.PodSpec{
-				Containers:                    containers,
-				Volumes:                       volumes,
-				ImagePullSecrets:              imagePullSecrets,
-				NodeSelector:                  nodeSelector,
-				TerminationGracePeriodSeconds: &gracePeriod,
-			},
+			Spec: podSpec,
 		},
 	}
 	if cniPluginsSpec.UpgradePolicy != nil {

@@ -21,9 +21,9 @@ data:
           "vendors": ["1dd8"], 
           "devices": ["1002"],
           "drivers": ["ionic"],
-          "excludeTopology": true,
           "isRdma": true
-        }
+        },
+        "excludeTopology": false
       },
       {
         "resourceName": "vnic",
@@ -33,8 +33,8 @@ data:
           "vendors": ["1dd8"], 
           "devices": ["1003"],
           "drivers": ["ionic"],
-          "excludeTopology": true,
           "isRdma": true
-        }
+        },
+        "excludeTopology": false
       }]
     }

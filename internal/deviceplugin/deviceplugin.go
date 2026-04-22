@@ -29,10 +29,11 @@ import (
 )
 
 const (
-	defaultInitContainerImage = "busybox:1.36"
-	defaultDevicePluginImage  = "docker.io/rocm/k8s-network-device-plugin:v1.1.0"
-	devicePluginSAName        = "amd-network-operator-device-plugin"
-	DevicePluginName          = "device-plugin"
+	defaultInitContainerImage    = "busybox:1.36"
+	defaultDevicePluginImage     = "docker.io/rocm/k8s-network-device-plugin:v1.1.0"
+	defaultDevicePluginConfigMap = "amd-network-operator-device-plugin-config"
+	devicePluginSAName           = "amd-network-operator-device-plugin"
+	DevicePluginName             = "device-plugin"
 )
 
 // buildMultusCheckCommand returns a shell command that checks if Multus config exists.
@@ -60,21 +61,29 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 		utils.CRNameLabel: nwConfig.Name,
 	}
 
+	volumeMounts := []v1.VolumeMount{
+		{
+			Name:      "sys",
+			MountPath: "/sys",
+		},
+		{
+			Name:      "cni",
+			MountPath: "/host/etc/cni/",
+		},
+	}
+	if isOpenShift {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      "cni-k8s",
+			MountPath: "/host/etc/kubernetes/cni/",
+		})
+	}
+
 	initContainer := protos.InitContainerSpec{
 		CommonContainerSpec: protos.CommonContainerSpec{
 			DefaultImage: defaultInitContainerImage,
 			Image:        nwConfig.Spec.CommonConfig.InitContainerImage,
 			IsPrivileged: true,
-			VolumeMounts: []v1.VolumeMount{
-				{
-					Name:      "sys",
-					MountPath: "/sys",
-				},
-				{
-					Name:      "cni",
-					MountPath: "/host/etc/cni/",
-				},
-			},
+			VolumeMounts: volumeMounts,
 		},
 	}
 
@@ -103,6 +112,7 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 
 	dpOut.InitContainers = []protos.InitContainerSpec{initContainer}
 	dpOut.MainContainer.DefaultImage = defaultDevicePluginImage
+	dpOut.MainContainer.DefaultUbiImage = defaultDevicePluginImage
 	dpOut.MainContainer.Image = specIn.DevicePluginImage
 	dpOut.MainContainer.ImagePullPolicy = specIn.DevicePluginImagePullPolicy
 	dpOut.MainContainer.ImageRegistrySecret = specIn.ImageRegistrySecret
@@ -211,7 +221,12 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 			VolumeSource: v1.VolumeSource{
 				ConfigMap: &v1.ConfigMapVolumeSource{
 					LocalObjectReference: v1.LocalObjectReference{
-						Name: os.Getenv("DEVICE_PLUGIN_CONFIG_MAP_NAME"),
+						Name: func() string {
+							if name := os.Getenv("DEVICE_PLUGIN_CONFIG_MAP_NAME"); name != "" {
+								return name
+							}
+							return defaultDevicePluginConfigMap
+						}(),
 					},
 				},
 			},
@@ -243,6 +258,17 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 				},
 			},
 		},
+	}
+	if isOpenShift {
+		dpOut.Volumes = append(dpOut.Volumes, v1.Volume{
+			Name: "cni-k8s",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/etc/kubernetes/cni",
+					Type: &hostPathDirectory,
+				},
+			},
+		})
 	}
 	return &dpOut
 }

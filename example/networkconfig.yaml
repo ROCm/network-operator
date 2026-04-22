@@ -18,6 +18,20 @@ spec:
     # Make sure you created the secret within the namespace that KMM operator is running
     imageRegistrySecret:
       name: my-secret
+    # (Optional) configure the driver image build within the cluster
+    imageBuild:
+      # configure the registry to search for base image for building driver
+      # e.g. if you are using worker node with ubuntu 22.04 and baseImageRegistry is docker.io
+      # image builder will use docker.io/ubuntu:22.04 as base image
+      baseImageRegistry: docker.io
+      # sourceImageRepo: specify the amdainic source code image repo for building driver
+      # the Operator will decide the image tag based on user provided driver version and system OS version
+      # e.g. if you input docker.io/rocm/amdainic-driver the image tag will be coreos-<rhel version>-<driver version>
+      # NOTE: currently only work for OpenShift cluster
+      sourceImageRepo: docker.io/rocm/amdainic-driver
+      baseImageRegistryTLS:
+        insecure: False # If True, check for the container image using plain HTTP
+        insecureSkipTLSVerify: False # If True, skip any TLS server certificate validation (useful for self-signed certificates)
     # Specify the driver version
     # when you need to upgrade the driver, just update this field
     # we will unload the old version driver and load the new version driver
@@ -87,7 +101,7 @@ spec:
     # CNI plugin configuration
     cniPlugins:
       enable: True
-      image: docker.io/rocm/k8s-cni-plugins:v1.0.0
+      image: docker.io/rocm/k8s-cni-plugins:v1.1.0
       imagePullPolicy: "Always"
       # image registry secret used to pull/push images
       imageRegistrySecret:
@@ -98,7 +112,7 @@ spec:
     initContainerImage: busybox:1.36
     utilsContainer:
       # -- network operator utility container image used for driver upgrade
-      image: docker.io/rocm/network-operator-utils:v1.0.0
+      image: docker.io/rocm/network-operator-utils:v1.1.0
       # -- utility container image pull policy
       imagePullPolicy: IfNotPresent
       # -- utility container image pull secret, e.g. {"name": "mySecretName"}

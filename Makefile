@@ -5,7 +5,7 @@ endif
 
 # PROJECT_VERSION defines the project version.
 # Update this value when you upgrade the version of your project.
-PROJECT_VERSION ?= v1.0.0
+PROJECT_VERSION ?= v1.1.0
 
 ####################################
 # Network Operator Image Build variables
@@ -21,6 +21,16 @@ IMG ?= $(IMAGE_TAG_BASE):$(IMAGE_TAG)
 # name used for saving the container images as tar.gz
 DOCKER_CONTAINER_IMG = $(IMAGE_NAME)-$(IMAGE_TAG)
 HOURLY_TAG_LABEL ?= latest
+
+# CNI Plugins Image Build variables
+CNI_PLUGINS_IMAGE_NAME ?= k8s-cni-plugins
+CNI_PLUGINS_IMG ?= $(DOCKER_REGISTRY)/$(CNI_PLUGINS_IMAGE_NAME):$(IMAGE_TAG)
+CNI_PLUGINS_CONTAINER_IMG = $(CNI_PLUGINS_IMAGE_NAME)-$(IMAGE_TAG)
+
+# Utils Image Build variables
+UTILS_IMAGE_NAME ?= network-operator-utils
+UTILS_IMG ?= $(DOCKER_REGISTRY)/$(UTILS_IMAGE_NAME):$(IMAGE_TAG)
+UTILS_CONTAINER_IMG = $(UTILS_IMAGE_NAME)-$(IMAGE_TAG)
 
 # You can use docker or podman as a container engine. Notice that there are some options that might be only valid for one of them.
 CONTAINER_ENGINE ?= docker
@@ -38,7 +48,7 @@ KMM_OPERATOR_IMG_NAME ?= $(DOCKER_REGISTRY)/kernel-module-management-operator
 # by default, helm charts version is same as project version
 # unless in the hourly build where we may put hourly build tag in the helm charts version
 HELM_CHARTS_VERSION ?= $(PROJECT_VERSION)
-YAML_FILES=bundle/manifests/amd-network-operator-node-metrics_rbac.authorization.k8s.io_v1_rolebinding.yaml bundle/manifests/amd-network-operator.clusterserviceversion.yaml bundle/manifests/amd-network-operator-node-labeller_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml bundle/manifests/amd-network-operator-node-metrics_monitoring.coreos.com_v1_servicemonitor.yaml config/samples/amd.com_networkconfigs.yaml config/manifests/bases/amd-network-operator.clusterserviceversion.yaml example/networkconfig.yaml config/default/kustomization.yaml
+YAML_FILES=config/samples/amd.com_networkconfigs.yaml config/manifests/bases/amd-network-operator.clusterserviceversion.yaml example/networkconfig.yaml config/default/kustomization.yaml
 CRD_YAML_FILES = networkconfig-crd.yaml
 K8S_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
 OPENSHIFT_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
@@ -179,6 +189,7 @@ update-registry: ## Update all image URLs based on the image variables
 	-e 's|newName:.*$$|newName: ${IMAGE_TAG_BASE}|' \
 	config/manager-base/kustomization.yaml config/manager/kustomization.yaml \
 	hack/k8s-patch/metadata-patch/values.yaml helm-charts-k8s/values.yaml \
+	hack/openshift-patch/metadata-patch/values.yaml \
 	example/networkconfig.yaml
 	sed -i -e 's|tag:.*$$|tag: ${KMM_IMAGE_TAG}|' \
 	-e 's|repository:.*operator.*$$|repository: ${KMM_OPERATOR_IMG_NAME}|' \
@@ -195,6 +206,12 @@ update-version: ## Update the Project version in helm charts based on ${PROJECT_
 	sed -i '0,/version:/s|version:.*|version: ${HELM_CHARTS_VERSION}|' hack/k8s-patch/metadata-patch/Chart.yaml
 	sed -i -e 's|appVersion:.*$$|appVersion: ${IMAGE_TAG}|' hack/openshift-patch/metadata-patch/Chart.yaml
 	sed -i '0,/version:/s|version:.*|version: ${HELM_CHARTS_VERSION}|' hack/openshift-patch/metadata-patch/Chart.yaml
+	# updating image tags in go code
+	sed -i 's|k8s-network-node-labeller:v[^ "]*|k8s-network-node-labeller:${PROJECT_VERSION}|' internal/nodelabeller/nodelabeller.go
+	sed -i 's|k8s-cni-plugins:v[^ "]*|k8s-cni-plugins:${PROJECT_VERSION}|' internal/secondarynetwork/cniplugins.go
+	sed -i 's|network-operator-utils:v[^ "]*|network-operator-utils:${PROJECT_VERSION}|' internal/controllers/upgrademgr.go internal/utils.go
+	sed -i 's|k8s-network-device-plugin:v[^ "]*|k8s-network-device-plugin:${PROJECT_VERSION}|' internal/deviceplugin/deviceplugin.go
+	sed -i 's|device-metrics-exporter:nic-v[^ "]*|device-metrics-exporter:nic-${PROJECT_VERSION}|' internal/metricsexporter/exporter.go
 
 .PHONY: manifests
 manifests: controller-gen update-registry update-version ## Generate ClusterRole and CustomResourceDefinition objects.
@@ -427,7 +444,7 @@ bundle-build: operator-sdk manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	cd config/manager-base && $(KUSTOMIZE) edit set image controller=$(IMG)
 	OPERATOR_SDK="${OPERATOR_SDK}" \
-		     BUNDLE_GEN_FLAGS="${BUNDLE_GEN_FLAGS} --extra-service-accounts amd-network-operator-kmm-device-plugin,amd-network-operator-kmm-module-loader,amd-network-operator-node-labeller,amd-network-operator-metrics-exporter,amd-network-operator-metrics-exporter-rbac-proxy,amd-network-operator-test-runner,amd-network-operator-config-manager,amd-network-operator-utils-container" \
+		     BUNDLE_GEN_FLAGS="${BUNDLE_GEN_FLAGS} --extra-service-accounts amd-network-operator-kmm-device-plugin,amd-network-operator-kmm-module-loader,amd-network-operator-node-labeller,amd-network-operator-metrics-exporter,amd-network-operator-metrics-exporter-rbac-proxy,amd-network-operator-test-runner,amd-network-operator-config-manager,amd-network-operator-utils-container,amd-network-operator-cni-plugins,amd-network-operator-device-plugin" \
 		     PKG=amd-network-operator \
 		     SOURCE_DIR=$(dir $(realpath $(lastword $(MAKEFILE_LIST)))) \
 		     KUBECTL_CMD=${KUBECTL_CMD} ./hack/generate-bundle
@@ -679,10 +696,33 @@ copyrights:
 	GOFLAGS=-mod=mod go run tools/build/copyright/main.go && ${MAKE} fmt && ./tools/build/check-local-files.sh
 
 CNI_PLUGINS := $(wildcard ./cni/plugins/*/)
-cni-plugins:
+
+.PHONY: cni-plugins
+cni-plugins: ## Build CNI plugins binary and docker image
 	@for dir in $(CNI_PLUGINS); do \
 		echo "Building module in $$dir..."; \
 		cd $$dir && go mod vendor && go build -mod=vendor -o ../../build/;\
 	done
-	@echo "Building Docker image: $(CNI_PLUGINS_DOCKER_IMAGE) from ./cni/build/..."
-	docker build -t $(CNI_PLUGINS_DOCKER_IMAGE) ./cni/build/
+	@echo "Building Docker image: $(CNI_PLUGINS_IMG) from ./cni/build/..."
+	$(CONTAINER_ENGINE) build -t $(CNI_PLUGINS_IMG) --label HOURLY_TAG=$(HOURLY_TAG_LABEL) ./cni/build/
+
+.PHONY: cni-plugins-push
+cni-plugins-push: ## Push CNI plugins docker image
+	$(CONTAINER_ENGINE) push $(CNI_PLUGINS_IMG)
+
+.PHONY: cni-plugins-save
+cni-plugins-save: ## Save CNI plugins docker image as tar.gz
+	$(CONTAINER_ENGINE) save $(CNI_PLUGINS_IMG) | gzip > $(CNI_PLUGINS_CONTAINER_IMG).tar.gz
+
+.PHONY: utils-build
+utils-build: ## Build utils docker image
+	@echo "Building Docker image: $(UTILS_IMG) from ./internal/utils_container/..."
+	$(CONTAINER_ENGINE) build -t $(UTILS_IMG) --label HOURLY_TAG=$(HOURLY_TAG_LABEL) -f ./internal/utils_container/Dockerfile .
+
+.PHONY: utils-push
+utils-push: ## Push utils docker image
+	$(CONTAINER_ENGINE) push $(UTILS_IMG)
+
+.PHONY: utils-save
+utils-save: ## Save utils docker image as tar.gz
+	$(CONTAINER_ENGINE) save $(UTILS_IMG) | gzip > $(UTILS_CONTAINER_IMG).tar.gz

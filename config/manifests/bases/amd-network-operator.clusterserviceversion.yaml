@@ -249,6 +249,49 @@ spec:
         path: driver.image
         x-descriptors:
         - urn:alm:descriptor:com.amd.NetworkConfigs:image
+      - description: image build configs
+        displayName: ImageBuild
+        path: driver.imageBuild
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.deviceconfigs:imageBuild
+      - description: 'image registry to fetch base image for building driver image,
+          default value is docker.io, the builder will search for corresponding OS
+          base image from given registry e.g. if your worker node is using Ubuntu
+          22.04, by default the base image would be docker.io/ubuntu:22.04 Use spec.driver.imageRegistrySecret
+          for authentication with private registries. NOTE: this field won''t apply
+          for OpenShift since OpenShift is using its own DriverToolKit image to build
+          driver image'
+        displayName: BaseImageRegistry
+        path: driver.imageBuild.baseImageRegistry
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistry
+      - description: TLS settings for fetching base image this field will be applied
+          to SourceImageRepo as well
+        displayName: BaseImageRegistryTLS
+        path: driver.imageBuild.baseImageRegistryTLS
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistryTLS
+      - description: If true, check if the container image already exists using plain
+          HTTP.
+        displayName: Insecure
+        path: driver.imageBuild.baseImageRegistryTLS.insecure
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.NetworkConfigs:insecure
+      - description: If true, skip any TLS server certificate validation
+        displayName: InsecureSkipTLSVerify
+        path: driver.imageBuild.baseImageRegistryTLS.insecureSkipTLSVerify
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.NetworkConfigs:insecureSkipTLSVerify
+      - description: 'SourceImageRepo specifies the image repository for the driver
+          source code (OpenShift only). Used when spec.driver.useSourceImage is true.
+          The operator automatically determines the image tag based on cluster RHEL
+          version and spec.driver.version (format: coreos-<rhel>-<driver version>).
+          Default: docker.io/rocm/amdainic-driver Use spec.driver.imageRegistrySecret
+          for authentication with private registries.'
+        displayName: SourceImageRepo
+        path: driver.imageBuild.sourceImageRepo
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.deviceconfigs:sourceImageRepo
       - description: secrets used for pull/push images from/to private registry specified
           in driversImage
         displayName: ImageRegistrySecret
@@ -340,6 +383,13 @@ spec:
         path: driver.upgradePolicy.rebootRequired
         x-descriptors:
         - urn:alm:descriptor:com.amd.NetworkConfigs:rebootRequired
+      - description: 'NOTE: currently only for OpenShift cluster set to true to use
+          source image to build driver image on the fly otherwise use installer debian/rpm
+          packages from radeon repo to build driver image'
+        displayName: UseSourceImage
+        path: driver.useSourceImage
+        x-descriptors:
+        - urn:alm:descriptor:com.amd.deviceconfigs:useSourceImage
       - description: 'version of the drivers source code, can be used as part of image
           of dockerfile source image default value for different OS is: ubuntu: 1.117.1-a-42,
           coreOS: 1.117.1-a-42'

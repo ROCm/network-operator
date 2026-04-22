@@ -129,7 +129,7 @@ spec:
   secondaryNetwork:
     cniPlugins:
       enable: True
-      image: docker.io/rocm/k8s-cni-plugins:v1.0.0
+      image: docker.io/rocm/k8s-cni-plugins:v1.1.0
       imagePullPolicy: "Always"
       imageRegistrySecret:
         name: my-secret
@@ -147,7 +147,7 @@ spec:
     initContainerImage: busybox:1.36
     utilsContainer:
       # -- network operator utility container image used for driver upgrade
-      image: docker.io/rocm/network-operator-utils:v1.0.0
+      image: docker.io/rocm/network-operator-utils:v1.1.0
       # -- utility container image pull policy
       imagePullPolicy: IfNotPresent
       # -- utility container image pull secret, e.g. {"name": "mySecretName"}

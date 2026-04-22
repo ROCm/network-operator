@@ -43,7 +43,7 @@ spec:
   secondaryNetwork:
     cniPlugins:
       enable: True
-      image: docker.io/rocm/k8s-cni-plugins:v1.0.0
+      image: docker.io/rocm/k8s-cni-plugins:v1.1.0
   
   # Specify the node to be managed by this NetworkConfig Custom Resource
   selector:
@@ -101,7 +101,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `cniPlugins.enable` | Enable/disable CNI plugins | `false` |
-| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/cni-plugins:v1.0.0`|
+| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/cni-plugins:v1.1.0`|
 | `cniPlugins.imageRegistrySecret.name` | Name of registry credentials secret<br> to pull metrics exporter image | |
 
 #### `spec.selector` Parameters

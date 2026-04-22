@@ -216,6 +216,12 @@ type DriverSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BlacklistDrivers",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:blacklistDrivers"}
 	Blacklist *bool `json:"blacklist,omitempty"`
 
+	// NOTE: currently only for OpenShift cluster
+	// set to true to use source image to build driver image on the fly
+	// otherwise use installer debian/rpm packages from radeon repo to build driver image
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="UseSourceImage",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:useSourceImage"}
+	UseSourceImage *bool `json:"useSourceImage,omitempty"`
+
 	// radeon repo URL for fetching amdnetwork installer if building driver image on the fly
 	// installer URL is https://repo.radeon.com by default
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="AMDNetworkInstallerRepoURL",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:AMDNetworkInstallerRepoURL"}
@@ -254,6 +260,11 @@ type DriverSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ImageSign",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:imageSign"}
 	// +optional
 	ImageSign ImageSignSpec `json:"imageSign,omitempty"`
+
+	// image build configs
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ImageBuild",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:imageBuild"}
+	// +optional
+	ImageBuild ImageBuildSpec `json:"imageBuild,omitempty"`
 
 	// policy to upgrade the drivers
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="UpgradePolicy",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:upgradePolicy"}
@@ -379,6 +390,29 @@ type ImageSignSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ImageSignCertSecret",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:imageSignCertSecret"}
 	// +optional
 	CertSecret *v1.LocalObjectReference `json:"certSecret,omitempty"`
+}
+
+type ImageBuildSpec struct {
+	// image registry to fetch base image for building driver image, default value is docker.io, the builder will search for corresponding OS base image from given registry
+	// e.g. if your worker node is using Ubuntu 22.04, by default the base image would be docker.io/ubuntu:22.04
+	// Use spec.driver.imageRegistrySecret for authentication with private registries.
+	// NOTE: this field won't apply for OpenShift since OpenShift is using its own DriverToolKit image to build driver image
+	// +kubebuilder:default=docker.io
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistry",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistry"}
+	BaseImageRegistry string `json:"baseImageRegistry,omitempty"`
+
+	// SourceImageRepo specifies the image repository for the driver source code (OpenShift only).
+	// Used when spec.driver.useSourceImage is true. The operator automatically determines the image tag
+	// based on cluster RHEL version and spec.driver.version (format: coreos-<rhel>-<driver version>).
+	// Default: docker.io/rocm/amdainic-driver
+	// Use spec.driver.imageRegistrySecret for authentication with private registries.
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SourceImageRepo",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:sourceImageRepo"}
+	SourceImageRepo string `json:"sourceImageRepo,omitempty"`
+
+	// TLS settings for fetching base image
+	// this field will be applied to SourceImageRepo as well
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistryTLS",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistryTLS"}
+	BaseImageRegistryTLS RegistryTLS `json:"baseImageRegistryTLS,omitempty"`
 }
 
 // ServiceType string describes ingress methods for a service

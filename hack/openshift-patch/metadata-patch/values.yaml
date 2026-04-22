@@ -12,7 +12,7 @@ controllerManager:
       allowPrivilegeEscalation: false
     image:
       repository: docker.io/rocm/amd-network-operator
-      tag: dev 
+      tag: dev
     imagePullPolicy: Always
     imagePullSecrets: ""
     tolerations:

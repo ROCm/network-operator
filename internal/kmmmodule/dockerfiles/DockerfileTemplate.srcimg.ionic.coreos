@@ -1,0 +1,43 @@
+ARG DTK_AUTO
+ARG RHEL_VERSION
+ARG SOURCE_IMAGE_REPO=docker.io/library/ionic-srcimg
+ARG DRIVERS_VERSION
+
+FROM ${SOURCE_IMAGE_REPO}:${DRIVERS_VERSION} as sources
+FROM ${DTK_AUTO} as builder
+
+ARG KERNEL_VERSION
+
+COPY --from=sources /ionic_src/driver /ionic_src
+
+WORKDIR /ionic_src
+
+# Build all DKMS modules
+RUN for d in /ionic_src/*; do \
+      if [ -d "$d" ] && [ -f "$d/Makefile" ]; then \
+        echo "Building module in $d..." && \
+        make -C "$d" -j$(nproc) KERNELRELEASE="${KERNEL_VERSION}" KERNELDIR="/usr/src/kernels/${KERNEL_VERSION}" || true; \
+      fi; \
+    done
+
+RUN mkdir -p /lib/modules/${KERNEL_VERSION}/extra && \
+    find /ionic_src -type f -name "*.ko" -print -exec cp {} /lib/modules/${KERNEL_VERSION}/extra/ \; ; \
+    depmod ${KERNEL_VERSION} && \
+    find /lib/modules/${KERNEL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
+    depmod ${KERNEL_VERSION}
+
+RUN mkdir -p /modules_files && \
+    mkdir -p /ionic_ko_files && \
+    mkdir -p /kernel_files && \
+    cp /lib/modules/${KERNEL_VERSION}/modules.* /modules_files/ && \
+    cp -r /lib/modules/${KERNEL_VERSION}/extra/* /ionic_ko_files/ && \
+    cp -r /lib/modules/${KERNEL_VERSION}/kernel/* /kernel_files/ || true
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+ARG KERNEL_VERSION
+
+COPY --from=builder /ionic_ko_files /opt/lib/modules/${KERNEL_VERSION}/extra
+COPY --from=builder /kernel_files /opt/lib/modules/${KERNEL_VERSION}/kernel
+COPY --from=builder /modules_files /opt/lib/modules/${KERNEL_VERSION}/
+COPY --from=sources /ionic_src/firmware /firmwareDir/updates/ionic

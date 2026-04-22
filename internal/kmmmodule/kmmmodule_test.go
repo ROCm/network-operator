@@ -127,9 +127,24 @@ var _ = PDescribe("setKMMModuleLoader", func() {
 			},
 		}
 
-		err = setKMMModuleLoader(context.TODO(), &mod, &input, false, testNodeList)
+		// Create kmmModule for testing (client not needed since we check ResourceVersion)
+		km := &kmmModule{
+			client:      nil, // Not needed - we check mod.ResourceVersion instead
+			scheme:      scheme,
+			isOpenShift: false,
+		}
+
+		err = km.setKMMModuleLoader(context.TODO(), &mod, &input, testNodeList)
 
 		Expect(err).To(BeNil())
+		// Update expected values to match new behavior (includes extra modules)
+		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModuleName = networkDriverModuleName
+		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder = []string{
+			networkDriverModuleName,
+			ionicModuleName,
+			pdsCoreModuleName,
+			tawkIPCModuleName,
+		}
 		Expect(mod).To(Equal(expectedMod))
 	})
 
@@ -191,9 +206,24 @@ var _ = PDescribe("setKMMModuleLoader", func() {
 			},
 		}
 
-		err = setKMMModuleLoader(context.TODO(), &mod, &input, false, testNodeList)
+		// Create kmmModule for testing (client not needed since we check ResourceVersion)
+		km := &kmmModule{
+			client:      nil, // Not needed - we check mod.ResourceVersion instead
+			scheme:      scheme,
+			isOpenShift: false,
+		}
+
+		err = km.setKMMModuleLoader(context.TODO(), &mod, &input, testNodeList)
 
 		Expect(err).To(BeNil())
+		// Update expected values to match new behavior (includes extra modules)
+		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModuleName = networkDriverModuleName
+		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder = []string{
+			networkDriverModuleName,
+			ionicModuleName,
+			pdsCoreModuleName,
+			tawkIPCModuleName,
+		}
 		Expect(mod).To(Equal(expectedMod))
 	})
 })

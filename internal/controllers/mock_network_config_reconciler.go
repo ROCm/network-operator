@@ -205,17 +205,17 @@ func (mr *MocknetworkConfigReconcilerHelperAPIMockRecorder) handleBuildConfigMap
 }
 
 // handleDevicePlugin mocks base method.
-func (m *MocknetworkConfigReconcilerHelperAPI) handleDevicePlugin(ctx context.Context, nwConfig *v1alpha1.NetworkConfig) error {
+func (m *MocknetworkConfigReconcilerHelperAPI) handleDevicePlugin(ctx context.Context, nwConfig *v1alpha1.NetworkConfig, isOpenShift bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "handleDevicePlugin", ctx, nwConfig)
+	ret := m.ctrl.Call(m, "handleDevicePlugin", ctx, nwConfig, isOpenShift)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // handleDevicePlugin indicates an expected call of handleDevicePlugin.
-func (mr *MocknetworkConfigReconcilerHelperAPIMockRecorder) handleDevicePlugin(ctx, nwConfig any) *gomock.Call {
+func (mr *MocknetworkConfigReconcilerHelperAPIMockRecorder) handleDevicePlugin(ctx, nwConfig, isOpenShift any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "handleDevicePlugin", reflect.TypeOf((*MocknetworkConfigReconcilerHelperAPI)(nil).handleDevicePlugin), ctx, nwConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "handleDevicePlugin", reflect.TypeOf((*MocknetworkConfigReconcilerHelperAPI)(nil).handleDevicePlugin), ctx, nwConfig, isOpenShift)
 }
 
 // handleKMMModule mocks base method.
