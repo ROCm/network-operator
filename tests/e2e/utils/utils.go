@@ -720,13 +720,16 @@ func DeployResourcesFromFile(pathOrURL string, cl *kubernetes.Clientset, apiCl *
 	var fileName string
 	if strings.HasPrefix(pathOrURL, "http") || strings.HasPrefix(pathOrURL, "https") {
 		resp, err := http.Get(pathOrURL)
-		if err != nil || resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("failed to get file from URL: %s", pathOrURL)
+		if err != nil {
+			return fmt.Errorf("HTTP GET %s: %w", pathOrURL, err)
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("HTTP GET %s returned status %d (%s)", pathOrURL, resp.StatusCode, resp.Status)
+		}
 		data, err = io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("failed to read response body: %s", pathOrURL)
+			return fmt.Errorf("reading response body from %s: %w", pathOrURL, err)
 		}
 	} else {
 		fileName = pathOrURL
@@ -735,7 +738,7 @@ func DeployResourcesFromFile(pathOrURL string, cl *kubernetes.Clientset, apiCl *
 		}
 		data, err = os.ReadFile(fileName)
 		if err != nil {
-			return fmt.Errorf("failed to read file: %s", fileName)
+			return fmt.Errorf("reading file %s: %w", fileName, err)
 		}
 	}
 

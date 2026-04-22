@@ -88,6 +88,26 @@ spec:
    version: 1.117.1-a-42
 ```
 
+## Upgrade Notice
+
+### Upgrading from v1.0.0 to v1.2.0
+
+If you are upgrading from **v1.0.0** to **v1.2.0** and want to install the `tawk_ipc` and `pds_coe` kernel modules, you need to manually trigger a rebuild and redeploy of the driver:
+
+1. Delete the existing NetworkConfig CR:
+
+   ```bash
+   kubectl delete networkconfig <your-networkconfig-name> -n kube-amd-network
+   ```
+
+2. Remove the existing compiled driver image from your registry (or use a different image name).
+
+3. Re-create the NetworkConfig CR with the same configuration to trigger a rebuild and redeploy of the driver with the new modules.
+
+```{note}
+This manual process is only required for v1.0.0 users. The operator now preserves existing module loading order during upgrades to prevent unexpected module reloads. Users upgrading from **v1.1.0** are not affected as these modules were already included in that version.
+```
+
 ## Driver installation verification
 
 If you successfully installed ionic driver on the worker nodes by AMD Network Operator, you should be able to see the KMM operator labeled the node with its driver ready label and driver version label. For example for a `NetworkConfig` named `test-networkconfig` in namespace `kube-amd-network`, it will show:

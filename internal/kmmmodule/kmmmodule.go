@@ -58,23 +58,28 @@ import (
 )
 
 const (
+	ionicModuleName               = "ionic"
 	networkDriverModuleName       = "ionic_rdma"
 	pdsCoreModuleName             = "pds_core"
 	tawkIPCModuleName             = "tawk_ipc"
 	kmmNodeVersionLabelTemplate   = "kmm.node.kubernetes.io/version-module.%s.%s"
-	defaultOcDriversImageTemplate = "image-registry.openshift-image-registry.svc:5000/$MOD_NAMESPACE/amdionic_kmod"
+	defaultOcDriversImageTemplate = "image-registry.openshift-image-registry.svc:5000/$MOD_NAMESPACE/amdnetwork_kmod"
 	// start local registry image-registry:5000 in k8s
-	defaultDriversImageTemplate = "image-registry:5000/$MOD_NAMESPACE/amdionic_kmod"
-	defaultOcDriversVersion     = "1.117.1-a-42"
+	defaultDriversImageTemplate = "image-registry:5000/$MOD_NAMESPACE/amdnetwork_kmod"
+	defaultOcDriversVersion     = "1.117.5-a-56"
 	defaultInstallerRepoURL     = "https://repo.radeon.com"
 	defaultInitContainerImage   = "busybox:1.36"
+	defaultSourceImageRepo      = "docker.io/rocm/amdainic-driver"
+	nfdOSReleaseLabelKey        = "feature.node.kubernetes.io/system-os_release.VERSION_ID"
 )
 
 var (
 	//go:embed dockerfiles/DockerfileTemplate.ubuntu
 	dockerfileTemplateUbuntu string
-	//go:embed dockerfiles/DockerfileTemplate.coreos
-	buildOcDockerfile string
+	//go:embed dockerfiles/DockerfileTemplate.srcimg.ionic.coreos
+	dockerfileTemplateCoreOSFromSrcImage string
+	//go:embed dockerfiles/DockerfileTemplate.rpm.ionic.coreos
+	dockerfileTemplateCoreOSFromRPM string
 	//go:embed devdockerfiles/devdockerfile.txt
 	dockerfileDevTemplateUbuntu string
 )
@@ -145,7 +150,10 @@ func (km *kmmModule) SetBuildConfigMapAsDesired(buildCM *v1.ConfigMap, nwConfig 
 		buildCM.Data = make(map[string]string)
 	}
 	if km.isOpenShift {
-		buildCM.Data["dockerfile"] = buildOcDockerfile
+		buildCM.Data["dockerfile"] = dockerfileTemplateCoreOSFromRPM
+		if nwConfig.Spec.Driver.UseSourceImage != nil && *nwConfig.Spec.Driver.UseSourceImage {
+			buildCM.Data["dockerfile"] = dockerfileTemplateCoreOSFromSrcImage
+		}
 	} else {
 		dockerfile, err := resolveDockerfile(buildCM.Name, nwConfig)
 		if err != nil {
@@ -160,6 +168,40 @@ var driverLabels = map[string]string{
 	"20.04": "focal",
 	"22.04": "jammy",
 	"24.04": "noble",
+}
+
+func parseRHELHelper(regExp *regexp.Regexp, osImage string) string {
+	matches := regExp.FindStringSubmatch(osImage)
+	if len(matches) >= 3 {
+		return fmt.Sprintf("%s.%s", matches[1], matches[2])
+	}
+	return ""
+}
+
+func parseRHELVersion(labels map[string]string, osImage string) string {
+	// firstly check if NFD label for RHEL version is present
+	// if yes, use it directly
+	if labels != nil {
+		if rhelVersion, found := labels[nfdOSReleaseLabelKey]; found {
+			return rhelVersion
+		}
+	}
+
+	// if NFD label not found, parse the RHEL version from OS image string
+	// https://github.com/openshift/release-controller/blob/c4b8d4c3c7674884f2e479c35a8876428aa08de8/pkg/rhcos/rhcos.go#L38-L42
+	// OpenShift < 4.19 Legacy format: e.g., 418.94.202410090804-0 → 9.4
+	reLegacy := regexp.MustCompile(`\b4\d+\.(\d)(\d+)\.\d+-\d+\b`)
+	// OpenShift >= 4.19 Modern format: e.g., 9.6.20250121-0 or 10.0.20260101-0 → 9.6 or 10.0
+	reModern := regexp.MustCompile(`\b(\d+)\.(\d+)\.\d+-\d+\b`)
+
+	switch {
+	case reLegacy.MatchString(osImage):
+		return parseRHELHelper(reLegacy, osImage)
+	case reModern.MatchString(osImage):
+		return parseRHELHelper(reModern, osImage)
+	}
+
+	return ""
 }
 
 func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (string, error) {
@@ -197,7 +239,10 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 			dockerfileTemplate = strings.Replace(dockerfileTemplate, "ubuntu:$$VERSION", fmt.Sprintf("%v:$$VERSION", internalUbuntuBaseImage), -1)
 		}
 	case "coreos":
-		dockerfileTemplate = buildOcDockerfile
+		dockerfileTemplate = dockerfileTemplateCoreOSFromRPM
+		if nwConfig.Spec.Driver.UseSourceImage != nil && *nwConfig.Spec.Driver.UseSourceImage {
+			dockerfileTemplate = dockerfileTemplateCoreOSFromSrcImage
+		}
 	// FIX ME
 	// add the RHEL back when it is fully supported
 	/*case "rhel":
@@ -218,31 +263,55 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 }
 
 func (km *kmmModule) SetKMMModuleAsDesired(ctx context.Context, mod *kmmv1beta1.Module, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error {
-	err := setKMMModuleLoader(ctx, mod, nwConfig, km.isOpenShift, nodes)
+	err := km.setKMMModuleLoader(ctx, mod, nwConfig, nodes)
 	if err != nil {
 		return fmt.Errorf("failed to set KMM Module: %v", err)
 	}
 	return controllerutil.SetControllerReference(nwConfig, mod, km.scheme)
 }
 
-func setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Module, nwConfig *amdv1alpha1.NetworkConfig, isOpenshift bool, nodes *v1.NodeList) error {
+func (km *kmmModule) setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Module, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error {
 	kmlog := log.FromContext(ctx)
-	kmlog.Info(fmt.Sprintf("isOpenshift %+v", isOpenshift))
+	kmlog.Info(fmt.Sprintf("isOpenshift %+v", km.isOpenShift))
 
-	kernelMappings, driversVersion, err := getKernelMappings(nwConfig, isOpenshift, nodes)
+	kernelMappings, driversVersion, err := getKernelMappings(nwConfig, km.isOpenShift, nodes)
 	if err != nil {
 		return err
 	}
 
+	// Use ionic_rdma as the main module (topmost module in the dependency chain)
+	// KMM's modulesLoadingOrder expects: [topmost module, then what it depends on, etc.]
+	// Dependency chain: ionic_rdma -> ionic -> pds_core -> tawk_ipc
+	// For unloading, KMM will reverse this order automatically
+	moduleName := networkDriverModuleName
+	var modulesLoadingOrder []string
+
+	// Check if the Module already exists by checking ResourceVersion (set when object exists in cluster)
+	// This avoids an extra API call since mod is populated by CreateOrPatch when the resource exists
+	moduleExists := mod.ResourceVersion != ""
+
+	if moduleExists {
+		// Module exists - this is an upgrade scenario
+		// Preserve existing modulesLoadingOrder (even if empty) to avoid triggering module reload
+		modulesLoadingOrder = mod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder
+		kmlog.Info(fmt.Sprintf("Preserving existing modulesLoadingOrder for upgrade: %v", modulesLoadingOrder))
+	} else {
+		// New installation: use correct module loading order
+		// ionic_rdma is the topmost module, followed by its dependencies
+		modulesLoadingOrder = []string{
+			networkDriverModuleName, // ionic_rdma (topmost module)
+			ionicModuleName,         // ionic (ionic_rdma depends on this)
+			pdsCoreModuleName,       // pds_core (ionic depends on this)
+			tawkIPCModuleName,       // tawk_ipc (pds_core depends on this)
+		}
+		kmlog.Info(fmt.Sprintf("Using new modulesLoadingOrder for fresh installation: %v", modulesLoadingOrder))
+	}
+
 	mod.Spec.ModuleLoader.Container = kmmv1beta1.ModuleLoaderContainerSpec{
 		Modprobe: kmmv1beta1.ModprobeSpec{
-			ModuleName: networkDriverModuleName,
-			Args:       &kmmv1beta1.ModprobeArgs{},
-			ModulesLoadingOrder: []string{
-				networkDriverModuleName,
-				pdsCoreModuleName,
-				tawkIPCModuleName,
-			},
+			ModuleName:          moduleName,
+			Args:                &kmmv1beta1.ModprobeArgs{},
+			ModulesLoadingOrder: modulesLoadingOrder,
 		},
 		Version:        nwConfig.Spec.Driver.Version,
 		KernelMappings: kernelMappings,
@@ -297,6 +366,12 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 		return kmmv1beta1.KernelMapping{}, "", err
 	}
 
+	rhelVersion := ""
+	sourceImageRepo := defaultSourceImageRepo
+	if nwConfig.Spec.Driver.ImageBuild.SourceImageRepo != "" {
+		sourceImageRepo = nwConfig.Spec.Driver.ImageBuild.SourceImageRepo
+	}
+
 	if isOpenShift {
 		if driversVersion == "" {
 			driversVersion = defaultOcDriversVersion
@@ -305,6 +380,7 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 			driversImage = defaultOcDriversImageTemplate
 		}
 		driversImage = addNodeInfoSuffixToImageTag(driversImage, osName, driversVersion)
+		rhelVersion = parseRHELVersion(node.Labels, node.Status.NodeInfo.OSImage)
 	} else {
 		if driversVersion == "" {
 			driversVersion, err = utils.GetDefaultDriversVersion(node)
@@ -368,6 +444,25 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 	if isCIEnvSet {
 		kmmBuild.BaseImageRegistryTLS.Insecure = true
 		kmmBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify = true
+	}
+
+	if nwConfig.Spec.Driver.UseSourceImage != nil && *nwConfig.Spec.Driver.UseSourceImage {
+		kmmBuild.BuildArgs = append(kmmBuild.BuildArgs,
+			kmmv1beta1.BuildArg{
+				Name:  "SOURCE_IMAGE_REPO",
+				Value: sourceImageRepo,
+			},
+		)
+	}
+
+	if isOpenShift {
+		if rhelVersion != "" {
+			kmmBuild.BuildArgs = append(kmmBuild.BuildArgs,
+				kmmv1beta1.BuildArg{
+					Name:  "RHEL_VERSION",
+					Value: rhelVersion,
+				})
+		}
 	}
 
 	return kmmv1beta1.KernelMapping{

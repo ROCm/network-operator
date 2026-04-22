@@ -28,3 +28,6 @@ resources:
   - config_manager_service_account.yaml
   - config_manager_role.yaml
   - config_manager_role_binding.yaml
+  - cni_plugins_service_account.yaml
+  - cni_plugins_cluster_role.yaml
+  - cni_plugins_role_binding.yaml

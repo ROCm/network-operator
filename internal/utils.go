@@ -40,7 +40,7 @@ const (
 	ResourceNamingStrategyFlag  = "resource_naming_strategy"
 	SingleStrategy              = "single"
 	MixedStrategy               = "mixed"
-	DefaultUtilsImage           = "docker.io/rocm/network-operator-utils:v1.0.0"
+	DefaultUtilsImage           = "docker.io/rocm/network-operator-utils:v1.1.0"
 
 	// worker pod related constants
 	KindNetworkConfig      = "NetworkConfig"

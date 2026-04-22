@@ -1,0 +1,53 @@
+ARG DTK_AUTO
+
+FROM ${DTK_AUTO} as builder
+ARG KERNEL_VERSION
+ARG DRIVERS_VERSION
+ARG REPO_URL
+
+RUN source /etc/os-release && \
+    MAJOR_VERSION=$(echo ${VERSION_ID} | cut -d. -f1) && \
+    echo -e "[amdnetwork] \n\
+name=amdnetwork \n\
+baseurl=${REPO_URL}/amdainic/pensando/el${MAJOR_VERSION}/${DRIVERS_VERSION}/ \n\
+enabled=1 \n\
+priority=50 \n\
+gpgcheck=1 \n\
+gpgkey=${REPO_URL}/rocm/rocm.gpg.key" > /etc/yum.repos.d/amdnetwork.repo
+
+RUN source /etc/os-release && \
+    MAJOR_VERSION=$(echo ${VERSION_ID} | cut -d. -f1) && \
+    dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${MAJOR_VERSION}.noarch.rpm && \
+    dnf install -y 'dnf-command(config-manager)' && \
+    if [ "${MAJOR_VERSION}" == "9" ]; then \
+        dnf config-manager --set-enabled crb; \
+        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/; \
+        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/; \
+        rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official; \
+    fi && \
+    dnf install -y ionic-dkms pds-dkms tawk-ipc-dkms && \
+    depmod ${KERNEL_VERSION} && \
+    find /lib/modules/${KERNEL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
+    depmod ${KERNEL_VERSION} && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN mkdir -p /modules_files && \
+    mkdir -p /amdnetwork_ko_files && \
+    mkdir -p /kernel_files && \
+    mkdir -p /firmware_files && \
+    cp /lib/modules/${KERNEL_VERSION}/modules.* /modules_files/ && \
+    cp -r /lib/modules/${KERNEL_VERSION}/extra/* /amdnetwork_ko_files/ && \
+    cp -r /lib/modules/${KERNEL_VERSION}/kernel/* /kernel_files/ && \
+    if [ -d /lib/firmware/updates/amdnetwork ]; then cp -r /lib/firmware/updates/amdnetwork /firmware_files/; fi
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+
+ARG KERNEL_VERSION
+
+RUN microdnf install -y kmod
+
+COPY --from=builder /amdnetwork_ko_files /opt/lib/modules/${KERNEL_VERSION}/extra
+COPY --from=builder /kernel_files /opt/lib/modules/${KERNEL_VERSION}/kernel
+COPY --from=builder /modules_files /opt/lib/modules/${KERNEL_VERSION}/
+COPY --from=builder /firmware_files /firmwareDir/updates/

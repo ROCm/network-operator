@@ -282,7 +282,7 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	logger.Info("start device-plugin reconciliation")
-	if err = r.helper.handleDevicePlugin(ctx, nwConfig); err != nil {
+	if err = r.helper.handleDevicePlugin(ctx, nwConfig, r.isOpenShift); err != nil {
 		return res, fmt.Errorf("failed to handle device-plugin for NetworkConfig %s: %v", req.NamespacedName, err)
 	}
 
@@ -350,7 +350,7 @@ type networkConfigReconcilerHelperAPI interface {
 	findNetworkConfigsWithKMM(ctx context.Context, node client.Object) []reconcile.Request
 	setFinalizer(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error
 	handleKMMModule(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error
-	handleDevicePlugin(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error
+	handleDevicePlugin(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, isOpenShift bool) error
 	handleKMMVersionLabel(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error
 	handleBuildConfigMap(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList) error
 	handleNodeLabeller(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, nodes *v1.NodeList, isOpenShift bool) error
@@ -1106,7 +1106,7 @@ func (dcrh *networkConfigReconcilerHelper) handleKMMModule(ctx context.Context, 
 	return nil
 }
 
-func (dcrh *networkConfigReconcilerHelper) handleDevicePlugin(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) error {
+func (dcrh *networkConfigReconcilerHelper) handleDevicePlugin(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig, isOpenShift bool) error {
 	logger := log.FromContext(ctx)
 	ds := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1114,7 +1114,7 @@ func (dcrh *networkConfigReconcilerHelper) handleDevicePlugin(ctx context.Contex
 			Name:      fmt.Sprintf("%s-%s", nwConfig.Name, deviceplugin.DevicePluginName)},
 	}
 
-	dpOut := dpinternal.GenerateCommonDevicePluginSpec(nwConfig)
+	dpOut := dpinternal.GenerateCommonDevicePluginSpec(nwConfig, isOpenShift)
 	opRes, err := controllerutil.CreateOrPatch(ctx, dcrh.client, ds, func() error {
 		scheme, dcrhErr := dcrh.devicepluginHandler.SetDevicePluginAsDesired(ds, dpOut)
 		if dcrhErr != nil {
