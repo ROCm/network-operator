@@ -2,8 +2,50 @@ apiVersion: v1
 entries:
   network-operator-charts:
   - apiVersion: v2
+    appVersion: v1.2.0
+    created: "2026-04-28T00:15:44.732904895Z"
+    dependencies:
+    - condition: node-feature-discovery.enabled
+      name: node-feature-discovery
+      repository: https://kubernetes-sigs.github.io/node-feature-discovery/charts
+      version: v0.16.1
+    - condition: kmm.enabled
+      name: kmm
+      repository: file://./charts/kmm
+      version: v1.0.0
+    - condition: multus.enabled
+      name: multus
+      repository: file://./charts/multus
+      version: v1.0.0
+    description: AMD Network Operator simplifies the deployment and management of
+      AMD AINICs within Kubernetes clusters.
+    digest: 143d31c60d9b42b6bbd57ae66998d01b9c4833b4401a40674457517bcb828ada
+    home: https://github.com/ROCm/network-operator
+    icon: https://raw.githubusercontent.com/ROCm/k8s-device-plugin/master/helm/logo.png
+    keywords:
+    - kubernetes
+    - cluster
+    - hardware
+    - amd
+    - network
+    - ai
+    - deep learning
+    - monitoring
+    kubeVersion: '>= 1.29.0-0'
+    maintainers:
+    - name: Sundara Gurunathan<Sundaramurthy.Gurunathan@amd.com>
+    - name: Yuvarani Shankar<Yuvarani.Shankar@amd.com>
+    - name: Shrey Ajmera<Shrey.Ajmera@amd.com>
+    name: network-operator-charts
+    sources:
+    - https://github.com/ROCm/network-operator
+    type: application
+    urls:
+    - https://rocm.github.io/network-operator/charts/network-operator-charts-v1.2.0.tgz
+    version: v1.2.0
+  - apiVersion: v2
     appVersion: v1.1.0
-    created: "2026-02-26T05:42:01.421729645Z"
+    created: "2026-04-28T00:15:44.723896853Z"
     dependencies:
     - condition: node-feature-discovery.enabled
       name: node-feature-discovery
@@ -45,7 +87,7 @@ entries:
     version: v1.1.0
   - apiVersion: v2
     appVersion: v1.0.1
-    created: "2026-02-26T05:42:01.412720226Z"
+    created: "2026-04-28T00:15:44.709351664Z"
     dependencies:
     - condition: node-feature-discovery.enabled
       name: node-feature-discovery
@@ -87,7 +129,7 @@ entries:
     version: v1.0.1
   - apiVersion: v2
     appVersion: v1.0.0
-    created: "2026-02-26T05:42:01.404951187Z"
+    created: "2026-04-28T00:15:44.701695078Z"
     dependencies:
     - condition: node-feature-discovery.enabled
       name: node-feature-discovery
@@ -127,4 +169,4 @@ entries:
     urls:
     - https://rocm.github.io/network-operator/charts/network-operator-charts-v1.0.0.tgz
     version: v1.0.0
-generated: "2026-02-26T05:42:01.394062549Z"
+generated: "2026-04-28T00:15:44.691403775Z"
