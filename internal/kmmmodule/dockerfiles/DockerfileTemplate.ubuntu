@@ -1,4 +1,6 @@
-FROM ubuntu:$$VERSION as builder
+ARG BASE_IMAGE_REGISTRY=docker.io
+
+FROM ${BASE_IMAGE_REGISTRY}/ubuntu:$$VERSION as builder
 
 ARG KERNEL_FULL_VERSION
 
@@ -61,7 +63,9 @@ RUN mods_dir=/lib/modules/${KERNEL_FULL_VERSION}; \
     # Regenerate dependency maps only for staged modules
     depmod -b /staging ${KERNEL_FULL_VERSION}
 
-FROM ubuntu:$$VERSION
+ARG BASE_IMAGE_REGISTRY=docker.io
+
+FROM ${BASE_IMAGE_REGISTRY}/ubuntu:$$VERSION
 
 ARG KERNEL_FULL_VERSION
 

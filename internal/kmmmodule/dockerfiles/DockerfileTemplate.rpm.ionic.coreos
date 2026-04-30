@@ -41,7 +41,9 @@ RUN mkdir -p /modules_files && \
     cp -r /lib/modules/${KERNEL_VERSION}/kernel/* /kernel_files/ && \
     if [ -d /lib/firmware/updates/amdnetwork ]; then cp -r /lib/firmware/updates/amdnetwork /firmware_files/; fi
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
+
+FROM ${BASE_IMAGE_REGISTRY}/ubi9/ubi-minimal:latest
 
 ARG KERNEL_VERSION
 
