@@ -1,4 +1,6 @@
-FROM redhat/ubi$$MAJOR_VERSION as builder
+ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
+
+FROM ${BASE_IMAGE_REGISTRY}/redhat/ubi$$MAJOR_VERSION as builder
 
 ARG KERNEL_FULL_VERSION
 
@@ -25,7 +27,9 @@ RUN dnf clean all && \
 
 RUN depmod ${KERNEL_VERSION}
 
-FROM redhat/ubi$$MAJOR_VERSION
+ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
+
+FROM ${BASE_IMAGE_REGISTRY}/redhat/ubi$$MAJOR_VERSION
 
 ARG KERNEL_FULL_VERSION
 

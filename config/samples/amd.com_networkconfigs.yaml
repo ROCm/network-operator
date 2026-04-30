@@ -23,6 +23,25 @@ spec:
     # we will unload the old version driver and load the new version driver
     version: "6.2.2"
 
+    # Optional: Configure image build settings
+    # imageBuild:
+    #   # Registry for OS base images (default: docker.io)
+    #   # e.g. For Ubuntu 22.04, base image will be <baseImageRegistry>/ubuntu:22.04
+    #   # Note: This field does not apply to OpenShift (OpenShift uses DriverToolKit)
+    #   baseImageRegistry: docker.io
+    #
+    #   # TLS settings for base image registry
+    #   baseImageRegistryTLS:
+    #     insecure: false
+    #     insecureSkipTLSVerify: false
+    #
+    #   # Driver source image repository (OpenShift only, used with useSourceImage)
+    #   # Default: docker.io/rocm/amdainic-driver
+    #   sourceImageRepo: docker.io/rocm/amdainic-driver
+    #
+    # # Toggle between source-based and package-based builds (OpenShift only)
+    # # useSourceImage: true
+
   devicePlugin:
     # Specify the device plugin image
     # default value is rocm/k8s-device-plugin:latest

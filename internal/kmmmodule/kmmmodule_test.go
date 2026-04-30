@@ -75,6 +75,162 @@ var (
 	}
 )
 
+var _ = Describe("BaseImageRegistry and BaseImageRegistryTLS", func() {
+	It("should pass BASE_IMAGE_REGISTRY build arg with default value", func() {
+		node := testNodeList.Items[0]
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+				},
+			},
+		}
+
+		km, _, err := getKM(nwConfig, node, "", false)
+
+		Expect(err).To(BeNil())
+		Expect(km.Build).NotTo(BeNil())
+
+		// Verify BASE_IMAGE_REGISTRY build arg is present with default value
+		var foundBaseImageRegistry bool
+		for _, arg := range km.Build.BuildArgs {
+			if arg.Name == "BASE_IMAGE_REGISTRY" {
+				foundBaseImageRegistry = true
+				Expect(arg.Value).To(Equal("docker.io"))
+				break
+			}
+		}
+		Expect(foundBaseImageRegistry).To(BeTrue(), "BASE_IMAGE_REGISTRY build arg should be present")
+	})
+
+	It("should pass BASE_IMAGE_REGISTRY build arg with custom value", func() {
+		node := testNodeList.Items[0]
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+					ImageBuild: amdv1alpha1.ImageBuildSpec{
+						BaseImageRegistry: "quay.io",
+					},
+				},
+			},
+		}
+
+		km, _, err := getKM(nwConfig, node, "", false)
+
+		Expect(err).To(BeNil())
+		Expect(km.Build).NotTo(BeNil())
+
+		// Verify BASE_IMAGE_REGISTRY build arg has custom value
+		var foundBaseImageRegistry bool
+		for _, arg := range km.Build.BuildArgs {
+			if arg.Name == "BASE_IMAGE_REGISTRY" {
+				foundBaseImageRegistry = true
+				Expect(arg.Value).To(Equal("quay.io"))
+				break
+			}
+		}
+		Expect(foundBaseImageRegistry).To(BeTrue(), "BASE_IMAGE_REGISTRY build arg should be present")
+	})
+
+	It("should set BaseImageRegistryTLS from CRD", func() {
+		node := testNodeList.Items[0]
+		insecure := true
+		skipTLS := true
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+					ImageBuild: amdv1alpha1.ImageBuildSpec{
+						BaseImageRegistry: "my-registry.internal",
+						BaseImageRegistryTLS: amdv1alpha1.RegistryTLS{
+							Insecure:              &insecure,
+							InsecureSkipTLSVerify: &skipTLS,
+						},
+					},
+				},
+			},
+		}
+
+		km, _, err := getKM(nwConfig, node, "", false)
+
+		Expect(err).To(BeNil())
+		Expect(km.Build).NotTo(BeNil())
+		Expect(km.Build.BaseImageRegistryTLS.Insecure).To(Equal(true))
+		Expect(km.Build.BaseImageRegistryTLS.InsecureSkipTLSVerify).To(Equal(true))
+	})
+
+	It("should fallback to CI_ENV when BaseImageRegistryTLS not set in CRD", func() {
+		node := testNodeList.Items[0]
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+				},
+			},
+		}
+
+		// Set CI_ENV
+		os.Setenv("CI_ENV", "1")
+		defer os.Unsetenv("CI_ENV")
+
+		km, _, err := getKM(nwConfig, node, "", false)
+
+		Expect(err).To(BeNil())
+		Expect(km.Build).NotTo(BeNil())
+		Expect(km.Build.BaseImageRegistryTLS.Insecure).To(Equal(true))
+		Expect(km.Build.BaseImageRegistryTLS.InsecureSkipTLSVerify).To(Equal(true))
+	})
+
+	It("should use registry.access.redhat.com for OpenShift by default", func() {
+		node := testNodeList.Items[0]
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+					// No ImageBuild section - should default to registry.access.redhat.com for OpenShift
+				},
+			},
+		}
+
+		km, _, err := getKM(nwConfig, node, "", true) // isOpenShift = true
+
+		Expect(err).To(BeNil())
+		Expect(km.Build).NotTo(BeNil())
+
+		// Verify BASE_IMAGE_REGISTRY uses Red Hat registry for OpenShift
+		var foundBaseImageRegistry bool
+		for _, arg := range km.Build.BuildArgs {
+			if arg.Name == "BASE_IMAGE_REGISTRY" {
+				foundBaseImageRegistry = true
+				Expect(arg.Value).To(Equal("registry.access.redhat.com"))
+				break
+			}
+		}
+		Expect(foundBaseImageRegistry).To(BeTrue(), "BASE_IMAGE_REGISTRY build arg should be present")
+	})
+})
+
 var _ = PDescribe("setKMMModuleLoader", func() {
 	It("KMM module creation - default input values", func() {
 		mod := kmmv1beta1.Module{

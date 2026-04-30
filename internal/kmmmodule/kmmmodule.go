@@ -231,13 +231,6 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 			dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$AMDNetwork_BUILD", devBuildinfo[2], -1)
 			dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$ROCM_BUILD", devBuildinfo[3], -1)
 		}
-		// use an environment variable to ask CI infra to pull image from internal repository
-		// in order to avoid docekrhub pull rate limit issue
-		_, isCIEnvSet := os.LookupEnv("CI_ENV")
-		internalUbuntuBaseImage, internalUbuntuBaseSet := os.LookupEnv("INTERNAL_UBUNTU_BASE")
-		if isCIEnvSet && internalUbuntuBaseSet {
-			dockerfileTemplate = strings.Replace(dockerfileTemplate, "ubuntu:$$VERSION", fmt.Sprintf("%v:$$VERSION", internalUbuntuBaseImage), -1)
-		}
 	case "coreos":
 		dockerfileTemplate = dockerfileTemplateCoreOSFromRPM
 		if nwConfig.Spec.Driver.UseSourceImage != nil && *nwConfig.Spec.Driver.UseSourceImage {
@@ -372,6 +365,27 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 		sourceImageRepo = nwConfig.Spec.Driver.ImageBuild.SourceImageRepo
 	}
 
+	// Set platform-specific default base image registry
+	// Note: CRD has +kubebuilder:default=docker.io, so field is never empty
+	// Override with platform-appropriate default if user used the CRD default
+	baseImageRegistry := nwConfig.Spec.Driver.ImageBuild.BaseImageRegistry
+	if baseImageRegistry == "" || baseImageRegistry == "docker.io" {
+		// Use platform-appropriate defaults
+		if isOpenShift {
+			baseImageRegistry = "registry.access.redhat.com"
+		} else {
+			// Determine OS to set appropriate default
+			osImageStr := strings.ToLower(node.Status.NodeInfo.OSImage)
+			if strings.Contains(osImageStr, "ubuntu") {
+				baseImageRegistry = "docker.io"
+			} else if strings.Contains(osImageStr, "red hat") || strings.Contains(osImageStr, "rhel") {
+				baseImageRegistry = "registry.access.redhat.com"
+			} else {
+				baseImageRegistry = "docker.io" // fallback default
+			}
+		}
+	}
+
 	if isOpenShift {
 		if driversVersion == "" {
 			driversVersion = defaultOcDriversVersion
@@ -437,13 +451,29 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 				Name:  "REPO_URL",
 				Value: repoURL,
 			},
+			{
+				Name:  "BASE_IMAGE_REGISTRY",
+				Value: baseImageRegistry,
+			},
 		},
 	}
 
-	_, isCIEnvSet := os.LookupEnv("CI_ENV")
-	if isCIEnvSet {
-		kmmBuild.BaseImageRegistryTLS.Insecure = true
-		kmmBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify = true
+	// Read BaseImageRegistryTLS from NetworkConfig CRD
+	if nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.Insecure != nil ||
+		nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify != nil {
+		if nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.Insecure != nil {
+			kmmBuild.BaseImageRegistryTLS.Insecure = *nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.Insecure
+		}
+		if nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify != nil {
+			kmmBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify = *nwConfig.Spec.Driver.ImageBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify
+		}
+	} else {
+		// Fallback to CI_ENV for backward compatibility if CRD fields are not set
+		_, isCIEnvSet := os.LookupEnv("CI_ENV")
+		if isCIEnvSet {
+			kmmBuild.BaseImageRegistryTLS.Insecure = true
+			kmmBuild.BaseImageRegistryTLS.InsecureSkipTLSVerify = true
+		}
 	}
 
 	if nwConfig.Spec.Driver.UseSourceImage != nil && *nwConfig.Spec.Driver.UseSourceImage {
