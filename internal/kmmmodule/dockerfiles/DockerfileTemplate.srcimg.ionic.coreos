@@ -33,7 +33,9 @@ RUN mkdir -p /modules_files && \
     cp -r /lib/modules/${KERNEL_VERSION}/extra/* /ionic_ko_files/ && \
     cp -r /lib/modules/${KERNEL_VERSION}/kernel/* /kernel_files/ || true
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
+
+FROM ${BASE_IMAGE_REGISTRY}/ubi9/ubi-minimal
 
 ARG KERNEL_VERSION
 
