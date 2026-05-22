@@ -1,4 +1,5 @@
 ARG DTK_AUTO
+ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
 
 FROM ${DTK_AUTO} as builder
 ARG KERNEL_VERSION
@@ -17,14 +18,7 @@ gpgkey=${REPO_URL}/rocm/rocm.gpg.key" > /etc/yum.repos.d/amdnetwork.repo
 
 RUN source /etc/os-release && \
     MAJOR_VERSION=$(echo ${VERSION_ID} | cut -d. -f1) && \
-    dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-${MAJOR_VERSION}.noarch.rpm && \
-    dnf install -y 'dnf-command(config-manager)' && \
-    if [ "${MAJOR_VERSION}" == "9" ]; then \
-        dnf config-manager --set-enabled crb; \
-        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/; \
-        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/; \
-        rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official; \
-    fi && \
+    rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${MAJOR_VERSION}.noarch.rpm && \
     dnf install -y ionic-dkms pds-dkms tawk-ipc-dkms && \
     depmod ${KERNEL_VERSION} && \
     find /lib/modules/${KERNEL_VERSION} -name "*.ko.xz" -exec xz -d {} \; && \
@@ -40,8 +34,6 @@ RUN mkdir -p /modules_files && \
     cp -r /lib/modules/${KERNEL_VERSION}/extra/* /amdnetwork_ko_files/ && \
     cp -r /lib/modules/${KERNEL_VERSION}/kernel/* /kernel_files/ && \
     if [ -d /lib/firmware/updates/amdnetwork ]; then cp -r /lib/firmware/updates/amdnetwork /firmware_files/; fi
-
-ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
 
 FROM ${BASE_IMAGE_REGISTRY}/ubi9/ubi-minimal:latest
 
