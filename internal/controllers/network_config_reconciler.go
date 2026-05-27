@@ -1441,8 +1441,8 @@ func (dcrh *networkConfigReconcilerHelper) updateNodeLabels(ctx context.Context,
 			}
 
 			for k := range nodeObjCopy.Labels {
-				if strings.HasPrefix(k, "beta.amd.com") ||
-					strings.HasPrefix(k, "amd.com") {
+				if strings.HasPrefix(k, "beta.amd.com/nic") ||
+					strings.HasPrefix(k, "amd.com/nic") {
 					delete(nodeObj.Labels, k)
 					updated = true
 				}
