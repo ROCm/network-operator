@@ -287,6 +287,7 @@ func (n *upgradeMgr) HandleDelete(ctx context.Context, networkConfig *amdv1alpha
 			log.FromContext(ctx).Error(err, fmt.Sprintf("Taint Removal failed for %v during networkconfig delete:%v", &nodeList.Items[i].Name, err))
 		}
 		n.helper.deleteRebootPod(ctx, nodeList.Items[i].Name, *networkConfig, true)
+		n.helper.removeModuleVersionLabelFromNode(ctx, networkConfig, &nodeList.Items[i])
 	}
 	n.helper.clearNodeStatus()
 	return
@@ -334,6 +335,7 @@ type upgradeMgrHelperAPI interface {
 	deleteOrDrainPods(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) error
 	updateModuleVersionOnNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) error
 	resetModuleVersionOnNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) error
+	removeModuleVersionLabelFromNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node)
 	cleanupDanglingKMMPods(ctx context.Context, node *v1.Node, networkConfig *amdv1alpha1.NetworkConfig) error
 	isLabelUpgradeRequiredOnNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) bool
 	removeLabelUpgradeRequiredOnNode(ctx context.Context, node *v1.Node) error
@@ -1373,6 +1375,30 @@ func (h *upgradeMgrHelper) resetModuleVersionOnNode(ctx context.Context, network
 	}
 
 	return nil
+}
+
+func (h *upgradeMgrHelper) removeModuleVersionLabelFromNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) {
+	logger := log.FromContext(ctx)
+	labelKey := fmt.Sprintf("kmm.node.kubernetes.io/version-module.%s.%s", networkConfig.Namespace, networkConfig.Name)
+
+	if retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		nodeObj := &v1.Node{}
+		if err := h.client.Get(ctx, client.ObjectKey{Name: node.Name}, nodeObj); err != nil {
+			return err
+		}
+
+		if _, exists := nodeObj.Labels[labelKey]; !exists {
+			return nil
+		}
+
+		original := nodeObj.DeepCopy()
+		delete(nodeObj.Labels, labelKey)
+		return h.client.Patch(ctx, nodeObj, client.MergeFrom(original))
+	}); retryErr != nil {
+		logger.Error(retryErr, fmt.Sprintf("Failed to remove label %q from node %s", labelKey, node.Name))
+	} else {
+		logger.Info(fmt.Sprintf("Removed KMM label %q from node %s during NetworkConfig deletion", labelKey, node.Name))
+	}
 }
 
 func (h *upgradeMgrHelper) isLabelUpgradeRequiredOnNode(ctx context.Context, networkConfig *amdv1alpha1.NetworkConfig, node *v1.Node) bool {

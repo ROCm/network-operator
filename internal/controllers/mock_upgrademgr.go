@@ -21,6 +21,7 @@ limitations under the License.
 //
 //	mockgen -source=upgrademgr.go -package=controllers -destination=mock_upgrademgr.go upgradeMgrHelperAPI
 //
+
 // Package controllers is a generated GoMock package.
 package controllers
 
@@ -38,6 +39,7 @@ import (
 type MockupgradeMgrAPI struct {
 	ctrl     *gomock.Controller
 	recorder *MockupgradeMgrAPIMockRecorder
+	isgomock struct{}
 }
 
 // MockupgradeMgrAPIMockRecorder is the mock recorder for MockupgradeMgrAPI.
@@ -133,6 +135,7 @@ func (mr *MockupgradeMgrAPIMockRecorder) HandleUpgrade(ctx, networkConfig, nodes
 type MockupgradeMgrHelperAPI struct {
 	ctrl     *gomock.Controller
 	recorder *MockupgradeMgrHelperAPIMockRecorder
+	isgomock struct{}
 }
 
 // MockupgradeMgrHelperAPIMockRecorder is the mock recorder for MockupgradeMgrHelperAPI.
@@ -588,6 +591,18 @@ func (m *MockupgradeMgrHelperAPI) removeLabelUpgradeRequiredOnNode(ctx context.C
 func (mr *MockupgradeMgrHelperAPIMockRecorder) removeLabelUpgradeRequiredOnNode(ctx, node any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "removeLabelUpgradeRequiredOnNode", reflect.TypeOf((*MockupgradeMgrHelperAPI)(nil).removeLabelUpgradeRequiredOnNode), ctx, node)
+}
+
+// removeModuleVersionLabelFromNode mocks base method.
+func (m *MockupgradeMgrHelperAPI) removeModuleVersionLabelFromNode(ctx context.Context, networkConfig *v1alpha1.NetworkConfig, node *v1.Node) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "removeModuleVersionLabelFromNode", ctx, networkConfig, node)
+}
+
+// removeModuleVersionLabelFromNode indicates an expected call of removeModuleVersionLabelFromNode.
+func (mr *MockupgradeMgrHelperAPIMockRecorder) removeModuleVersionLabelFromNode(ctx, networkConfig, node any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "removeModuleVersionLabelFromNode", reflect.TypeOf((*MockupgradeMgrHelperAPI)(nil).removeModuleVersionLabelFromNode), ctx, networkConfig, node)
 }
 
 // resetModuleVersionOnNode mocks base method.
