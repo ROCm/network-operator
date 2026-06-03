@@ -75,6 +75,7 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 	nlOut.MainContainer.IsPrivileged = true
 
 	hostPathDirectory := v1.HostPathDirectory
+	hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
 
 	nlOut.MainContainer.Envs = []v1.EnvVar{
 		{
@@ -108,6 +109,11 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 		{
 			Name:      "lib-modules",
 			MountPath: "/lib/modules",
+		},
+		{
+			Name:      "etc-amd-ainic",
+			MountPath: "/etc/amd/ainic",
+			ReadOnly:  true,
 		},
 	}
 
@@ -145,6 +151,15 @@ func GenerateCommonNodeLabellerSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 				HostPath: &v1.HostPathVolumeSource{
 					Path: "/etc",
 					Type: &hostPathDirectory,
+				},
+			},
+		},
+		{
+			Name: "etc-amd-ainic",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/etc/amd/ainic",
+					Type: &hostPathDirectoryOrCreate,
 				},
 			},
 		},
