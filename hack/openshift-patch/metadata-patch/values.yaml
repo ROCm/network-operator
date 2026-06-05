@@ -72,3 +72,6 @@ nodeLabeller:
 metricsExporter:
   serviceAccount:
     annotations: {}
+cniPlugins:
+  serviceAccount:
+    annotations: {}
