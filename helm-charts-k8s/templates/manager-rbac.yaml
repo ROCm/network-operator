@@ -181,22 +181,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - nfd.openshift.io
-  resources:
-  - nodefeaturediscoveries
-  verbs:
-  - delete
-  - get
-  - list
-- apiGroups:
-  - nfd.openshift.io
-  resources:
-  - nodefeaturediscoveries/finalizers
-  - nodefeaturediscoveries/status
-  verbs:
-  - get
-  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
