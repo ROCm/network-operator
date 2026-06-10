@@ -4,12 +4,12 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Seamless Upgrades
-    categories: AI/Machine Learning,Monitoring
+    categories: AI/Machine Learning,Networking,Monitoring
     containerImage: registry.test.pensando.io:5000/amd-network-operator:dev
     description: |-
       Operator responsible for deploying AMD Network kernel drivers, device plugin, device test runner and device metrics exporter
       For more information, visit [documentation](https://instinct.docs.amd.com/projects/network-operator/en/latest/)
-    devicePluginImage: docker.io/rocm/k8s-device-plugin:rhubi-latest
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v0.0.1
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "false"
     features.operators.openshift.io/proxy-aware: "true"
@@ -17,8 +17,8 @@ metadata:
     features.operators.openshift.io/token-auth-aws: "false"
     features.operators.openshift.io/token-auth-azure: "false"
     features.operators.openshift.io/token-auth-gcp: "false"
-    metricsExporterImage: docker.io/rocm/device-metrics-exporter:v1.2.0
-    nodelabellerImage: docker.io/rocm/k8s-device-plugin:labeller-rhubi-latest
+    metricsExporterImage: docker.io/rocm/device-metrics-exporter:nic-v0.0.1
+    nodelabellerImage: docker.io/rocm/k8s-network-node-labeller:v0.0.1
     operatorframework.io/cluster-monitoring: "true"
     operatorframework.io/suggested-namespace: openshift-amd-network
     operators.openshift.io/valid-subscription: '[]'
@@ -253,7 +253,7 @@ spec:
         displayName: ImageBuild
         path: driver.imageBuild
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:imageBuild
+        - urn:alm:descriptor:com.amd.networkconfigs:imageBuild
       - description: 'image registry to fetch base image for building driver image,
           default value is docker.io, the builder will search for corresponding OS
           base image from given registry e.g. if your worker node is using Ubuntu
@@ -264,13 +264,13 @@ spec:
         displayName: BaseImageRegistry
         path: driver.imageBuild.baseImageRegistry
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistry
+        - urn:alm:descriptor:com.amd.networkconfigs:baseImageRegistry
       - description: TLS settings for fetching base image this field will be applied
           to SourceImageRepo as well
         displayName: BaseImageRegistryTLS
         path: driver.imageBuild.baseImageRegistryTLS
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistryTLS
+        - urn:alm:descriptor:com.amd.networkconfigs:baseImageRegistryTLS
       - description: If true, check if the container image already exists using plain
           HTTP.
         displayName: Insecure
@@ -291,7 +291,7 @@ spec:
         displayName: SourceImageRepo
         path: driver.imageBuild.sourceImageRepo
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:sourceImageRepo
+        - urn:alm:descriptor:com.amd.networkconfigs:sourceImageRepo
       - description: secrets used for pull/push images from/to private registry specified
           in driversImage
         displayName: ImageRegistrySecret
@@ -337,7 +337,7 @@ spec:
         displayName: Tolerations
         path: driver.tolerations
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:tolerations
+        - urn:alm:descriptor:com.amd.networkconfigs:tolerations
       - description: policy to upgrade the drivers
         displayName: UpgradePolicy
         path: driver.upgradePolicy
@@ -389,7 +389,7 @@ spec:
         displayName: UseSourceImage
         path: driver.useSourceImage
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:useSourceImage
+        - urn:alm:descriptor:com.amd.networkconfigs:useSourceImage
       - description: 'version of the drivers source code, can be used as part of image
           of dockerfile source image default value for different OS is: ubuntu: 1.117.1-a-42,
           coreOS: 1.117.1-a-42'
@@ -455,75 +455,75 @@ spec:
         displayName: Prometheus
         path: metricsExporter.prometheus
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:prometheus
+        - urn:alm:descriptor:com.amd.networkconfigs:prometheus
       - description: ServiceMonitor configuration for Prometheus integration
         displayName: ServiceMonitor
         path: metricsExporter.prometheus.serviceMonitor
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:serviceMonitor
+        - urn:alm:descriptor:com.amd.networkconfigs:serviceMonitor
       - description: AttachMetadata defines if Prometheus should attach node metadata
           to the target
         displayName: AttachMetadata
         path: metricsExporter.prometheus.serviceMonitor.attachMetadata
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:attachMetadata
+        - urn:alm:descriptor:com.amd.networkconfigs:attachMetadata
       - description: Optional Prometheus authorization configuration for accessing
           the endpoint
         displayName: Authorization
         path: metricsExporter.prometheus.serviceMonitor.authorization
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:authorization
+        - urn:alm:descriptor:com.amd.networkconfigs:authorization
       - description: 'Path to bearer token file to be used by Prometheus (e.g., service
           account token path) Deprecated: Use Authorization instead. This field is
           kept for backward compatibility.'
         displayName: BearerTokenFile
         path: metricsExporter.prometheus.serviceMonitor.bearerTokenFile
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:bearerTokenFile
+        - urn:alm:descriptor:com.amd.networkconfigs:bearerTokenFile
       - description: Enable or disable ServiceMonitor creation (default false)
         displayName: Enable
         path: metricsExporter.prometheus.serviceMonitor.enable
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:enable
+        - urn:alm:descriptor:com.amd.networkconfigs:enable
       - description: HonorLabels chooses the metric's labels on collisions with target
           labels (default true)
         displayName: HonorLabels
         path: metricsExporter.prometheus.serviceMonitor.honorLabels
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:honorLabels
+        - urn:alm:descriptor:com.amd.networkconfigs:honorLabels
       - description: HonorTimestamps controls whether the scrape endpoints honor timestamps
           (default false)
         displayName: HonorTimestamps
         path: metricsExporter.prometheus.serviceMonitor.honorTimestamps
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:honorTimestamps
+        - urn:alm:descriptor:com.amd.networkconfigs:honorTimestamps
       - description: 'How frequently to scrape metrics. Accepts values with time unit
           suffix: "30s", "1m", "2h", "500ms"'
         displayName: Interval
         path: metricsExporter.prometheus.serviceMonitor.interval
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:interval
+        - urn:alm:descriptor:com.amd.networkconfigs:interval
       - description: 'Additional labels to add to the ServiceMonitor (default release:
           prometheus)'
         displayName: Labels
         path: metricsExporter.prometheus.serviceMonitor.labels
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:labels
+        - urn:alm:descriptor:com.amd.networkconfigs:labels
       - description: Relabeling rules applied to individual scraped metrics
         displayName: MetricRelabelings
         path: metricsExporter.prometheus.serviceMonitor.metricRelabelings
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:metricRelabelings
+        - urn:alm:descriptor:com.amd.networkconfigs:metricRelabelings
       - description: RelabelConfigs to apply to samples before ingestion
         displayName: Relabelings
         path: metricsExporter.prometheus.serviceMonitor.relabelings
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:relabelings
+        - urn:alm:descriptor:com.amd.networkconfigs:relabelings
       - description: TLS settings used by Prometheus to connect to the metrics endpoint
         displayName: TLSConfig
         path: metricsExporter.prometheus.serviceMonitor.tlsConfig
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:tlsConfig
+        - urn:alm:descriptor:com.amd.networkconfigs:tlsConfig
       - description: optional kube-rbac-proxy config to provide rbac services
         displayName: RbacConfig
         path: metricsExporter.rbacConfig
@@ -534,7 +534,7 @@ spec:
         displayName: ClientCAConfigMap
         path: metricsExporter.rbacConfig.clientCAConfigMap
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:clientCAConfigMap
+        - urn:alm:descriptor:com.amd.networkconfigs:clientCAConfigMap
       - description: disable https protecting the proxy endpoint
         displayName: DisableHttps
         path: metricsExporter.rbacConfig.disableHttps
@@ -561,18 +561,18 @@ spec:
         displayName: StaticAuthorization
         path: metricsExporter.rbacConfig.staticAuthorization
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:staticAuthorization
+        - urn:alm:descriptor:com.amd.networkconfigs:staticAuthorization
       - description: Expected CN (Common Name) from client cert (e.g., Prometheus
           SA identity)
         displayName: ClientName
         path: metricsExporter.rbacConfig.staticAuthorization.clientName
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:clientName
+        - urn:alm:descriptor:com.amd.networkconfigs:clientName
       - description: Enables static authorization using client certificate CN
         displayName: Enable
         path: metricsExporter.rbacConfig.staticAuthorization.enable
         x-descriptors:
-        - urn:alm:descriptor:com.amd.deviceconfigs:enable
+        - urn:alm:descriptor:com.amd.networkconfigs:enable
       - description: Selector describes on which nodes to enable metrics exporter
         displayName: Selector
         path: metricsExporter.selector
@@ -833,9 +833,11 @@ spec:
   keywords:
   - AMD
   - Network
-  - AI
-  - Deep Learning
-  - Hardware
+  - NIC
+  - AINIC
+  - RDMA
+  - SR-IOV
+  - CNI
   - Driver
   - Monitoring
   links:
@@ -843,11 +845,13 @@ spec:
     url: https://github.com/ROCm/network-operator
   maintainers:
   - email: Sundaramurthy.Gurunathan@amd.com
-    name: Yan Sun
+    name: Sundaramurthy Gurunathan
   - email: Yuvarani.Shankar@amd.com
-    name: Farshad Ghodsian
+    name: Yuvarani Shankar
   - email: shrey.ajmera@amd.com
     name: Shrey Ajmera
+  - email: Yan.Sun3@amd.com
+    name: Yan Sun
   maturity: stable
   provider:
     name: Advanced Micro Devices, Inc.

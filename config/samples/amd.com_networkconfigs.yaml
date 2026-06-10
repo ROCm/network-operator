@@ -44,12 +44,12 @@ spec:
 
   devicePlugin:
     # Specify the device plugin image
-    # default value is rocm/k8s-device-plugin:latest
-    devicePluginImage: rocm/k8s-device-plugin:latest
+    # default value is rocm/k8s-network-device-plugin:v0.0.1
+    devicePluginImage: rocm/k8s-network-device-plugin:v0.0.1
 
     # Specify the node labeller image
-    # default value is rocm/k8s-device-plugin:labeller-latest
-    nodeLabellerImage: rocm/k8s-device-plugin:labeller-latest
+    # default value is rocm/k8s-network-node-labeller:v0.0.1
+    nodeLabellerImage: rocm/k8s-network-node-labeller:v0.0.1
 
   # Specifythe node to be managed by this NetworkConfig Custom Resource
   selector:
