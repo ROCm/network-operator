@@ -5,7 +5,7 @@ type: application
 home: https://github.com/ROCm/network-operator
 sources:
   - https://github.com/ROCm/network-operator
-icon: https://raw.githubusercontent.com/ROCm/k8s-device-plugin/master/helm/logo.png
+icon: https://raw.githubusercontent.com/ROCm/network-operator/main/docs/_static/amd-network-operator-diagram.jpg
 maintainers:
   - name: Sundara Gurunathan <Sundaramurthy.Gurunathan@amd.com>
   - name: Yuvarani Shankar <Yuvarani.Shankar@amd.com>
@@ -15,8 +15,9 @@ keywords:
   - hardware
   - amd
   - network
-  - ai
-  - deep learning
+  - nic
+  - ainic
+  - rdma
   - monitoring
 
 kubeVersion: ">= 1.29.0-0"

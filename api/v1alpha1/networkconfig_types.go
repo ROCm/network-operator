@@ -219,7 +219,7 @@ type DriverSpec struct {
 	// NOTE: currently only for OpenShift cluster
 	// set to true to use source image to build driver image on the fly
 	// otherwise use installer debian/rpm packages from radeon repo to build driver image
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="UseSourceImage",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:useSourceImage"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="UseSourceImage",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:useSourceImage"}
 	UseSourceImage *bool `json:"useSourceImage,omitempty"`
 
 	// radeon repo URL for fetching amdnetwork installer if building driver image on the fly
@@ -262,7 +262,7 @@ type DriverSpec struct {
 	ImageSign ImageSignSpec `json:"imageSign,omitempty"`
 
 	// image build configs
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ImageBuild",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:imageBuild"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ImageBuild",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:imageBuild"}
 	// +optional
 	ImageBuild ImageBuildSpec `json:"imageBuild,omitempty"`
 
@@ -272,7 +272,7 @@ type DriverSpec struct {
 	UpgradePolicy *DriverUpgradePolicySpec `json:"upgradePolicy,omitempty"`
 
 	// tolerations for kmm module object
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:tolerations"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Tolerations",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:tolerations"}
 	// +optional
 	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
 }
@@ -398,7 +398,7 @@ type ImageBuildSpec struct {
 	// Use spec.driver.imageRegistrySecret for authentication with private registries.
 	// NOTE: this field won't apply for OpenShift since OpenShift is using its own DriverToolKit image to build driver image
 	// +kubebuilder:default=docker.io
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistry",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistry"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistry",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:baseImageRegistry"}
 	BaseImageRegistry string `json:"baseImageRegistry,omitempty"`
 
 	// SourceImageRepo specifies the image repository for the driver source code (OpenShift only).
@@ -406,12 +406,12 @@ type ImageBuildSpec struct {
 	// based on cluster RHEL version and spec.driver.version (format: coreos-<rhel>-<driver version>).
 	// Default: docker.io/rocm/amdainic-driver
 	// Use spec.driver.imageRegistrySecret for authentication with private registries.
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SourceImageRepo",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:sourceImageRepo"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="SourceImageRepo",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:sourceImageRepo"}
 	SourceImageRepo string `json:"sourceImageRepo,omitempty"`
 
 	// TLS settings for fetching base image
 	// this field will be applied to SourceImageRepo as well
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistryTLS",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:baseImageRegistryTLS"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BaseImageRegistryTLS",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:baseImageRegistryTLS"}
 	BaseImageRegistryTLS RegistryTLS `json:"baseImageRegistryTLS,omitempty"`
 }
 
@@ -543,14 +543,14 @@ type MetricsExporterSpec struct {
 	HostNetwork *bool `json:"hostNetwork,omitempty"`
 
 	// Prometheus configuration for metrics exporter
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:prometheus"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Prometheus",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:prometheus"}
 	// +optional
 	Prometheus *PrometheusConfig `json:"prometheus,omitempty"`
 }
 
 type PrometheusConfig struct {
 	// ServiceMonitor configuration for Prometheus integration
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServiceMonitor",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:serviceMonitor"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ServiceMonitor",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:serviceMonitor"}
 	// +optional
 	ServiceMonitor *ServiceMonitorConfig `json:"serviceMonitor,omitempty"`
 }
@@ -558,60 +558,60 @@ type PrometheusConfig struct {
 // ServiceMonitorConfig provides configuration for ServiceMonitor
 type ServiceMonitorConfig struct {
 	// Enable or disable ServiceMonitor creation (default false)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:enable"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:enable"}
 	// +optional
 	Enable *bool `json:"enable,omitempty"`
 
 	// How frequently to scrape metrics. Accepts values with time unit suffix: "30s", "1m", "2h", "500ms"
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Interval",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:interval"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Interval",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:interval"}
 	// +optional
 	// +kubebuilder:validation:Pattern=`^([0-9]+)(ms|s|m|h)$`
 	Interval string `json:"interval,omitempty"`
 
 	// AttachMetadata defines if Prometheus should attach node metadata to the target
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="AttachMetadata",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:attachMetadata"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="AttachMetadata",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:attachMetadata"}
 	// +optional
 	AttachMetadata *monitoringv1.AttachMetadata `json:"attachMetadata,omitempty"`
 
 	// HonorLabels chooses the metric's labels on collisions with target labels (default true)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HonorLabels",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:honorLabels"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HonorLabels",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:honorLabels"}
 	// +optional
 	// +kubebuilder:default=true
 	HonorLabels *bool `json:"honorLabels,omitempty"`
 
 	// HonorTimestamps controls whether the scrape endpoints honor timestamps (default false)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HonorTimestamps",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:honorTimestamps"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="HonorTimestamps",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:honorTimestamps"}
 	// +optional
 	HonorTimestamps *bool `json:"honorTimestamps,omitempty"`
 
 	// Additional labels to add to the ServiceMonitor (default release: prometheus)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Labels",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:labels"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Labels",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:labels"}
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// RelabelConfigs to apply to samples before ingestion
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Relabelings",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:relabelings"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Relabelings",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:relabelings"}
 	// +optional
 	Relabelings []monitoringv1.RelabelConfig `json:"relabelings,omitempty"`
 
 	// Relabeling rules applied to individual scraped metrics
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="MetricRelabelings",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:metricRelabelings"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="MetricRelabelings",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:metricRelabelings"}
 	// +optional
 	MetricRelabelings []monitoringv1.RelabelConfig `json:"metricRelabelings,omitempty"`
 
 	// Optional Prometheus authorization configuration for accessing the endpoint
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Authorization",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:authorization"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Authorization",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:authorization"}
 	// +optional
 	Authorization *monitoringv1.SafeAuthorization `json:"authorization,omitempty"`
 
 	// Path to bearer token file to be used by Prometheus (e.g., service account token path)
 	// Deprecated: Use Authorization instead. This field is kept for backward compatibility.
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BearerTokenFile",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:bearerTokenFile"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="BearerTokenFile",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:bearerTokenFile"}
 	// +optional
 	BearerTokenFile string `json:"bearerTokenFile,omitempty"`
 
 	// TLS settings used by Prometheus to connect to the metrics endpoint
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLSConfig",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:tlsConfig"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="TLSConfig",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:tlsConfig"}
 	// +optional
 	TLSConfig *monitoringv1.TLSConfig `json:"tlsConfig,omitempty"`
 }
@@ -619,11 +619,11 @@ type ServiceMonitorConfig struct {
 // StaticAuthConfig contains static authorization configuration for kube-rbac-proxy
 type StaticAuthConfig struct {
 	// Enables static authorization using client certificate CN
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:enable"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Enable",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:enable"}
 	Enable bool `json:"enable,omitempty"`
 
 	// Expected CN (Common Name) from client cert (e.g., Prometheus SA identity)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ClientName",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:clientName"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ClientName",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:clientName"}
 	ClientName string `json:"clientName,omitempty"`
 }
 
@@ -651,12 +651,12 @@ type KubeRbacConfig struct {
 	Secret *v1.LocalObjectReference `json:"secret,omitempty"`
 
 	// Reference to a configmap containing the client CA (key: ca.crt) for mTLS client validation
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ClientCAConfigMap",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:clientCAConfigMap"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="ClientCAConfigMap",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:clientCAConfigMap"}
 	// +optional
 	ClientCAConfigMap *v1.LocalObjectReference `json:"clientCAConfigMap,omitempty"`
 
 	// Optional static RBAC rules based on client certificate Common Name (CN)
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StaticAuthorization",xDescriptors={"urn:alm:descriptor:com.amd.deviceconfigs:staticAuthorization"}
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="StaticAuthorization",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:staticAuthorization"}
 	// +optional
 	StaticAuthorization *StaticAuthConfig `json:"staticAuthorization,omitempty"`
 }
