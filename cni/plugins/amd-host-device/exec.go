@@ -31,16 +31,24 @@ var defaultExec = &invoke.DefaultExec{
 	RawExec: &invoke.RawExec{Stderr: os.Stderr},
 }
 
+func getCNIPath() string {
+	if p := os.Getenv("CNI_PATH"); p != "" {
+		return p
+	}
+	return fallbackCNIPluginPath
+}
+
 func execPlugin(plugin string, command string, confBytes []byte, args *skel.CmdArgs, withResult bool) (*current.Result, error) {
+	cniPath := getCNIPath()
 	pluginArgs := &invoke.Args{
 		Command:       command,
 		ContainerID:   args.ContainerID,
 		NetNS:         args.Netns,
 		IfName:        args.IfName,
 		PluginArgsStr: args.Args,
-		Path:          defaultCNIPluginPath,
+		Path:          cniPath,
 	}
-	paths := filepath.SplitList(defaultCNIPluginPath)
+	paths := filepath.SplitList(cniPath)
 	pluginPath, err := defaultExec.FindInPath(plugin, paths)
 	if err != nil {
 		return nil, err
