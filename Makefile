@@ -444,7 +444,7 @@ bundle-build: operator-sdk manifests kustomize
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	cd config/manager-base && $(KUSTOMIZE) edit set image controller=$(IMG)
 	OPERATOR_SDK="${OPERATOR_SDK}" \
-		     BUNDLE_GEN_FLAGS="${BUNDLE_GEN_FLAGS} --extra-service-accounts amd-network-operator-kmm-device-plugin,amd-network-operator-kmm-module-loader,amd-network-operator-node-labeller,amd-network-operator-metrics-exporter,amd-network-operator-metrics-exporter-rbac-proxy,amd-network-operator-test-runner,amd-network-operator-config-manager,amd-network-operator-utils-container,amd-network-operator-cni-plugins,amd-network-operator-device-plugin" \
+		     BUNDLE_GEN_FLAGS="${BUNDLE_GEN_FLAGS} --extra-service-accounts amd-network-operator-device-plugin,amd-network-operator-kmm-module-loader,amd-network-operator-node-labeller,amd-network-operator-metrics-exporter,amd-network-operator-metrics-exporter-rbac-proxy,amd-network-operator-test-runner,amd-network-operator-config-manager,amd-network-operator-utils-container,amd-network-operator-cni-plugins" \
 		     PKG=amd-network-operator \
 		     SOURCE_DIR=$(dir $(realpath $(lastword $(MAKEFILE_LIST)))) \
 		     KUBECTL_CMD=${KUBECTL_CMD} ./hack/generate-bundle

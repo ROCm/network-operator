@@ -5,7 +5,7 @@ metadata:
   namespace: moduleNamespace
 spec:
   devicePlugin:
-    serviceAccountName: "amd-gpu-operator-kmm-device-plugin"
+    serviceAccountName: "amd-network-operator-device-plugin"
     container:
       image: rocm/k8s-device-plugin:latest
       volumeMounts:
