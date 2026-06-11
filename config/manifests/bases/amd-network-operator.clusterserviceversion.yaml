@@ -7,7 +7,7 @@ metadata:
     categories: AI/Machine Learning,Networking,Monitoring
     containerImage: registry.test.pensando.io:5000/amd-network-operator:dev
     description: |-
-      Operator responsible for deploying AMD Network kernel drivers, device plugin, device test runner and device metrics exporter
+      Operator responsible for deploying AMD Network kernel drivers, device plugin, node labeller and device metrics exporter
       For more information, visit [documentation](https://instinct.docs.amd.com/projects/network-operator/en/latest/)
     devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v0.0.1
     features.operators.openshift.io/disconnected: "true"
