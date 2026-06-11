@@ -976,14 +976,16 @@ kubectl delete namespace openshift-amd-network
 
 #### 1. operator-sdk: TLS Error with Insecure Registry
 
-**Problem**: 
-```
+**Problem**:
+
+```text
 http: server gave HTTP response to HTTPS client
 ```
 
 **Root Cause**: operator-sdk running locally doesn't know about cluster's insecure registry configuration.
 
 **Solution**: Use `--use-http` and `--skip-tls` flags:
+
 ```bash
 ./bin/operator-sdk run bundle ${BUNDLE_IMG} --use-http --skip-tls -n <namespace>
 ```
@@ -992,8 +994,9 @@ http: server gave HTTP response to HTTPS client
 
 #### 2. OperatorGroup Conflict
 
-**Problem**: 
-```
+**Problem**:
+
+```text
 csv failed: reason: "InterOperatorGroupOwnerConflict"
 intersecting operatorgroups provide the same apis
 ```
@@ -1001,6 +1004,7 @@ intersecting operatorgroups provide the same apis
 **Root Cause**: Another operator instance already exists providing the same CRDs.
 
 **Solution**: Only one operator instance allowed per cluster:
+
 1. Check existing operators: `kubectl get csv -A | grep amd-network`
 2. Either use existing namespace or cleanup old deployment first
 3. Delete test namespaces if created during troubleshooting
@@ -1014,15 +1018,21 @@ intersecting operatorgroups provide the same apis
 **Root Cause**: Registry not accessible or missing credentials.
 
 **Solution**:
+
 1. **For insecure registries**: Verify configuration
+
    ```bash
    kubectl get image.config.openshift.io/cluster -o yaml | grep insecureRegistries
    ```
+
 2. **For authenticated registries**: Check pull secrets
+
    ```bash
    kubectl get secret -n openshift-amd-network | grep pull
    ```
+
 3. **Test registry access** from node:
+
    ```bash
    kubectl debug node/<node-name> -- chroot /host podman pull --tls-verify=false <image>
    ```
@@ -1034,6 +1044,7 @@ intersecting operatorgroups provide the same apis
 **Problem**: `lsmod` shows no ionic modules on node
 
 **Diagnostic Steps**:
+
 ```bash
 # 1. Check KMM Module status
 kubectl get module -n openshift-amd-network -o yaml
@@ -1050,6 +1061,7 @@ kubectl get nodes --show-labels | grep <label>
 ```
 
 **Common Causes**:
+
 - Node selector doesn't match any nodes
 - Driver image pull failed
 - Module build failed (check BuildConfig logs)
@@ -1064,11 +1076,13 @@ kubectl get nodes --show-labels | grep <label>
 **Root Cause**: Module loading order is incorrect - `ionic` must load before `ionic_rdma`.
 
 **Verification**:
+
 ```bash
 kubectl get module -n openshift-amd-network -o jsonpath='{.spec.moduleLoader.container.modprobe}'
 ```
 
 **Expected Output**:
+
 ```json
 {
   "moduleName": "ionic",
@@ -1077,6 +1091,7 @@ kubectl get module -n openshift-amd-network -o jsonpath='{.spec.moduleLoader.con
 ```
 
 **Fix**: Ensure code in `internal/kmmmodule/kmmmodule.go` sets:
+
 - `ModuleName: ionicModuleName` for OpenShift
 - Correct loading order array
 
@@ -1085,18 +1100,21 @@ kubectl get module -n openshift-amd-network -o jsonpath='{.spec.moduleLoader.con
 ### Module Loading Order
 
 The operator loads modules in this specific order (required for dependencies):
+
 1. `ionic` - Base driver
 2. `ionic_rdma` - RDMA support (depends on ionic)
 3. `pds_core` - PDS core functionality
 4. `tawk_ipc` - IPC support
 
 **Code Location**: `internal/kmmmodule/kmmmodule.go`
+
 - Uses `ModuleName: ionicModuleName` (OpenShift)
 - Uses `ModuleName: networkDriverModuleName` (Ubuntu/K8s)
 
 ### Multus CNI Dependency
 
 The device plugin has a hard dependency on Multus CNI:
+
 - Waits for Multus config in init container
 - Checks both `/etc/cni/net.d/` and `/etc/kubernetes/cni/net.d/` (OpenShift)
 - Uses Multus device-info API at `/var/run/k8s.cni.cncf.io/devinfo/dp`
@@ -1106,6 +1124,7 @@ The device plugin has a hard dependency on Multus CNI:
 ### Service Account Naming
 
 All service accounts use consistent naming without platform-specific suffixes to maintain backward compatibility:
+
 - `amd-network-operator-device-plugin` (not `-kmm-device-plugin`)
 - Helm charts and RBAC must match these names
 

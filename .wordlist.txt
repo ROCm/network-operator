@@ -144,11 +144,14 @@ Pensando
 Podman
 Pollara
 QP
+radeon
 rbac
 rbacConfig
 RCCL
+rdma
 RDMA
 relatedImageBuild
+repo
 relatedImageBuildPullSecret
 RPMs
 relatedImageSign
@@ -162,6 +165,7 @@ RollingUpdate
 SAR
 SBR
 serverName
+sdk
 ServiceAccount
 ServiceAccounts
 serviceAccountNamespaceSelector
@@ -172,6 +176,7 @@ SR-IOV
 sriov
 staticAuthorization
 SubjectAccessReview
+tawk
 techsupport
 TechSupport
 tlsConfig
