@@ -1,11 +1,12 @@
 # AMD Network Operator - Production Deployment Guide
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Prerequisites](#prerequisites)
    - [Infrastructure Requirements](#infrastructure-requirements)
    - [Required Operators Installation](#required-operators-installation)
-   - [Development Tools](#development-tools)
+   - [Development Tools (for building)](#development-tools-for-building)
 3. [Architecture](#architecture)
 4. [Cluster Configuration](#cluster-configuration)
 5. [Installing the AMD Network Operator](#installing-the-amd-network-operator)
@@ -17,7 +18,7 @@
    - [Method 1: RPM-based Build (Recommended)](#method-1-rpm-based-build-recommended)
    - [Method 2: Source Image Build (Advanced)](#method-2-source-image-build-advanced)
 8. [Deploying NetworkConfig CR](#deploying-networkconfig-cr)
-9. [Verification](#verification)
+9. [Validation](#validation)
 10. [Updating the Operator](#updating-the-operator)
 11. [Cleanup](#cleanup)
 12. [Troubleshooting](#troubleshooting)
@@ -31,6 +32,7 @@
 This guide provides production-ready steps for deploying the AMD Network Operator on OpenShift clusters using OLM (Operator Lifecycle Manager). This operator manages AMD network drivers (ionic, ionic_rdma, pds_core, tawk_ipc) using Kernel Module Management (KMM).
 
 **What this operator does:**
+
 - Automatically loads AMD network drivers on OpenShift CoreOS nodes
 - Manages kernel module lifecycle through KMM
 - Deploys device plugins for GPU-NIC integration
@@ -42,6 +44,7 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 **Time Required**: 30-45 minutes (excluding build time)
 
 **High-Level Steps**:
+
 1. Install NFD and KMM operators from OperatorHub *(5 min)*
 2. Configure insecure registry (if needed) *(2 min)*
 3. **Install AMD Network Operator**:
@@ -53,6 +56,7 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 > 💡 **Quick Start**: For connected environments, you can skip directly to step 4 after installing the operator. KMM will automatically build driver images in-cluster using the OpenShift internal registry.
 
 **Key Requirements**:
+
 - ✅ OpenShift 4.16+ with CoreOS
 - ✅ NFD and KMM operators installed
 - ✅ Container registry (insecure registry configured if internal)
@@ -63,9 +67,9 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 ## Important Notes
 
 > 💡 **TIP**: This guide uses production-style versioning (`v1.0.0-netop-beta`). Replace with your actual version tags.
-
+>
 > ⚠️ **WARNING**: Only install KMM operator **ONCE** in `openshift-kmm` namespace. Multiple instances cause conflicts.
-
+>
 > 🌐 **REGISTRY**: Configure insecure registries at cluster level before starting. Images won't pull otherwise.
 
 ---
@@ -73,6 +77,7 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 ## Prerequisites
 
 ### Infrastructure Requirements
+
 - OpenShift 4.16+ cluster with CoreOS nodes
 - AMD Pensando network hardware
 - Container registry accessible from the cluster
@@ -87,6 +92,7 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 NFD detects hardware features on nodes and labels them accordingly.
 
 **Installation via OpenShift Web Console:**
+
 1. Log in to OpenShift Web Console
 2. Navigate to **Operators** → **OperatorHub**
 3. Search for **"Node Feature Discovery"**
@@ -100,6 +106,7 @@ NFD detects hardware features on nodes and labels them accordingly.
 7. Click **Install** and wait for the operator to become ready
 
 **Verification:**
+
 ```bash
 kubectl get csv -n openshift-nfd | grep nfd
 # Expected: nfd.x.x.x    Node Feature Discovery    x.x.x    Succeeded
@@ -156,6 +163,7 @@ kubectl get pods -n openshift-nfd | grep worker
 KMM manages out-of-tree kernel modules on OpenShift clusters.
 
 **Installation via OpenShift Web Console:**
+
 1. Log in to OpenShift Web Console
 2. Navigate to **Operators** → **OperatorHub**
 3. Search for **"Kernel Module Management"**
@@ -169,6 +177,7 @@ KMM manages out-of-tree kernel modules on OpenShift clusters.
 7. Click **Install** and wait for the operator to become ready
 
 **Verification:**
+
 ```bash
 kubectl get csv -n openshift-kmm | grep kernel-module-management
 # Expected: kernel-module-management.v2.5.1    Kernel Module Management    2.5.1    Succeeded
@@ -183,6 +192,7 @@ kubectl get deployment -n openshift-kmm
 **⚠️ IMPORTANT**: Only install KMM **once** in the `openshift-kmm` namespace. Multiple KMM instances cause conflicts and module loading failures.
 
 ### Development Tools (for building)
+
 - Docker or Podman
 - Go 1.23+
 - make
@@ -191,7 +201,7 @@ kubectl get deployment -n openshift-kmm
 
 ## Architecture
 
-```
+```text
 NetworkConfig CR → AMD Network Operator → KMM Module CR → KMM Operator → Driver Pods → Node (drivers loaded)
 ```
 
@@ -264,6 +274,7 @@ export DTK_IMAGE=$(kubectl get is -n openshift driver-toolkit -o jsonpath="{.spe
 ## Installing the AMD Network Operator
 
 Choose the appropriate installation method based on your use case:
+
 - **Official Installation**: Install published operator from OperatorHub (recommended for production)
 - **Development Installation**: Build and install from source (for development and testing)
 
@@ -317,6 +328,7 @@ This method is for developers and testers who need to build and deploy the opera
 #### Prerequisites
 
 Ensure you have the following tools installed:
+
 - Docker or Podman
 - Go 1.23+
 - make
@@ -358,6 +370,7 @@ make bundle-push BUNDLE_IMG=${BUNDLE_IMG}
 ```
 
 **What this does:**
+
 - Generates CSV (ClusterServiceVersion) with operator metadata
 - Creates RBAC manifests for all service accounts
 - Packages CRDs and required resources
@@ -382,6 +395,7 @@ make bundle-push
 ```
 
 **Flags explained:**
+
 - `--use-http`: Use HTTP instead of HTTPS for registry communication
 - `--skip-tls`: Skip TLS verification (for insecure registries)
 - `-n`: Target namespace for operator deployment
@@ -428,12 +442,14 @@ kubectl get sa -n openshift-amd-network
 > ⚠️ **THIS SECTION IS OPTIONAL**: For most users with connected clusters, you can **skip this entire section** and proceed directly to [Deploying NetworkConfig CR](#deploying-networkconfig-cr). When you create a NetworkConfig CR, KMM will automatically build driver images in-cluster using the OpenShift internal registry.
 
 **When to use this section:**
+
 - **Air-gapped/disconnected environments**: No internet access during runtime
 - **Pre-staging images**: Want driver images ready before deployment
 - **External registry requirements**: Need images in a specific external registry
 - **Custom build pipelines**: Integrating with CI/CD systems
 
 **When to skip this section:**
+
 - **Connected clusters**: Have internet access to `repo.radeon.com`
 - **Quick start/trial**: Want the fastest path to running drivers
 - **Using internal registry**: OpenShift's built-in registry is sufficient
@@ -447,12 +463,14 @@ kubectl get sa -n openshift-amd-network
 The operator supports two methods for building driver images, controlled by the `useSourceImage` field in NetworkConfig CR:
 
 **Method 1: RPM-based Build** (`useSourceImage: false`) - **Recommended**
+
 - Downloads pre-compiled RPM packages from repo.radeon.com
 - Installs drivers directly from RPMs
 - Faster build process
 - Uses: `DockerfileTemplate.rpm.ionic.coreos`
 
 **Method 2: Source Image Build** (`useSourceImage: true`) - **Advanced**
+
 - Requires building a source image first containing driver source code
 - KMM compiles modules from source against specific kernel
 - More flexible for custom builds
@@ -541,6 +559,7 @@ kubectl logs -f build/amd-driver-build-1 -n openshift-amd-network
 ```
 
 **Build Arguments Explained:**
+
 - `DTK_AUTO`: Driver Toolkit image matching your OpenShift version and kernel
 - `KERNEL_VERSION`: Target kernel version from node
 - `DRIVERS_VERSION`: AMD driver package version from repo.radeon.com
@@ -580,6 +599,7 @@ sudo podman push --tls-verify=false \
 ```
 
 **Why Push to External Registry?**
+
 - OpenShift's internal registry may not be accessible during module loading
 - External registry provides consistent access across cluster operations
 - Simplifies image management and versioning
@@ -612,14 +632,14 @@ These images are automatically built and published by the GitHub Actions workflo
 
 If you need to build source images yourself (e.g., for a custom driver version or internal registry):
 
-**Option 1: Using the automated builder script**
+##### Option 1: Using the automated builder script
 
 ```bash
 cd internal-example/driverSrcImage
 ./build-all-source-images.sh --version ${DRIVERS_VERSION} --registry your-registry.com
 ```
 
-**Option 2: Using OpenShift BuildConfig**
+##### Option 2: Using OpenShift BuildConfig
 
 ```bash
 cat > /tmp/source-image-build.yaml << EOF
@@ -669,6 +689,7 @@ kubectl logs -f build/amd-source-image-build-1 -n openshift-amd-network
 ```
 
 **What source images contain:**
+
 - `/ionic_src/driver/` - Source code for ionic, pds, tawk-ipc modules
 - `/ionic_src/firmware/` - Firmware files
 
@@ -709,29 +730,13 @@ spec:
 > 💡 **Note**: If using a custom/internal source image registry, replace `docker.io/amdpsdo/amdnic-drivers` with your registry path.
 
 **How it works:**
+
 1. KMM uses `DockerfileTemplate.srcimg.ionic.coreos`
 2. Copies source code from your source image (`sourceImageRepo`)
 3. Compiles modules against the Driver Toolkit (DTK) for the specific kernel version
 4. Creates final driver image with compiled `.ko` files
 
 ---
-
-## Post-Installation Verification
-
-The operator creates multiple service accounts for different components:
-
-```bash
-kubectl get sa -n openshift-amd-network
-
-# Expected service accounts:
-# - amd-network-operator-controller-manager
-# - amd-network-operator-device-plugin
-# - amd-network-operator-kmm-module-loader
-# - amd-network-operator-node-labeller
-# - amd-network-operator-metrics-exporter
-# - amd-network-operator-config-manager
-# - amd-network-operator-utils-container
-```
 
 ## Deploying NetworkConfig CR
 
