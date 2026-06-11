@@ -1,5 +1,11 @@
 # Release Notes
 
+## v1.2.1
+
+### Bug Fixes
+
+- **AMD Host Device CNI**: Fixed `host-device` plugin lookup failure on OpenShift CoreOS where `/opt/cni` is a broken symlink. The plugin now reads `CNI_PATH` from the environment (set by Multus per the CNI spec) instead of hardcoding `/opt/cni/bin`, with fallback to `/var/lib/cni/bin` and `/usr/libexec/cni`
+
 ## v1.2.0
 
 This release adds full AINIC driver stack management with `pds_core` and `tawk_ipc` modules, LIF-level aggregated QP metrics for improved monitoring scalability, and significant improvements to the AMD Host Device CNI plugin including gateway auto-configuration for source-based routing.

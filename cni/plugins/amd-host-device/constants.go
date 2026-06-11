@@ -25,8 +25,8 @@ const (
 	// file has the details of the interface names and it's IP mapping
 	mappingsFilePath = "/var/lib/cni/amd-host-device/ip-interface-mappings.json"
 
-	// defaultCNIPluginPath is the default path where CNI plugins are installed on the host
-	defaultCNIPluginPath = "/opt/cni/bin"
+	// fallbackCNIPluginPath is used when CNI_PATH is not set by the runtime
+	fallbackCNIPluginPath = "/opt/cni/bin:/var/lib/cni/bin:/usr/libexec/cni"
 
 	// pluginExecTimeout is the timeout for plugin execution (host-device)
 	pluginExecTimeout = 5 * time.Minute
