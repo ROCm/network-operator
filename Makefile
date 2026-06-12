@@ -52,7 +52,7 @@ YAML_FILES=config/samples/amd.com_networkconfigs.yaml config/manifests/bases/amd
 CRD_YAML_FILES = networkconfig-crd.yaml
 K8S_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
 OPENSHIFT_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
-OPENSHIFT_CLUSTER_NFD_CRD_YAML_FILES=nodefeature-crd.yaml nodefeaturediscovery-crd.yaml nodefeaturerule-crd.yaml noderesourcetopology-crd.yaml
+OPENSHIFT_CLUSTER_NFD_CRD_YAML_FILES=nodefeature-crd.yaml nodefeaturediscovery-crd.yaml nodefeaturerule-crd.yaml
 
 ifdef OPENSHIFT
 $(info selected openshift)
