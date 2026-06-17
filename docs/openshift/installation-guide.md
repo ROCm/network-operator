@@ -256,7 +256,7 @@ oc apply -f ionic-module-blacklist.yaml
 
 **Note**: Applying a `MachineConfig` will trigger a rolling reboot of the worker nodes managed by the Machine Config Operator (MCO). The base64 content decodes to:
 
-```
+```text
 blacklist ionic
 blacklist ionic_rdma
 ```
