@@ -38,10 +38,14 @@ spec:
 To install the `ionic`, `ionic_rdma`, `tawk_ipc`, and `pds_core` drivers by using AMD Network Operator, please prepare an image registry to store the compiled driver images, then specify corresponding fields in the driver spec of `NetworkConfig`. Please note that user-space drivers are not installed by the Network Operator and need to be installed separately.
 
 ```{note}
-Some Operating System may contain an inbox `ionic` kernel module. That inbox kernel module could be old versions and affect the installation of desired version out-of-tree kernel module. To blacklist the inbox `ionic` driver please specify `spec.driver.blacklist` as true. After that the worker nodes may need to these to apply the blacklist and avoid the usage of inbox `ionic` kernel module:
+Some operating systems may include an in-tree `ionic` kernel module. That module may be an older version and can conflict with the out-of-tree kernel module installed by the operator.
+
+**Kubernetes (Ubuntu):** To blacklist the in-tree `ionic` driver, set `spec.driver.blacklist: true` in the NetworkConfig CR. After that, run the following on each worker node to apply the blacklist:
 
 * sudo update-initramfs -u
 * sudo reboot
+
+**OpenShift:** The `spec.driver.blacklist` field is not supported on OpenShift. Instead, use a MachineConfig resource to blacklist the in-tree ionic module. See the [OpenShift Installation Guide](../openshift/installation-guide.md#2-blacklist-in-tree-ionic-driver-recommended) for details.
 ```
 
 For example:

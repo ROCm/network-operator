@@ -222,7 +222,46 @@ kubectl patch image.config.openshift.io/cluster --type=merge \
 
 **Note**: This configuration allows all nodes to pull from the specified registry without TLS verification.
 
-### 2. Verify KMM Installation
+### 2. Blacklist In-Tree Ionic Driver (Recommended)
+
+OpenShift CoreOS ships with an in-tree `ionic` kernel module that loads at boot and can conflict with the out-of-tree driver installed by the AMD Network Operator. Apply a MachineConfig to blacklist the in-tree module and prevent it from loading at boot. The operator also configures KMM to remove any loaded in-tree module at runtime, but the blacklist prevents the brief window where the in-tree driver is active before KMM intervenes.
+
+Create a `MachineConfig` to blacklist the in-tree `ionic` and `ionic_rdma` modules:
+
+```yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker
+  name: ionic-module-blacklist
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+        - path: "/etc/modprobe.d/ionic-blacklist.conf"
+          mode: 0644
+          overwrite: true
+          contents:
+            source: "data:text/plain;base64,YmxhY2tsaXN0IGlvbmljCmJsYWNrbGlzdCBpb25pY19yZG1hCg=="
+```
+
+Save the above manifest to a file and apply it:
+
+```bash
+oc apply -f ionic-module-blacklist.yaml
+```
+
+**Note**: Applying a `MachineConfig` will trigger a rolling reboot of the worker nodes managed by the Machine Config Operator (MCO). The base64 content decodes to:
+
+```text
+blacklist ionic
+blacklist ionic_rdma
+```
+
+### 3. Verify KMM Installation
 
 ```bash
 # Verify KMM is running in openshift-kmm namespace
@@ -238,7 +277,7 @@ kubectl get deployment -n openshift-kmm
 
 **Troubleshooting**: If KMM exists in multiple namespaces, keep only the one in `openshift-kmm` to avoid conflicts.
 
-### 3. Set Environment Variables
+### 4. Set Environment Variables
 
 Set version variables that will be used throughout the deployment:
 
