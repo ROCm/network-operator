@@ -38,7 +38,7 @@ spec:
     nodePort: 32501
     hostNetwork: true
     image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
-
+  
   # Secondary network config
   secondaryNetwork:
     cniPlugins:
@@ -61,14 +61,14 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 #### `metadata` Parameters
 
 | Parameter | Description |
-|-----------|-------------|
+| --------- | ----------- |
 | `name` | Unique identifier for the resource |
 | `namespace` | Namespace where the operator is running |
 
 #### `spec.driver` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `enable` | Enable/disable driver installation | `true` |
 | `image` | Image URL to pull/push kernel modules images | |
 | `version` | Driver version for source code builds | |
@@ -79,7 +79,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 #### `spec.devicePlugin` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `devicePluginImage` | AMD Network device plugin image | `docker.io/rocm/k8s-network-device-plugin:v1.2.0` |
 | `nodeLabellerImage` | Node labeller image | `docker.io/rocm/k8s-network-node-labeller:v1.2.0` |
 | `imageRegistrySecret.name` | Name of registry credentials secret<br> to pull device plugin / node labeller image | |
@@ -88,7 +88,7 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 #### `spec.metricsExporter` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `enable` | Enable/disable metrics exporter | `false` |
 | `imageRegistrySecret.name` | Name of registry credentials secret<br> to pull metrics exporter image | |
 | `serviceType` | Service type for metrics endpoint <br>Options: "ClusterIP" or "NodePort" | `ClusterIP` |
@@ -99,15 +99,15 @@ To check the full spec of `NetworkConfig` definition, run `kubectl get crds netw
 #### `spec.secondaryNetwork` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `cniPlugins.enable` | Enable/disable CNI plugins | `false` |
-| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/k8s-cni-plugins:v1.2.0`|
+| `cniPlugins.image` | CNI plugins image | `docker.io/rocm/cni-plugins:v1.2.0` |
 | `cniPlugins.imageRegistrySecret.name` | Name of registry credentials secret<br> to pull metrics exporter image | |
 
 #### `spec.selector` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `selector` | Labels to select nodes for driver installation | `feature.node.kubernetes.io/amd-nic: "true"` |
 
 ### Registry Secret Configuration

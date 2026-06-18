@@ -32,13 +32,14 @@ spec:
 
 ### Field Description
 
-| Field Name                       | Description                                     |
-|----------------------------------|-------------------------------------------------|
-| **DevicePluginImage**            | Device plugin image                             |
-| **DevicePluginImagePullPolicy**  | One of Always, Never, IfNotPresent.             |
-| **NodeLabellerImage**            | Image to use for the Node Labeller              |
-| **NodeLabellerImagePullPolicy**  | Image pull policy: Always, Never, IfNotPresent  |
-| **EnableNodeLabeller**           | Enable or disable the Node Labeller (true/false)|
+| Field Name                       | Description                                      |
+|----------------------------------|--------------------------------------------------|
+| **DevicePluginImage**            | Device plugin image                              |
+| **DevicePluginImagePullPolicy**  | One of Always, Never, IfNotPresent.              |
+| **NodeLabellerImage**            | Image to use for the Node Labeller               |
+| **NodeLabellerImagePullPolicy**  | Image pull policy: Always, Never, IfNotPresent   |
+| **EnableNodeLabeller**           | Enable or disable the Node Labeller (true/false) |
+
 </br>
 
 The `ImagePullPolicy` field defaults to `Always` if the image tag is `:latest`, or to `IfNotPresent` for other tags. This follows the default Kubernetes behavior for `ImagePullPolicy`.

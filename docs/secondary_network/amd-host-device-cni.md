@@ -50,7 +50,7 @@ spec:
   }'
 ```
 
-For detailed information on how this resource is allocated and how the CNI is invoked, please refer to the documentation [here](./integration-flow.md).
+For detailed information on how this resource is allocated and how the CNI is invoked, please refer to the [integration flow documentation](./integration-flow.md).
 
 ## Verification
 

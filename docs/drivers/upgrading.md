@@ -67,7 +67,7 @@ To check the full spec of upgrade configuration run kubectl get crds networkconf
 #### `driver.upgradePolicy` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `enable` | Enable this upgrade policy | `false` |
 | `maxParallelUpgrades` | Maximum number of nodes which will be upgraded in parallel | `1` |
 | `maxUnavailableNodes` | Maximum number (or Percentage) of nodes which can be unavailable (cordoned) in the cluster | `25%` |
@@ -76,14 +76,14 @@ To check the full spec of upgrade configuration run kubectl get crds networkconf
 #### `driver.upgradePolicy.nodeDrainPolicy` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `force` | Allow drain to proceed on the node even if there are managed pods such as daemon-sets. In such cases drain will not proceed unless this option is set to true | `true` |
 | `timeout` | The length of time to wait before giving up. Zero means infinite | `300s` |
 
 #### `driver.upgradePolicy.podDeletionPolicy` Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | `force` | Force delete all pods that use amd nics | `true` |
 | `timeout` | The length of time to wait before giving up. Zero means infinite | `300s` |
 
@@ -127,7 +127,7 @@ status:
 The following are the different node states during the upgrade process
 
 | State | Description |
-|-----------|---------|
+| ----- | ----------- |
 | `Install-In-Progress` | Driver is being installed on the node for the first time |
 | `Install-Complete` | Driver install is complete |
 | `Upgrade-Not-Started` | Automatic upgrade enabled and driver version change is detected. All nodes move to this state |
@@ -136,7 +136,7 @@ The following are the different node states during the upgrade process
 | `Upgrade-Timed-Out` | Driver upgrade couldn't finish within 2 hours |
 | `Cordon-Failed` | Cordoning of the node failed |
 | `Uncordon-Failed` | Uncordoning of the node failed |
-| `Drain-Failed` | Drain node or Delete pods operation failed|
+| `Drain-Failed` | Drain node or Delete pods operation failed |
 | `Reboot-In-Progress` | Driver upgrade is done and reboot is in progress |
 | `Reboot-Failed` | Driver upgrade is done and reboot attempt failed |
 | `Upgrade-Failed` | Driver upgrade failed for any other reasons |
@@ -202,7 +202,7 @@ The operator will automatically:
 The operator uses specific tag formats based on the OS:
 
 | OS | Tag Format | Example |
-|----|------------|---------|
+| -- | ---------- | ------- |
 | Ubuntu | `ubuntu-<version>-<kernel>-<driver>` | `ubuntu-22.04-6.8.0-40-generic-6.1.3` |
 | RHEL CoreOS | `coreos-<version>-<kernel>-<driver>` | `coreos-416.94-5.14.0-427.28.1.el9_4.x86_64-6.2.2` |
 

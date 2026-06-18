@@ -31,7 +31,7 @@
 
 This guide provides production-ready steps for deploying the AMD Network Operator on OpenShift clusters using OLM (Operator Lifecycle Manager). This operator manages AMD network drivers (ionic, ionic_rdma, pds_core, tawk_ipc) using Kernel Module Management (KMM).
 
-**What this operator does:**
+**What this operator does**:
 
 - Automatically loads AMD network drivers on OpenShift CoreOS nodes
 - Manages kernel module lifecycle through KMM
@@ -57,20 +57,24 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 
 **Key Requirements**:
 
-- ✅ OpenShift 4.16+ with CoreOS
-- ✅ NFD and KMM operators installed
-- ✅ Container registry (insecure registry configured if internal)
-- ✅ AMD Pensando NICs installed on nodes
+- OpenShift 4.16+ with CoreOS
+- NFD and KMM operators installed
+- Container registry (insecure registry configured if internal)
+- AMD Pensando NICs installed on nodes
 
 ---
 
 ## Important Notes
 
-> 💡 **TIP**: This guide uses production-style versioning (`v1.0.0-netop-beta`). Replace with your actual version tags.
->
-> ⚠️ **WARNING**: Only install KMM operator **ONCE** in `openshift-kmm` namespace. Multiple instances cause conflicts.
->
-> 🌐 **REGISTRY**: Configure insecure registries at cluster level before starting. Images won't pull otherwise.
+> **TIP**: This guide uses production-style versioning (`v1.0.0-netop-beta`). Replace with your actual version tags.
+
+<!-- -->
+
+> **WARNING**: Only install KMM operator **ONCE** in `openshift-kmm` namespace. Multiple instances cause conflicts.
+
+<!-- -->
+
+> **REGISTRY**: Configure insecure registries at cluster level before starting. Images won't pull otherwise.
 
 ---
 
@@ -85,13 +89,13 @@ This guide provides production-ready steps for deploying the AMD Network Operato
 
 ### Required Operators Installation
 
-**These operators must be installed BEFORE deploying the AMD Network Operator:**
+**These operators must be installed BEFORE deploying the AMD Network Operator**:
 
 #### 1. Install Node Feature Discovery (NFD)
 
 NFD detects hardware features on nodes and labels them accordingly.
 
-**Installation via OpenShift Web Console:**
+**Installation via OpenShift Web Console**:
 
 1. Log in to OpenShift Web Console
 2. Navigate to **Operators** → **OperatorHub**
@@ -105,14 +109,14 @@ NFD detects hardware features on nodes and labels them accordingly.
    - **Update Approval**: Automatic
 7. Click **Install** and wait for the operator to become ready
 
-**Verification:**
+**Verification**:
 
 ```bash
 kubectl get csv -n openshift-nfd | grep nfd
 # Expected: nfd.x.x.x    Node Feature Discovery    x.x.x    Succeeded
 ```
 
-**Create a NodeFeatureDiscovery instance to activate NFD:**
+**Create a NodeFeatureDiscovery instance to activate NFD**:
 
 After installing the NFD operator, create a `NodeFeatureDiscovery` CR to start NFD workers on the cluster:
 
@@ -162,7 +166,7 @@ kubectl get pods -n openshift-nfd | grep worker
 
 KMM manages out-of-tree kernel modules on OpenShift clusters.
 
-**Installation via OpenShift Web Console:**
+**Installation via OpenShift Web Console**:
 
 1. Log in to OpenShift Web Console
 2. Navigate to **Operators** → **OperatorHub**
@@ -176,7 +180,7 @@ KMM manages out-of-tree kernel modules on OpenShift clusters.
    - **Update Approval**: Automatic
 7. Click **Install** and wait for the operator to become ready
 
-**Verification:**
+**Verification**:
 
 ```bash
 kubectl get csv -n openshift-kmm | grep kernel-module-management
@@ -298,7 +302,7 @@ export REPO_URL="https://repo.radeon.com"
 export DTK_IMAGE="quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:288b3574a5524121c139b846e98a223da793305560f8b42dcd8d2aa712912998"
 ```
 
-**Finding Version Values:**
+**Finding Version Values**:
 
 ```bash
 # Get node kernel version
@@ -408,7 +412,7 @@ make bundle-build \
 make bundle-push BUNDLE_IMG=${BUNDLE_IMG}
 ```
 
-**What this does:**
+**What this does**:
 
 - Generates CSV (ClusterServiceVersion) with operator metadata
 - Creates RBAC manifests for all service accounts
@@ -433,7 +437,7 @@ make bundle-push
   -n openshift-amd-network
 ```
 
-**Flags explained:**
+**Flags explained**:
 
 - `--use-http`: Use HTTP instead of HTTPS for registry communication
 - `--skip-tls`: Skip TLS verification (for insecure registries)
@@ -480,14 +484,14 @@ kubectl get sa -n openshift-amd-network
 
 > ⚠️ **THIS SECTION IS OPTIONAL**: For most users with connected clusters, you can **skip this entire section** and proceed directly to [Deploying NetworkConfig CR](#deploying-networkconfig-cr). When you create a NetworkConfig CR, KMM will automatically build driver images in-cluster using the OpenShift internal registry.
 
-**When to use this section:**
+**When to use this section**:
 
 - **Air-gapped/disconnected environments**: No internet access during runtime
 - **Pre-staging images**: Want driver images ready before deployment
 - **External registry requirements**: Need images in a specific external registry
 - **Custom build pipelines**: Integrating with CI/CD systems
 
-**When to skip this section:**
+**When to skip this section**:
 
 - **Connected clusters**: Have internet access to `repo.radeon.com`
 - **Quick start/trial**: Want the fastest path to running drivers
@@ -501,14 +505,14 @@ kubectl get sa -n openshift-amd-network
 
 The operator supports two methods for building driver images, controlled by the `useSourceImage` field in NetworkConfig CR:
 
-**Method 1: RPM-based Build** (`useSourceImage: false`) - **Recommended**
+**Method 1: RPM-based Build** (`useSourceImage: false`) - **Recommended**:
 
 - Downloads pre-compiled RPM packages from repo.radeon.com
 - Installs drivers directly from RPMs
 - Faster build process
 - Uses: `DockerfileTemplate.rpm.ionic.coreos`
 
-**Method 2: Source Image Build** (`useSourceImage: true`) - **Advanced**
+**Method 2: Source Image Build** (`useSourceImage: true`) - **Advanced**:
 
 - Requires building a source image first containing driver source code
 - KMM compiles modules from source against specific kernel
@@ -597,14 +601,14 @@ kubectl start-build amd-driver-build -n openshift-amd-network
 kubectl logs -f build/amd-driver-build-1 -n openshift-amd-network
 ```
 
-**Build Arguments Explained:**
+**Build Arguments Explained**:
 
 - `DTK_AUTO`: Driver Toolkit image matching your OpenShift version and kernel
 - `KERNEL_VERSION`: Target kernel version from node
 - `DRIVERS_VERSION`: AMD driver package version from repo.radeon.com
 - `REPO_URL`: AMD repository URL
 
-**Finding the Correct DTK Image:**
+**Finding the Correct DTK Image**:
 
 ```bash
 # Get node kernel version (already set in env vars)
@@ -637,7 +641,7 @@ sudo podman push --tls-verify=false \
   ${REGISTRY_URL}/amdnetwork_kmod:coreos-${RHEL_VERSION}-${KERNEL_VERSION}-${DRIVERS_VERSION}
 ```
 
-**Why Push to External Registry?**
+Why push to an external registry?
 
 - OpenShift's internal registry may not be accessible during module loading
 - External registry provides consistent access across cluster operations
@@ -671,14 +675,14 @@ These images are automatically built and published by the GitHub Actions workflo
 
 If you need to build source images yourself (e.g., for a custom driver version or internal registry):
 
-##### Option 1: Using the automated builder script
+**Option 1: Using the automated builder script**:
 
 ```bash
 cd internal-example/driverSrcImage
 ./build-all-source-images.sh --version ${DRIVERS_VERSION} --registry your-registry.com
 ```
 
-##### Option 2: Using OpenShift BuildConfig
+**Option 2: Using OpenShift BuildConfig**:
 
 ```bash
 cat > /tmp/source-image-build.yaml << EOF
@@ -727,7 +731,7 @@ kubectl start-build amd-source-image-build -n openshift-amd-network
 kubectl logs -f build/amd-source-image-build-1 -n openshift-amd-network
 ```
 
-**What source images contain:**
+**What source images contain**:
 
 - `/ionic_src/driver/` - Source code for ionic, pds, tawk-ipc modules
 - `/ionic_src/firmware/` - Firmware files
@@ -768,7 +772,7 @@ spec:
 
 > 💡 **Note**: If using a custom/internal source image registry, replace `docker.io/amdpsdo/amdnic-drivers` with your registry path.
 
-**How it works:**
+**How it works**:
 
 1. KMM uses `DockerfileTemplate.srcimg.ionic.coreos`
 2. Copies source code from your source image (`sourceImageRepo`)
@@ -776,6 +780,23 @@ spec:
 4. Creates final driver image with compiled `.ko` files
 
 ---
+
+## Verifying Service Accounts
+
+The operator creates multiple service accounts for different components:
+
+```bash
+kubectl get sa -n openshift-amd-network
+
+# Expected service accounts:
+# - amd-network-operator-controller-manager
+# - amd-network-operator-device-plugin
+# - amd-network-operator-kmm-module-loader
+# - amd-network-operator-node-labeller
+# - amd-network-operator-metrics-exporter
+# - amd-network-operator-config-manager
+# - amd-network-operator-utils-container
+```
 
 ## Deploying NetworkConfig CR
 
@@ -840,7 +861,7 @@ metadata:
 spec:
   selector:
     feature.node.kubernetes.io/amd-nic: "true"
-  
+
   driver:
     enable: true
     version: "${DRIVERS_VERSION}"
@@ -856,12 +877,12 @@ spec:
         insecure: true
         insecureSkipTLSVerify: true
     AMDNetworkInstallerRepoURL: "${REPO_URL}"
-  
+
   devicePlugin:
     enableNodeLabeller: true
     devicePluginImage: docker.io/rocm/k8s-device-plugin:rhubi-latest
     nodeLabellerImage: docker.io/rocm/k8s-device-plugin:labeller-rhubi-latest
-  
+
   metricsExporter:
     enable: true
     image: docker.io/rocm/device-metrics-exporter:v1.2.0
@@ -880,7 +901,7 @@ metadata:
 spec:
   selector:
     feature.node.kubernetes.io/amd-nic: "true"
-  
+
   driver:
     enable: true
     version: "${DRIVERS_VERSION}"
@@ -897,12 +918,12 @@ spec:
       insecure: true
       insecureSkipTLSVerify: true
     AMDNetworkInstallerRepoURL: "${REPO_URL}"
-  
+
   devicePlugin:
     enableNodeLabeller: true
     devicePluginImage: docker.io/rocm/k8s-device-plugin:rhubi-latest
     nodeLabellerImage: docker.io/rocm/k8s-device-plugin:labeller-rhubi-latest
-  
+
   metricsExporter:
     enable: true
     image: docker.io/rocm/device-metrics-exporter:v1.2.0
@@ -1191,5 +1212,5 @@ All service accounts use consistent naming without platform-specific suffixes to
 
 ---
 
-**Document Version**: 1.0.0  
+**Document Version**: 1.0.0<br>
 **Target Platform**: OpenShift 4.16+ with CoreOS
