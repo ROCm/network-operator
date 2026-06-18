@@ -141,7 +141,7 @@ helm show values rocm/network-operator-charts
 ```
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| ----- | ------ | --------- | ------------- |
 | controllerManager.manager.image.repository | string | `"docker.io/rocm/network-operator"` | AMD Network operator controller manager image repository |
 | controllerManager.manager.image.tag | string | `"v1.2.0"` | AMD Network operator controller manager image tag |
 | controllerManager.manager.imagePullPolicy | string | `"Always"` | Image pull policy for AMD Network operator controller manager pod |

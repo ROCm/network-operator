@@ -61,7 +61,7 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 ## Key Components
 
 | Component | Description |
-|------------|-------------|
+| ------------ | ------------- |
 | **CronJob** | Periodically triggers node cluster node validation checks (e.g., every 24 hours). |
 | **ConfigMap** | Stores configuration, candidate selection script, Job and MPIJob manifest templates. |
 | **ServiceAccount + RBAC** | Grants permission to list/label nodes and create workloads. |
@@ -143,11 +143,11 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ## Example Output Labels
 
-| Node   | Label | Meaning |
-|:--------|:--------------------------------------------|:-----------------------------------------------------------|
-| node-a | `amd.com/cluster-validation-status=passed` | Node successfully passed all RCCL tests |
-| node-b | `amd.com/cluster-validation-status=failed` | Node failed one or more RCCL tests |
-| node-c | *(no label)* | Node not part of current candidate set |
+| Node   | Label                                       | Meaning                                                     |
+| ------ | ------------------------------------------- | ----------------------------------------------------------- |
+| node-a | `amd.com/cluster-validation-status=passed`  | Node successfully passed all RCCL tests                     |
+| node-b | `amd.com/cluster-validation-status=failed`  | Node failed one or more RCCL tests                          |
+| node-c | *(no label)*                                | Node not part of current candidate set                      |
 
 ---
 
@@ -155,8 +155,8 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 * Update image tags (**roce-workload**, **network-operator-utils**) as needed before deployment.
 * Modify `cluster-validation-config.yaml` to align with your deployment environment.
-* Ensure `slotsPerWorker` and resource limits correspond to the underlying GPU and NIC configuration.
-* Adjust `CronJob.spec` to set the job frequency.
+* Ensure `slotsPerWorker` and resource limits correspond to the underlying GPU and NIC configuration.  
+* Adjust `CronJob.spec` to set the job frequency.  
 * Set `debug_delay` to pause after job completion for debugging.
 * Configure `fluent_log_output` to define the log destination for Fluent sidecar-based centralized logging
 
