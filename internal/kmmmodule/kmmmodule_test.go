@@ -213,7 +213,7 @@ var _ = Describe("BaseImageRegistry and BaseImageRegistryTLS", func() {
 			},
 		}
 
-		km, _, err := getKM(nwConfig, node, "", true) // isOpenShift = true
+		km, _, err := getKM(nwConfig, node, "ionic", true) // isOpenShift = true
 
 		Expect(err).To(BeNil())
 		Expect(km.Build).NotTo(BeNil())
@@ -228,6 +228,40 @@ var _ = Describe("BaseImageRegistry and BaseImageRegistryTLS", func() {
 			}
 		}
 		Expect(foundBaseImageRegistry).To(BeTrue(), "BASE_IMAGE_REGISTRY build arg should be present")
+	})
+})
+
+var _ = Describe("getKernelMappings", func() {
+	newNetworkConfig := func() *amdv1alpha1.NetworkConfig {
+		return &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+				},
+			},
+		}
+	}
+
+	It("should set InTreeModulesToRemove to ionic on OpenShift", func() {
+		kms, _, err := getKernelMappings(newNetworkConfig(), true, testNodeList)
+		Expect(err).To(BeNil())
+		Expect(kms).NotTo(BeEmpty())
+		for _, km := range kms {
+			Expect(km.InTreeModulesToRemove).To(Equal([]string{"ionic"}))
+		}
+	})
+
+	It("should not set InTreeModulesToRemove on Kubernetes", func() {
+		kms, _, err := getKernelMappings(newNetworkConfig(), false, testNodeList)
+		Expect(err).To(BeNil())
+		Expect(kms).NotTo(BeEmpty())
+		for _, km := range kms {
+			Expect(km.InTreeModulesToRemove).To(BeNil())
+		}
 	})
 })
 

@@ -328,6 +328,9 @@ func (km *kmmModule) setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Mod
 func getKernelMappings(nwConfig *amdv1alpha1.NetworkConfig, isOpenshift bool, nodes *v1.NodeList) ([]kmmv1beta1.KernelMapping, string, error) {
 
 	inTreeModuleToRemove := ""
+	if isOpenshift {
+		inTreeModuleToRemove = ionicModuleName
+	}
 
 	if nodes == nil || len(nodes.Items) == 0 {
 		return nil, "", fmt.Errorf("No nodes found for the label selector %s", MapToLabelSelector(nwConfig.Spec.Selector))
@@ -495,14 +498,17 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 		}
 	}
 
-	return kmmv1beta1.KernelMapping{
-		Literal:              node.Status.NodeInfo.KernelVersion,
-		ContainerImage:       driversImage,
-		InTreeModuleToRemove: inTreeModuleToRemove,
-		Build:                kmmBuild,
-		Sign:                 kmmSign,
-		RegistryTLS:          registryTLS,
-	}, driversVersion, nil
+	km := kmmv1beta1.KernelMapping{
+		Literal:        node.Status.NodeInfo.KernelVersion,
+		ContainerImage: driversImage,
+		Build:          kmmBuild,
+		Sign:           kmmSign,
+		RegistryTLS:    registryTLS,
+	}
+	if inTreeModuleToRemove != "" {
+		km.InTreeModulesToRemove = []string{inTreeModuleToRemove}
+	}
+	return km, driversVersion, nil
 }
 
 func addNodeInfoSuffixToImageTag(imgStr string, osName, driversVersion string) string {
