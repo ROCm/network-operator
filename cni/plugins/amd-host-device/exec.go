@@ -33,7 +33,7 @@ var defaultExec = &invoke.DefaultExec{
 
 func getCNIPath() string {
 	if p := os.Getenv("CNI_PATH"); p != "" {
-		return p
+		return p + string(os.PathListSeparator) + fallbackCNIPluginPath
 	}
 	return fallbackCNIPluginPath
 }
