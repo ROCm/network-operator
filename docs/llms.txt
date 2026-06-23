@@ -1,0 +1,53 @@
+# AMD Network Operator
+
+> Deploy and manage AMD AINICs in Kubernetes environments. The AMD Network Operator manages all networking components required to enable RDMA workloads within a Kubernetes cluster, including NIC driver management, device plugin configuration, secondary network CNI plugins, and metrics collection.
+
+## Overview
+
+- [Network Operator overview](https://instinct.docs.amd.com/projects/network-operator/en/main/overview.html): Components of the AMD Network Operator and their roles in managing AMD NICs in Kubernetes clusters.
+- [Release notes](https://instinct.docs.amd.com/projects/network-operator/en/main/releasenotes.html): Release history and changelog for the AMD Network Operator.
+
+## Installation
+
+- [Install with Helm](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm.html): Install the AMD Network Operator on a Kubernetes cluster using Helm.
+- [Install with GPU Operator and Network Operator together](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/kubernetes-helm-operators.html): Install AMD GPU Operator and AMD Network Operator together in the same Kubernetes cluster.
+- [Custom Resource guide](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/networkconfig.html): Configure the NetworkConfig Custom Resource, including driver management, device plugin, and secondary network settings.
+- [NetworkConfig full reference](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/networkconfig-full.html): Comprehensive list of NetworkConfig CR configuration options.
+- [Deploy a workload with a network device](https://instinct.docs.amd.com/projects/network-operator/en/main/installation/workload.html): Create a NetworkAttachmentDefinition and deploy a workload with an assigned network device.
+
+## Driver management
+
+- [Driver management](https://instinct.docs.amd.com/projects/network-operator/en/main/drivers/drivers.html): Manage AMD AI NIC drivers using the AMD Network Operator on Kubernetes clusters.
+- [Driver upgrades](https://instinct.docs.amd.com/projects/network-operator/en/main/drivers/upgrading.html): Upgrade AMD Network drivers on worker nodes.
+
+## Device plugin
+
+- [Device Plugin and Node Labeller](https://instinct.docs.amd.com/projects/network-operator/en/main/device_plugin/deviceplugin.html): Configure the Device Plugin and Node Labeller via the NetworkConfig Custom Resource.
+- [Resource health monitoring](https://instinct.docs.amd.com/projects/network-operator/en/main/device_plugin/resource-health.html): Real-time monitoring and reporting of network device health status integrated with Kubernetes pod scheduling.
+
+## Secondary networks
+
+- [Kubernetes integration flow](https://instinct.docs.amd.com/projects/network-operator/en/main/secondary_network/integration-flow.html): How pod network attachment annotations trigger CNI plugins through the Kubernetes networking stack.
+- [AMD Host Device CNI plugin](https://instinct.docs.amd.com/projects/network-operator/en/main/secondary_network/amd-host-device-cni.html): Move PF or VF network interfaces from host into pod network namespaces with IP address preservation.
+- [Alternative CNI plugins](https://instinct.docs.amd.com/projects/network-operator/en/main/secondary_network/other-cnis.html): Alternative CNI plugins tested with AMD Network Operator via NetworkAttachmentDefinition.
+
+## Metrics
+
+- [Metrics Exporter](https://instinct.docs.amd.com/projects/network-operator/en/main/metrics/exporter.html): Configure the Metrics Exporter via the NetworkConfig Custom Resource.
+- [Prometheus integration](https://instinct.docs.amd.com/projects/network-operator/en/main/metrics/prometheus.html): Integrate the AMD Network Operator with Prometheus using ServiceMonitor for automatic metrics scraping.
+- [Grafana dashboard](https://instinct.docs.amd.com/projects/network-operator/en/main/metrics/grafana_dashboard.html): AINIC System Grafana dashboard for visualizing network metrics.
+- [Health checks](https://instinct.docs.amd.com/projects/network-operator/en/main/metrics/health.html): Health monitoring via the metrics exporter gRPC socket for Kubernetes device availability decisions.
+- [Kube-RBAC-Proxy](https://instinct.docs.amd.com/projects/network-operator/en/main/metrics/kube-rbac-proxy.html): Secure the metrics endpoint with RBAC or static authorization using the kube-rbac-proxy sidecar.
+
+## Upgrades
+
+- [Upgrade](https://instinct.docs.amd.com/projects/network-operator/en/main/upgrades/upgrade.html): Verify cluster readiness and upgrade the AMD Network Operator.
+- [Component upgrades](https://instinct.docs.amd.com/projects/network-operator/en/main/upgrades/componentupgrades.html): Upgrade Device Plugin, Node Labeller, Metrics Exporter, and CNI Plugin daemonsets.
+
+## Operations
+
+- [Troubleshooting](https://instinct.docs.amd.com/projects/network-operator/en/main/troubleshooting.html): Diagnose and resolve common issues with the AMD Network Operator.
+- [Uninstall](https://instinct.docs.amd.com/projects/network-operator/en/main/uninstallation/uninstallation.html): Remove the operator and related resources in the correct sequence.
+- [Cluster Validation and Job Scheduling Framework](https://instinct.docs.amd.com/projects/network-operator/en/main/cluster_validation_framework/README.html): Periodically verify worker node health and readiness before scheduling distributed AI and HPC workloads.
+
+---
