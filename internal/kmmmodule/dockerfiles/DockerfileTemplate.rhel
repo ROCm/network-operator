@@ -27,8 +27,6 @@ RUN dnf clean all && \
 
 RUN depmod ${KERNEL_VERSION}
 
-ARG BASE_IMAGE_REGISTRY=registry.access.redhat.com
-
 FROM ${BASE_IMAGE_REGISTRY}/redhat/ubi$$MAJOR_VERSION
 
 ARG KERNEL_FULL_VERSION
