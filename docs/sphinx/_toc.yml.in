@@ -25,6 +25,10 @@ subtrees:
         title: Workload Deployment
       - file: uninstallation/uninstallation
         title: Uninstallation
+  - caption: OpenShift
+    entries:
+      - file: openshift/installation-guide
+        title: Installation Guide
   - caption: Upgrades 
     entries:
       - file: upgrades/upgrade
@@ -65,3 +69,5 @@ subtrees:
     entries:
       - file: cluster_validation_framework/README
         title: Cluster Validation and Job Scheduling
+      - file: roce-workload
+        title: RoCE Workload Image

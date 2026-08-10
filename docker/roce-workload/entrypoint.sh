@@ -6,8 +6,8 @@ if [ ! -f /root/.ssh/id_rsa ]; then
   cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 fi
 
-### --v1.0.2-- Start SSH daemon ----
-/usr/sbin/sshd
+### Start SSH daemon ----
+LD_PRELOAD= /usr/sbin/sshd
 
 if [ "$#" -eq 0 ]; then
   exec sleep infinity

@@ -153,7 +153,7 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ## Notes for Operators
 
-* Update image tags (**roce-workload**, **network-operator-utils**) as needed before deployment.
+* Update image tags (**[roce-workload](../roce-workload.md)**, **network-operator-utils**) as needed before deployment.
 * Modify `cluster-validation-config.yaml` to align with your deployment environment.
 * Ensure `slotsPerWorker` and resource limits correspond to the underlying GPU and NIC configuration.  
 * Adjust `CronJob.spec` to set the job frequency.  
