@@ -1,12 +1,18 @@
 #!/bin/bash
 
-NUM_NODES=2
-GPUS_PER_NODE=8
+NUM_NODES=${NUM_NODES:-2}
+GPUS_PER_NODE=${GPUS_PER_NODE:-8}
 
-HOST1_IP="${1:-10.5.0.34}"
-HOST2_IP="${2:-10.5.0.52}"
-MCA_IF=${3:-eth0}
-COLLECTIVE=${4:-all_reduce_perf}
+HOST1_IP="${1:?Usage: $0 <host1_ip> <host2_ip> [collective]}"
+HOST2_IP="${2:?Usage: $0 <host1_ip> <host2_ip> [collective]}"
+COLLECTIVE=${3:-all_reduce_perf}
+MCA_IF=eth0
+
+START_MSG_SIZE=${START_MSG_SIZE:-1K}
+END_MSG_SIZE=${END_MSG_SIZE:-1G}
+STEP_FACTOR=${STEP_FACTOR:-2}
+NUM_ITER=${NUM_ITER:-6}
+NUM_WARMUP=${NUM_WARMUP:-20}
 
 export OMPI_DIR=/root/ompi/install
 export PERF_TEST_DIR=/root/rccl-tests/build
@@ -18,8 +24,9 @@ RCCL_ENV="$RCCL_ENV -x RCCL_GDR_FLUSH_GPU_MEM_NO_RELAXED_ORDERING=0"
 RCCL_ENV="$RCCL_ENV -x NCCL_IB_USE_INLINE=1"
 RCCL_ENV="$RCCL_ENV -x IONIC_LOCKFREE=all"
 RCCL_ENV="$RCCL_ENV -x NCCL_NET_PLUGIN=librccl-anp.so"
-RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=INFO"
+RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=${NCCL_DEBUG:-WARN}"
 
+## RCCL_ENV="$RCCL_ENV -x NCCL_DMABUF_ENABLE=0"
 ## RCCL_ENV="$RCCL_ENV -x NCCL_IB_TC=96"
 ## RCCL_ENV="$RCCL_ENV -x NCCL_IB_FIFO_TC=184"
 ## RCCL_ENV="$RCCL_ENV -x NCCL_IB_QPS_PER_CONNECTION=1"
@@ -35,14 +42,16 @@ RCCL_ENV="$RCCL_ENV -x NCCL_DEBUG=INFO"
 ## RCCL_ENV="$RCCL_ENV -x NCCL_MIN_NCHANNELS=1"
 ## RCCL_ENV="$RCCL_ENV -x NCCL_MAX_NCHANNELS=1"
 
-# -- rccl run start ---
 mkdir -p /tmp/run_logs
 NP=$(( NUM_NODES * GPUS_PER_NODE ))
-echo "MPI NP = $NP"
+echo "MPI NP=$NP (${NUM_NODES} nodes x ${GPUS_PER_NODE} GPUs), collective=${COLLECTIVE}"
+echo "Message sizes: ${START_MSG_SIZE} to ${END_MSG_SIZE}, step=${STEP_FACTOR}x, iters=${NUM_ITER}, warmup=${NUM_WARMUP}"
 ${OMPI_DIR}/bin/mpirun --np $NP \
     -H "$HOST1_IP":${GPUS_PER_NODE},"$HOST2_IP":${GPUS_PER_NODE} \
     -x PATH -x LD_LIBRARY_PATH -x LD_PRELOAD \
     --allow-run-as-root --mca plm_rsh_agent "ssh" \
     --mca btl ^vader,openib -mca btl_tcp_if_include $MCA_IF \
     ${RCCL_ENV} \
-    $PERF_TEST_DIR/${COLLECTIVE} -b 1k -e 4G -n 6  -w 20 -c 0 -f 2 -g 1  | tee /tmp/run_logs/${COLLECTIVE}_$(date +%Y%m%d%H%M).log
+    $PERF_TEST_DIR/${COLLECTIVE} -b ${START_MSG_SIZE} -e ${END_MSG_SIZE} \
+    -n ${NUM_ITER} -w ${NUM_WARMUP} -c 0 -f ${STEP_FACTOR} -g 1 \
+    | tee /tmp/run_logs/${COLLECTIVE}_$(date +%Y%m%d%H%M).log
