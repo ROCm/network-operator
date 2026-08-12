@@ -2,20 +2,6 @@
 
 The RoCE workload image bundles all components needed for running distributed RCCL performance tests across AMD GPU clusters with AMD AINIC (Pollara) NICs.
 
-## Prerequisites
-
-- Kubernetes cluster with AMD GPU and AINIC (Pollara) NIC nodes
-- [AMD Network Operator](https://instinct.docs.amd.com/projects/network-operator/en/main/) deployed with a `NetworkConfig` CR
-- `amd-host-device-nad` [NetworkAttachmentDefinition](https://instinct.docs.amd.com/projects/network-operator/en/main/secondary_network/amd-host-device-cni.html) created
-- [AMD GPU Operator](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/) deployed (for `amd.com/gpu` device resources)
-- [MPI Operator](https://github.com/kubeflow/mpi-operator) installed (for CVF and MPIJob-based workloads)
-
-**Important:** The workload image must be compatible with the AINIC driver version installed on the host nodes. The image bundles user-space AINIC libraries (libionic) that must match the host kernel driver. Use an image tagged with the same AINIC version as your deployed drivers (e.g., `ainic-1.117.5-a-77` in the image tag should match the firmware/driver version on the nodes).
-
-## Pre-built Images
-
-Pre-built images are available on [Docker Hub](https://hub.docker.com/r/rocm/roce-workload).
-
 ## What's Included
 
 | Component | Description |
@@ -28,12 +14,36 @@ Pre-built images are available on [Docker Hub](https://hub.docker.com/r/rocm/roc
 | OpenMPI | MPI implementation for multi-node communication |
 | AINIC drivers | User-space libraries for AMD AINIC (Pollara) NICs |
 
-## Quick Start
+## Getting the Image
+
+### Pre-built Images
+
+Pre-built images are available on [Docker Hub](https://hub.docker.com/r/rocm/roce-workload).
+
+**Important:** The workload image must be compatible with the AINIC driver version installed on the host nodes. The image bundles user-space AINIC libraries (libionic) that must match the host kernel driver. Use an image tagged with the same AINIC version as your deployed drivers (e.g., `ainic-1.117.5-a-77` in the image tag should match the firmware/driver version on the nodes).
+
+### Building a Custom Image
+
+To build a custom image with specific component versions, see the build instructions at [`docker/roce-workload/`](https://github.com/ROCm/network-operator/tree/main/docker/roce-workload).
+
+```bash
+cd docker/roce-workload
+./docker-build.sh <ainic_version>
+```
+
+## Using the Image
+
+The image can be used in two ways: **manually** for ad-hoc testing, or **with CVF** for automated fleet-wide validation.
+
+Both workflows require the cluster prerequisites described in the [Cluster Validation Framework requirements](README.md#requirements).
+
+### Manual Quick Start
 
 Deploy two workload pods and run an RCCL test to validate GPU-to-GPU communication over AINIC NICs:
 
+#### 1. Deploy workload pods
+
 ```bash
-# Deploy workload pods (adjust gpu/nic counts to match your hardware)
 kubectl apply -f - <<'EOF'
 apiVersion: v1
 kind: Pod
@@ -53,7 +63,7 @@ spec:
         add: [IPC_LOCK]
     resources:
       requests:
-        amd.com/gpu: 8
+        amd.com/gpu: 8   # adjust to match your hardware
         amd.com/nic: 2
       limits:
         amd.com/gpu: 8
@@ -106,23 +116,33 @@ spec:
       medium: Memory
       sizeLimit: 4Gi
 EOF
+```
 
-# Exchange SSH keys between pods
+Adjust `amd.com/gpu` and `amd.com/nic` counts to match your hardware. The anti-affinity rule ensures pods land on different nodes automatically.
+
+**For VMs with VNICs (SR-IOV VFs):** replace `amd.com/nic` with `amd.com/vnic` and `amd-host-device-nad` with `vf-amd-host-device-nad` in the pod spec above.
+
+#### 2. Exchange SSH keys
+
+```bash
 W0_KEY=$(kubectl exec rccl-worker-0 -- cat /root/.ssh/id_rsa.pub)
 W1_KEY=$(kubectl exec rccl-worker-1 -- cat /root/.ssh/id_rsa.pub)
 kubectl exec rccl-worker-0 -- bash -c "echo '$W1_KEY' >> /root/.ssh/authorized_keys"
 kubectl exec rccl-worker-1 -- bash -c "echo '$W0_KEY' >> /root/.ssh/authorized_keys"
+```
 
+#### 3. Run RCCL test
+
+```bash
 # Get pod IPs
 W0_IP=$(kubectl get pod rccl-worker-0 -o jsonpath='{.status.podIP}')
 W1_IP=$(kubectl get pod rccl-worker-1 -o jsonpath='{.status.podIP}')
 
-# Run RCCL test (set GPUS_PER_NODE to match amd.com/gpu above)
+# Run (GPUS_PER_NODE must match amd.com/gpu in the pod spec above)
 kubectl exec rccl-worker-0 -- env GPUS_PER_NODE=8 run_rccl.sh $W0_IP $W1_IP all_reduce_perf
-
-# Cleanup
-kubectl delete pod rccl-worker-0 rccl-worker-1
 ```
+
+Available collectives: `all_reduce_perf`, `broadcast_perf`, `reduce_scatter_perf`, `all_gather_perf`, `alltoall_perf`, `reduce_perf`, `scatter_perf`, `gather_perf`, `sendrecv_perf`
 
 A successful run ends with:
 
@@ -130,21 +150,18 @@ A successful run ends with:
 # Avg bus bandwidth    : 6.66557
 ```
 
-**For VMs with VNICs (SR-IOV VFs):** replace `amd.com/nic` with `amd.com/vnic` and `amd-host-device-nad` with `vf-amd-host-device-nad`.
+#### 4. Cleanup
 
-## Using with CVF
+```bash
+kubectl delete pod rccl-worker-0 rccl-worker-1
+```
 
-For fleet-wide cluster validation, use the [Cluster Validation Framework](cluster_validation_framework/README.md). Set the image in the CVF `config.yaml`:
+### Automated Validation with CVF
+
+For automated, fleet-wide cluster validation, use the [Cluster Validation Framework](README.md) instead of deploying pods manually. Set the image in the CVF `config.yaml`:
 
 ```yaml
 RCCL_WORKLOAD_IMAGE: "rocm/roce-workload:<tag>"
 ```
 
-## Building a Custom Image
-
-To build a custom image with specific component versions, see the build instructions at [`docker/roce-workload/`](https://github.com/ROCm/network-operator/tree/main/docker/roce-workload).
-
-```bash
-cd docker/roce-workload
-./docker-build.sh <ainic_version>
-```
+See the [CVF deployment steps](README.md#deployment-steps) for the full setup.

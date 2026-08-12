@@ -12,10 +12,8 @@ Pre-built images are available on [Docker Hub](https://hub.docker.com/r/rocm/roc
 2. [Build Requirements](#build-requirements)
 3. [Build](#build)
 4. [Configuration](#configuration)
-5. [Verify the Image](#verify-the-image)
-6. [Included Tools](#included-tools)
-7. [Running RCCL Tests Manually](#running-rccl-tests-manually)
-8. [Usage with CVF](#usage-with-cvf)
+5. [Included Tools](#included-tools)
+6. [Running and Deploying](#running-and-deploying)
 
 ---
 
@@ -84,23 +82,6 @@ To reduce build time, set only the targets you need (e.g., `GPU_TARGETS="gfx942"
 
 ---
 
-## Verify the Image
-
-After building, verify all components are present (find your tag with `docker images | grep roce-workload`):
-
-```bash
-docker run --rm roce-workload:<tag> bash -c '
-  echo "RCCL:"; ls /root/rccl/build/release/librccl.so* | head -1
-  echo "ANP:"; find / -name "librccl-anp.so" 2>/dev/null | head -1
-  echo "RCCL tests:"; ls /root/rccl-tests/build/all_reduce_perf
-  echo "MPI:"; /root/ompi/install/bin/mpirun --version | head -1
-  echo "UCX:"; /root/ucx_build/bin/ucx_info -v | head -1
-  echo "show_gid:"; ls /usr/sbin/show_gid
-'
-```
-
----
-
 ## Included Tools
 
 - **`run_rccl.sh`** — standalone 2-node RCCL test runner. Configurable via environment variables:
@@ -120,139 +101,6 @@ docker run --rm roce-workload:<tag> bash -c '
 
 ---
 
-## Running RCCL Tests Manually
+## Running and Deploying
 
-> This section is for quick validation that the image works correctly. For fleet-wide cluster validation, use the [Cluster Validation Framework (CVF)](#usage-with-cvf).
-
-**Prerequisites:**
-
-- [AMD Network Operator](https://instinct.docs.amd.com/projects/network-operator/en/main/) deployed with a `NetworkConfig` CR
-- `amd-host-device-nad` [NetworkAttachmentDefinition](https://instinct.docs.amd.com/projects/network-operator/en/main/secondary_network/amd-host-device-cni.html) created
-- [AMD GPU Operator](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/) deployed (for `amd.com/gpu` device resources)
-
-Each pod generates its own SSH key pair on startup. Before running MPI, exchange keys between pods:
-
-### 1. Deploy workload pods
-
-```bash
-kubectl apply -f - <<'EOF'
-apiVersion: v1
-kind: Pod
-metadata:
-  name: rccl-worker-0
-  labels:
-    app: rccl-test
-  annotations:
-    k8s.v1.cni.cncf.io/networks: amd-host-device-nad,amd-host-device-nad  # one entry per NIC
-spec:
-  restartPolicy: Never
-  containers:
-  - name: worker
-    image: rocm/roce-workload:ubuntu24_rocm-7.2_rccl-ainic-oob-fb67e5b_anp-v1.3.0_ainic-1.117.5-a-77
-    securityContext:
-      capabilities:
-        add: [IPC_LOCK]
-    resources:
-      requests:
-        amd.com/gpu: 8   # adjust to match your hardware
-        amd.com/nic: 2
-      limits:
-        amd.com/gpu: 8
-        amd.com/nic: 2
-    volumeMounts:
-    - name: shm
-      mountPath: /dev/shm
-  volumes:
-  - name: shm
-    emptyDir:
-      medium: Memory
-      sizeLimit: 4Gi
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: rccl-worker-1
-  labels:
-    app: rccl-test
-  annotations:
-    k8s.v1.cni.cncf.io/networks: amd-host-device-nad,amd-host-device-nad  # one entry per NIC
-spec:
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchLabels:
-            app: rccl-test
-        topologyKey: kubernetes.io/hostname
-  restartPolicy: Never
-  containers:
-  - name: worker
-    image: rocm/roce-workload:ubuntu24_rocm-7.2_rccl-ainic-oob-fb67e5b_anp-v1.3.0_ainic-1.117.5-a-77
-    securityContext:
-      capabilities:
-        add: [IPC_LOCK]
-    resources:
-      requests:
-        amd.com/gpu: 8
-        amd.com/nic: 2
-      limits:
-        amd.com/gpu: 8
-        amd.com/nic: 2
-    volumeMounts:
-    - name: shm
-      mountPath: /dev/shm
-  volumes:
-  - name: shm
-    emptyDir:
-      medium: Memory
-      sizeLimit: 4Gi
-EOF
-```
-
-Adjust `amd.com/gpu` and `amd.com/nic` counts to match your hardware. The anti-affinity rule ensures pods land on different nodes automatically.
-
-**For VMs with VNICs (SR-IOV VFs):** replace `amd.com/nic` with `amd.com/vnic` and `amd-host-device-nad` with `vf-amd-host-device-nad` in the pod spec above.
-
-### 2. Exchange SSH keys
-
-```bash
-W0_KEY=$(kubectl exec rccl-worker-0 -- cat /root/.ssh/id_rsa.pub)
-W1_KEY=$(kubectl exec rccl-worker-1 -- cat /root/.ssh/id_rsa.pub)
-kubectl exec rccl-worker-0 -- bash -c "echo '$W1_KEY' >> /root/.ssh/authorized_keys"
-kubectl exec rccl-worker-1 -- bash -c "echo '$W0_KEY' >> /root/.ssh/authorized_keys"
-```
-
-### 3. Run RCCL test
-
-```bash
-# Get pod IPs
-W0_IP=$(kubectl get pod rccl-worker-0 -o jsonpath='{.status.podIP}')
-W1_IP=$(kubectl get pod rccl-worker-1 -o jsonpath='{.status.podIP}')
-
-# Run (GPUS_PER_NODE must match amd.com/gpu in the pod spec above)
-kubectl exec rccl-worker-0 -- env GPUS_PER_NODE=8 run_rccl.sh $W0_IP $W1_IP all_reduce_perf
-```
-
-Available collectives: `all_reduce_perf`, `broadcast_perf`, `reduce_scatter_perf`, `all_gather_perf`, `alltoall_perf`, `reduce_perf`, `scatter_perf`, `gather_perf`, `sendrecv_perf`
-
-A successful run prints a bandwidth table and ends with:
-
-```text
-# Avg bus bandwidth    : 6.66557
-```
-
-### 4. Cleanup
-
-```bash
-kubectl delete pod rccl-worker-0 rccl-worker-1
-```
-
----
-
-## Usage with CVF
-
-Set the image in the [Cluster Validation Framework](https://instinct.docs.amd.com/projects/network-operator/en/main/cluster_validation_framework/README.html) `config.yaml`:
-
-```yaml
-RCCL_WORKLOAD_IMAGE: "rocm/roce-workload:ubuntu24_rocm-7.2_rccl-ainic-oob-fb67e5b_anp-v1.3.0_ainic-1.117.5-a-77"
-```
+For deployment instructions (pod manifests, RCCL tests, CVF integration), see the [RoCE Workload Image documentation](https://instinct.docs.amd.com/projects/network-operator/en/latest/cluster_validation_framework/roce-workload.html).
