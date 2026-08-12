@@ -1,6 +1,6 @@
 # Cluster Validation and Job Scheduling Framework
 
-The **Cluster  Validation and Job Scheduling Framework** is a Kubernetes-based framework designed to periodically verify the health and readiness of worker nodes present in the cluster through active tests. This framework can also be used for validating a set of newly added worker nodes to the kubernetes cluster before scheduling distributed training,inference workloads on them.
+The **Cluster Validation and Job Scheduling Framework** is a Kubernetes-based framework designed to periodically verify the health and readiness of worker nodes present in the cluster through active tests. This framework can also be used for validating a set of newly added worker nodes to the Kubernetes cluster before scheduling distributed training, inference workloads on them.
 
 In addition to validation, this framework can be leveraged for scheduling and orchestrating distributed AI and HPC workloads, ensuring that performance-verified nodes participate in large-scale compute jobs.
 
@@ -80,6 +80,7 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 
 3. **RCCL Test Execution**
    * A job manifest (like `MPIJob`) is applied dynamically using `kubectl apply`.
+   * The job uses the [RoCE workload image](roce-workload.md) which bundles ROCm, RCCL, MPI, and AINIC user-space libraries.
    * The job runs distributed or node-local workloads to test network, GPU, AINIC and system health.
 
 4. **Result Validation**
@@ -91,9 +92,9 @@ This framework supports Gang Scheduling  by checking for Pod Running status and 
 
 ---
 
-## 🚀 Deployment Steps
+## Deployment Steps
 
-## 1. Create ConfigMaps
+### 1. Create ConfigMaps
 
 [Download ConfigMap YAML](../_static/cluster-validation-config.yaml)
 
@@ -103,7 +104,7 @@ kubectl apply -f cluster-validation-config.yaml
 
 ---
 
-## 2. Deploy Cluster Validation Job
+### 2. Deploy Cluster Validation Job
 
 [Download CronJob YAML](../_static/cluster-validation-job.yaml)
 (CronJob + MPIJob Template + RBAC)
@@ -114,7 +115,7 @@ kubectl apply -f cluster-validation-job.yaml
 
 ---
 
-## 3. Verify CronJob
+### 3. Verify CronJob
 
 ```bash
 kubectl get cronjob cluster-validation-cron-job
@@ -123,25 +124,14 @@ kubectl get jobs
 
 ---
 
-## 4. Check Node Labels
+### 4. Check Node Labels
 
 ```bash
 kubectl get nodes --show-labels | grep cluster-validation-status
 kubectl describe node | grep "amd.com/cluster-validation\|Name:"
 ```
 
----
-
-## 5. Inspect Logs
-
-```bash
-kubectl logs job/cluster-validation-cron-job-<29379315>
-kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
-```
-
----
-
-## Example Output Labels
+Example output labels:
 
 | Node   | Label                                       | Meaning                                                     |
 | ------ | ------------------------------------------- | ----------------------------------------------------------- |
@@ -151,9 +141,18 @@ kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
 
 ---
 
+### 5. Inspect Logs
+
+```bash
+kubectl logs job/cluster-validation-cron-job-<29379315>
+kubectl logs job/cluster-validation-mpi-job-<20251110-0715>-launcher
+```
+
+---
+
 ## Notes for Operators
 
-* Update image tags (**[roce-workload](../roce-workload.md)**, **network-operator-utils**) as needed before deployment.
+* Update image tags (**[roce-workload](roce-workload.md)**, **network-operator-utils**) as needed before deployment.
 * Modify `cluster-validation-config.yaml` to align with your deployment environment.
 * Ensure `slotsPerWorker` and resource limits correspond to the underlying GPU and NIC configuration.  
 * Adjust `CronJob.spec` to set the job frequency.  

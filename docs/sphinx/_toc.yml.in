@@ -69,5 +69,5 @@ subtrees:
     entries:
       - file: cluster_validation_framework/README
         title: Cluster Validation and Job Scheduling
-      - file: roce-workload
+      - file: cluster_validation_framework/roce-workload
         title: RoCE Workload Image

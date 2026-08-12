@@ -25,7 +25,7 @@ This step defines a secondary network using a NetworkAttachmentDefinition, which
 
 ### 2. Deploy the Workload
 
-Pre-built workload images are available on [Docker Hub](https://hub.docker.com/r/rocm/roce-workload). To build a custom image, see [RoCE Workload Image](../roce-workload.md).
+Pre-built workload images are available on [Docker Hub](https://hub.docker.com/r/rocm/roce-workload). To build a custom image, see [RoCE Workload Image](../cluster_validation_framework/roce-workload.md).
 
 Create a workload requesting for a nic/vnic
 
