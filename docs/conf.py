@@ -20,6 +20,7 @@ html_theme = "rocm_docs_theme"
 html_theme_options = {
     "flavor": "instinct",
     "link_main_doc": True,
+    "use_download_button": True,
     # Add any additional theme options here
 }
 extensions = [
@@ -30,6 +31,11 @@ extensions = [
 # Table of contents
 external_toc_path = "./sphinx/_toc.yml"
 external_toc_exclude_missing = False
+
+# Generate llms.txt and llms-full.txt after each build (the llms.txt standard,
+# https://llmstxt.org/). See the rocm-docs-core guide:
+# https://rocm.docs.amd.com/projects/rocm-docs-core/en/latest/user_guide/llms.html
+rocm_docs_generate_llms = True
 
 # Only for new projects. Remove when stable.
 nitpicky = True
