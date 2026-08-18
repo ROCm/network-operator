@@ -331,6 +331,7 @@ var _ = PDescribe("setKMMModuleLoader", func() {
 		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModuleName = networkDriverModuleName
 		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder = []string{
 			networkDriverModuleName,
+			ionicModuleName,
 			pdsCoreModuleName,
 			tawkIPCModuleName,
 		}
@@ -409,6 +410,7 @@ var _ = PDescribe("setKMMModuleLoader", func() {
 		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModuleName = networkDriverModuleName
 		expectedMod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder = []string{
 			networkDriverModuleName,
+			ionicModuleName,
 			pdsCoreModuleName,
 			tawkIPCModuleName,
 		}
