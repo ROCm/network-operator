@@ -273,11 +273,9 @@ func (km *kmmModule) setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Mod
 	}
 
 	// Use ionic_rdma as the main module (topmost module in the dependency chain)
-	// KMM's modulesLoadingOrder expects: [topmost module, then soft deps it needs]
-	// ionic is a hard kernel dependency of ionic_rdma (handled by depmod/modprobe
-	// automatically) and must NOT be in modulesLoadingOrder — including it prevents
-	// KMM from unloading pds_core and tawk_ipc via the softdep reverse chain.
-	// Only soft dependencies (not tracked by depmod) belong in this list.
+	// KMM's modulesLoadingOrder expects: [topmost module, then what it depends on, etc.]
+	// Dependency chain: ionic_rdma -> ionic -> pds_core -> tawk_ipc
+	// For unloading, KMM will reverse this order automatically
 	moduleName := networkDriverModuleName
 	var modulesLoadingOrder []string
 
@@ -291,12 +289,13 @@ func (km *kmmModule) setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Mod
 		modulesLoadingOrder = mod.Spec.ModuleLoader.Container.Modprobe.ModulesLoadingOrder
 		kmlog.Info(fmt.Sprintf("Preserving existing modulesLoadingOrder for upgrade: %v", modulesLoadingOrder))
 	} else {
-		// New installation: only list soft dependencies that depmod doesn't know about.
-		// ionic is omitted because it is a hard kernel dependency of ionic_rdma.
+		// New installation: use correct module loading order
+		// ionic_rdma is the topmost module, followed by its dependencies
 		modulesLoadingOrder = []string{
 			networkDriverModuleName, // ionic_rdma (topmost module)
-			pdsCoreModuleName,       // pds_core (soft dep)
-			tawkIPCModuleName,       // tawk_ipc (soft dep)
+			ionicModuleName,         // ionic (ionic_rdma depends on this)
+			pdsCoreModuleName,       // pds_core (ionic depends on this)
+			tawkIPCModuleName,       // tawk_ipc (pds_core depends on this)
 		}
 		kmlog.Info(fmt.Sprintf("Using new modulesLoadingOrder for fresh installation: %v", modulesLoadingOrder))
 	}
