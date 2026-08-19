@@ -5,18 +5,20 @@ defaults:
 subtrees:
   - caption: Usage
     entries:
-    - file: overview
-      title: Network Operator Overview
-    - file: releasenotes
-      title: Release Notes
-    - file: troubleshooting
-      title: Troubleshooting 
+      - file: overview
+        title: Network Operator Overview
+      - file: releasenotes
+        title: Release Notes
+      - file: troubleshooting
+        title: Troubleshooting
   - caption: Installation
     entries:
       - file: installation/kubernetes-helm
         title: Kubernetes (Helm)
       - file: installation/kubernetes-helm-operators
         title: Install GPU and Network Operators
+      - file: installation/openshift-olm
+        title: OpenShift (OLM)
       - file: installation/networkconfig
         title: Custom Resource Guide
       - file: installation/networkconfig-full.md
@@ -25,10 +27,6 @@ subtrees:
         title: Workload Deployment
       - file: uninstallation/uninstallation
         title: Uninstallation
-  - caption: OpenShift
-    entries:
-      - file: openshift/installation-guide
-        title: Installation Guide
   - caption: Upgrades 
     entries:
       - file: upgrades/upgrade

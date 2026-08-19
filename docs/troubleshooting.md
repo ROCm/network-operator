@@ -51,3 +51,25 @@ Options:
 
    - `lsmod` output (loaded kernel modules)
    - `dmesg` output (kernel ring buffer)
+
+## Verifying Driver Modules
+
+On OpenShift with KMM, verify whether the loaded kernel module is the out-of-tree
+(KMM-managed) version or the in-box RHEL version by comparing `srcversion`:
+
+```bash
+# What's running in memory
+cat /sys/module/ionic/srcversion
+
+# In-box version on disk
+modinfo -F srcversion /lib/modules/$(uname -r)/kernel/drivers/net/ethernet/pensando/ionic/ionic.ko.xz
+
+# Out-of-tree version (if on disk)
+modinfo -F srcversion /opt/lib/modules/$(uname -r)/extra/ionic.ko
+```
+
+If the loaded srcversion matches the in-box file, the KMM out-of-tree driver did not
+load correctly.
+
+> **Note:** `modinfo -F filename ionic` always shows the on-disk in-box path regardless of
+> which version is actually loaded in memory. Do not use it to determine the active driver.
