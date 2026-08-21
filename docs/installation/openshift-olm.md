@@ -233,8 +233,6 @@ export DRIVERS_VERSION="1.117.5-a-56"
 export KERNEL_VERSION="5.14.0-570.76.1.el9_6.x86_64"
 export RHEL_VERSION="9.6"
 
-# Operator versions
-export OPERATOR_VERSION="v1.2.1"
 
 # Registry configuration
 export REGISTRY_URL="registry.test.pensando.io:5000"
@@ -398,12 +396,12 @@ spec:
 
   devicePlugin:
     enableNodeLabeller: true
-    devicePluginImage: docker.io/rocm/k8s-device-plugin:rhubi-latest
-    nodeLabellerImage: docker.io/rocm/k8s-device-plugin:labeller-rhubi-latest
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:latest
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:latest
 
   metricsExporter:
     enable: true
-    image: docker.io/rocm/device-metrics-exporter:v1.2.0
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
 EOF
 ```
 
@@ -439,12 +437,12 @@ spec:
 
   devicePlugin:
     enableNodeLabeller: true
-    devicePluginImage: docker.io/rocm/k8s-device-plugin:rhubi-latest
-    nodeLabellerImage: docker.io/rocm/k8s-device-plugin:labeller-rhubi-latest
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:latest
+    nodeLabellerImage: docker.io/rocm/k8s-network-node-labeller:latest
 
   metricsExporter:
     enable: true
-    image: docker.io/rocm/device-metrics-exporter:v1.2.0
+    image: docker.io/rocm/device-metrics-exporter:nic-v1.2.0
 EOF
 ```
 
@@ -851,18 +849,15 @@ For backend network configuration options, see the
 
 ```bash
 # Delete all NetworkConfig CRs first
-kubectl delete networkconfigs.amd.com -n openshift-amd-network --all
+oc delete networkconfigs.amd.com -n openshift-amd-network --all
 
-# Clean up using operator-sdk
-./bin/operator-sdk cleanup amd-network-operator -n openshift-amd-network
-
-# Or manually delete subscription and CSV
-kubectl delete subscription amd-network-operator -n openshift-amd-network
-kubectl delete csv amd-network-operator.<version> -n openshift-amd-network
+# Delete the operator subscription and CSV
+oc delete subscription amd-network-operator -n openshift-amd-network
+oc delete csv -n openshift-amd-network -l operators.coreos.com/amd-network-operator.openshift-amd-network
 
 # Delete CatalogSource (if using catalog method)
-kubectl delete catalogsource amd-network-operator-catalog -n openshift-marketplace
+oc delete catalogsource amd-network-operator-catalog -n openshift-marketplace
 
 # Delete namespace (optional)
-kubectl delete namespace openshift-amd-network
+oc delete namespace openshift-amd-network
 ```
