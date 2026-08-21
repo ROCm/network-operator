@@ -97,6 +97,7 @@ GPUs
 Grafana
 gRPC
 Gurunathan
+hoc
 honorLabels
 honorTimestamps
 host-device
@@ -116,10 +117,13 @@ insecureSkipVerify
 installdefaultNFDRule
 intra
 io
+iommu
+IOMMU
 IOV
 ipam
 ipc
 IPC
+IPs
 IPv
 JPG
 json
@@ -141,8 +145,8 @@ Kustomize
 labeller
 Labeller
 learnings
-LIF
 libionic
+LIF
 lifecycle
 LSP
 LTS
@@ -176,6 +180,8 @@ NFD
 nic
 NICCTL
 NICs
+NMState
+NNCP
 nodeAffinity
 NodeFeatureDiscovery
 nodelabeller
@@ -202,12 +208,13 @@ OpenShift's
 OperatorGroup
 OperatorHub
 oyaml
+passthrough
 Passthrough
 pci
 pds
 PDS
-perf
 Pensando
+perf
 Podman
 Pollara
 PostToolUse
@@ -231,6 +238,7 @@ relatedImageSignPullSecret
 relatedImageWorker
 relatedImageWorkerPullSecret
 repo
+RHCOS
 RHEL
 roce
 RoCE
@@ -253,6 +261,7 @@ ServiceMonitor
 serviceType
 SessionEnd
 SessionStart
+srcversion
 SR-IOV
 sriov
 staticAuthorization

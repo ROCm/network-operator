@@ -38,6 +38,21 @@ The following prerequisites need to be done on each new node which is intended t
 
 Back-end networking should be set up on the new node, and connectivity to other nodes in the cluster should be configured.
 
+### OpenShift-Specific Requirements
+
+On OpenShift clusters, the following additional configuration is required:
+
+* **`iommu=pt` kernel parameter** must be set via MachineConfig. Without it, GPU IPC
+  fails and RCCL tests crash. See
+  [OpenShift (OLM)](../installation/openshift-olm.md#iommu-pt-kernel-parameter) for the
+  MachineConfig YAML.
+
+### Back-end RoCE Network Configuration
+
+The back-end RoCE network should use **L3 (routed) networking** with each AINIC interface on a separate subnet. RoCE interfaces should be configured with **jumbo frames** (MTU 9000–9216) for optimal performance — this can be set via the [tuning CNI plugin](https://www.cni.dev/plugins/current/meta/tuning/) chained after the AMD Host Device CNI in the NetworkAttachmentDefinition.
+
+For detailed NIC, switch, and routing configuration guidance, refer to the [RoCE Cluster Network Configuration](https://instinct.docs.amd.com/projects/cluster-documentation/latest/how-to/roce-network-config.html) guide.
+
 ---
 
 ## Architecture

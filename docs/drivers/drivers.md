@@ -45,7 +45,7 @@ Some operating systems may include an in-tree `ionic` kernel module. That module
 * sudo update-initramfs -u
 * sudo reboot
 
-**OpenShift:** The `spec.driver.blacklist` field is not supported on OpenShift. Instead, use a MachineConfig resource to blacklist the in-tree ionic module. See the [OpenShift Installation Guide](../openshift/installation-guide.md#2-blacklist-in-tree-ionic-driver-recommended) for details.
+**OpenShift:** The `spec.driver.blacklist` field is not supported on OpenShift. Instead, use a MachineConfig resource to blacklist the in-tree ionic module. See the [OpenShift Installation Guide](../installation/openshift-olm.md#2-blacklist-in-tree-ionic-driver-recommended) for details.
 ```
 
 For example:
