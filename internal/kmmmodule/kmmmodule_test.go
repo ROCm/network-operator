@@ -231,6 +231,31 @@ var _ = Describe("BaseImageRegistry and BaseImageRegistryTLS", func() {
 	})
 })
 
+var _ = Describe("getKmodsToSign", func() {
+	It("should return exact expected paths for OpenShift", func() {
+		kv := "5.14.0-427.el9.x86_64"
+		files := getKmodsToSign(true, kv)
+		Expect(files).To(ConsistOf(
+			"/opt/lib/modules/"+kv+"/extra/tawk_ipc.ko",
+			"/opt/lib/modules/"+kv+"/extra/pds_core.ko",
+			"/opt/lib/modules/"+kv+"/extra/ionic.ko",
+			"/opt/lib/modules/"+kv+"/extra/ionic_rdma.ko",
+		))
+	})
+
+	It("should return exact expected paths for non-OpenShift", func() {
+		kv := "6.8.0-40-generic"
+		files := getKmodsToSign(false, kv)
+		Expect(files).To(ConsistOf(
+			"/opt/lib/modules/"+kv+"/updates/dkms/ib_peer_mem.ko",
+			"/opt/lib/modules/"+kv+"/updates/dkms/ionic.ko",
+			"/opt/lib/modules/"+kv+"/updates/dkms/ionic_rdma.ko",
+			"/opt/lib/modules/"+kv+"/kernel/drivers/infiniband/core/ib_core.ko",
+			"/opt/lib/modules/"+kv+"/kernel/drivers/infiniband/core/ib_uverbs.ko",
+		))
+	})
+})
+
 var _ = Describe("getKernelMappings", func() {
 	newNetworkConfig := func() *amdv1alpha1.NetworkConfig {
 		return &amdv1alpha1.NetworkConfig{
