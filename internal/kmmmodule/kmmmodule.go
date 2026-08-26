@@ -624,7 +624,12 @@ func getNodeSelector(nwConfig *amdv1alpha1.NetworkConfig) map[string]string {
 
 func getKmodsToSign(isOpenShift bool, kernelVersion string) []string {
 	if isOpenShift {
-		return []string{} // TODO add support for signing in OpenShift
+		return []string{
+			"/opt/lib/modules/" + kernelVersion + "/extra/tawk_ipc.ko",
+			"/opt/lib/modules/" + kernelVersion + "/extra/pds_core.ko",
+			"/opt/lib/modules/" + kernelVersion + "/extra/ionic.ko",
+			"/opt/lib/modules/" + kernelVersion + "/extra/ionic_rdma.ko",
+		}
 	}
 	return []string{
 		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/ib_peer_mem.ko",
