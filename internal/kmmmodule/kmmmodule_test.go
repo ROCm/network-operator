@@ -256,6 +256,78 @@ var _ = Describe("getKmodsToSign", func() {
 	})
 })
 
+var _ = Describe("ImageRegistryTLS propagation to Module CR container", func() {
+	It("should propagate imageRegistryTLS to container.registryTLS", func() {
+		insecure := true
+		skipTLS := true
+		driverEnable := true
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+					Enable:  &driverEnable,
+					ImageRegistryTLS: amdv1alpha1.RegistryTLS{
+						Insecure:              &insecure,
+						InsecureSkipTLSVerify: &skipTLS,
+					},
+				},
+			},
+		}
+		mod := kmmv1beta1.Module{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-module",
+				Namespace: "test-ns",
+			},
+		}
+		km := &kmmModule{
+			client:      nil,
+			scheme:      scheme,
+			isOpenShift: false,
+		}
+
+		err := km.setKMMModuleLoader(context.TODO(), &mod, nwConfig, testNodeList)
+		Expect(err).To(BeNil())
+		Expect(mod.Spec.ModuleLoader.Container.RegistryTLS.Insecure).To(Equal(true))
+		Expect(mod.Spec.ModuleLoader.Container.RegistryTLS.InsecureSkipTLSVerify).To(Equal(true))
+	})
+
+	It("should not set container.registryTLS when imageRegistryTLS is not configured", func() {
+		driverEnable := true
+		nwConfig := &amdv1alpha1.NetworkConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-config",
+				Namespace: "test-ns",
+			},
+			Spec: amdv1alpha1.NetworkConfigSpec{
+				Driver: amdv1alpha1.DriverSpec{
+					Version: "6.2.2",
+					Enable:  &driverEnable,
+				},
+			},
+		}
+		mod := kmmv1beta1.Module{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-module",
+				Namespace: "test-ns",
+			},
+		}
+		km := &kmmModule{
+			client:      nil,
+			scheme:      scheme,
+			isOpenShift: false,
+		}
+
+		err := km.setKMMModuleLoader(context.TODO(), &mod, nwConfig, testNodeList)
+		Expect(err).To(BeNil())
+		Expect(mod.Spec.ModuleLoader.Container.RegistryTLS.Insecure).To(Equal(false))
+		Expect(mod.Spec.ModuleLoader.Container.RegistryTLS.InsecureSkipTLSVerify).To(Equal(false))
+	})
+})
+
 var _ = Describe("getKernelMappings", func() {
 	newNetworkConfig := func() *amdv1alpha1.NetworkConfig {
 		return &amdv1alpha1.NetworkConfig{
