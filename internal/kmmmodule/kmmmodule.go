@@ -309,6 +309,12 @@ func (km *kmmModule) setKMMModuleLoader(ctx context.Context, mod *kmmv1beta1.Mod
 		Version:        nwConfig.Spec.Driver.Version,
 		KernelMappings: kernelMappings,
 	}
+	if nwConfig.Spec.Driver.ImageRegistryTLS.Insecure != nil {
+		mod.Spec.ModuleLoader.Container.RegistryTLS.Insecure = *nwConfig.Spec.Driver.ImageRegistryTLS.Insecure
+	}
+	if nwConfig.Spec.Driver.ImageRegistryTLS.InsecureSkipTLSVerify != nil {
+		mod.Spec.ModuleLoader.Container.RegistryTLS.InsecureSkipTLSVerify = *nwConfig.Spec.Driver.ImageRegistryTLS.InsecureSkipTLSVerify
+	}
 	if mod.Spec.ModuleLoader.Container.Version == "" {
 		mod.Spec.ModuleLoader.Container.Version = driversVersion
 	}
