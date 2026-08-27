@@ -631,14 +631,19 @@ func getNodeSelector(nwConfig *amdv1alpha1.NetworkConfig) map[string]string {
 func getKmodsToSign(isOpenShift bool, kernelVersion string) []string {
 	if isOpenShift {
 		return []string{
+			"/opt/lib/modules/" + kernelVersion + "/extra/ib_peer_mem.ko",
 			"/opt/lib/modules/" + kernelVersion + "/extra/tawk_ipc.ko",
 			"/opt/lib/modules/" + kernelVersion + "/extra/pds_core.ko",
 			"/opt/lib/modules/" + kernelVersion + "/extra/ionic.ko",
 			"/opt/lib/modules/" + kernelVersion + "/extra/ionic_rdma.ko",
+			"/opt/lib/modules/" + kernelVersion + "/kernel/drivers/infiniband/core/ib_core.ko",
+			"/opt/lib/modules/" + kernelVersion + "/kernel/drivers/infiniband/core/ib_uverbs.ko",
 		}
 	}
 	return []string{
 		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/ib_peer_mem.ko",
+		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/tawk_ipc.ko",
+		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/pds_core.ko",
 		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/ionic.ko",
 		"/opt/lib/modules/" + kernelVersion + "/updates/dkms/ionic_rdma.ko",
 		"/opt/lib/modules/" + kernelVersion + "/kernel/drivers/infiniband/core/ib_core.ko",
