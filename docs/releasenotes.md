@@ -2,9 +2,35 @@
 
 ## v1.2.1
 
+This release adds OpenShift (OLM) deployment support, configurable base image registries for air-gapped environments, and a modernized RoCE workload image, alongside numerous bug fixes for OpenShift driver management, OLM packaging, and node lifecycle operations.
+
+### Release Highlights
+
+- **Network Operator**
+  - Added OLM (Operator Lifecycle Manager) deployment support for OpenShift
+  - Added `BaseImageRegistry` and `BaseImageRegistryTLS` CRD fields for configuring custom base image registries in air-gapped or private registry environments, with platform-aware defaults (Docker Hub for Ubuntu, Red Hat registry for OpenShift/RHEL)
+  - Added automatic unloading of the in-tree `ionic` kernel driver on OpenShift via `InTreeModulesToRemove`, resolving module conflicts that prevented KMM from loading out-of-tree drivers
+
+- **AMD Host Device CNI**
+  - Added fallback path resolution for the `host-device` plugin on OpenShift CoreOS where `/opt/cni` is a broken symlink. The plugin now reads `CNI_PATH` from the environment (set by Multus per the CNI spec) and appends fallback directories (`/opt/cni/bin`, `/var/lib/cni/bin`, `/usr/libexec/cni`), ensuring the delegate binary is found regardless of where it is installed
+
+- **RoCE Workload Image**
+  - Modernized RCCL workload image build with a multi-stage Dockerfile that builds UCX, OpenMPI, and RCCL from source, replacing the previous shell-script-driven approach
+
 ### Bug Fixes
 
-- **AMD Host Device CNI**: Fixed `host-device` plugin lookup failure on OpenShift CoreOS where `/opt/cni` is a broken symlink. The plugin now reads `CNI_PATH` from the environment (set by Multus per the CNI spec) instead of hardcoding `/opt/cni/bin`, with fallback to `/var/lib/cni/bin` and `/usr/libexec/cni`
+- Fixed kernel module loading order that caused `NetworkConfig` deletion to hang
+- Fixed CoreOS KMM driver builds on OpenShift 4.21.7+ where `dnf` is no longer available in the DTK image
+- Fixed Multus config detection to support both `.conf` and `.conflist` formats on K3s with Flannel
+- Fixed stale KMM version-module labels persisting on nodes after `NetworkConfig` deletion
+- Fixed node label cleanup removing unrelated labels during `NetworkConfig` deletion
+- Fixed missing `device-plugin` ServiceAccount for OLM deployments
+- Fixed OLM bundle versioning that prevented OpenShift operator upgrades
+- Fixed OLM bundle image tagging that prevented successful operator publishing
+- Fixed OpenShift Helm chart build failures and cleaned up stale metadata from OLM bundle
+- Fixed base image registry configuration not being applied in all build stages
+- Fixed `imageRegistryTLS` not being propagated to the KMM module container, leaving TLS settings empty for private registries
+- Fixed node labeller reporting `default` profile for all NICs
 
 ## v1.2.0
 
