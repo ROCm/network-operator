@@ -1,19 +1,14 @@
----
-# Source: network-operator-charts/templates/networkconfig-crd.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: networkconfigs.amd.com
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.0
+  creationTimestamp: null
   labels:
     app.kubernetes.io/component: amd-network
+    app.kubernetes.io/name: amd-network
     app.kubernetes.io/part-of: amd-network
-    helm.sh/chart: network-operator-charts-v1.2.1
-    app.kubernetes.io/name: network-operator-charts
-    app.kubernetes.io/instance: amd-network
-    app.kubernetes.io/version: "dev"
-    app.kubernetes.io/managed-by: Helm
+  name: networkconfigs.amd.com
 spec:
   group: amd.com
   names:
@@ -48,15 +43,16 @@ spec:
           metadata:
             type: object
           spec:
-            description: NetworkConfigSpec describes how the AMD Network operator should
-              enable AMD Network device for customer's use.
+            description: NetworkConfigSpec describes how the AMD Network operator
+              should enable AMD Network device for customer's use.
             properties:
               commonConfig:
                 description: common config
                 properties:
                   initContainerImage:
-                    description: InitContainerImage is being used for the operands pods,
-                      i.e. metrics exporter, test runner, device plugin and node labeller
+                    description: InitContainerImage is being used for the operands
+                      pods, i.e. metrics exporter, test runner, device plugin and
+                      node labeller
                     type: string
                   utilsContainer:
                     description: UtilsContainer contains parameters to configure operator's
@@ -187,8 +183,8 @@ spec:
                       maxUnavailable:
                         default: 1
                         description: MaxUnavailable specifies the maximum number of
-                          Pods that can be unavailable during the update process. Applicable
-                          for RollingUpdate only. Default value is 1.
+                          Pods that can be unavailable during the update process.
+                          Applicable for RollingUpdate only. Default value is 1.
                         format: int32
                         type: integer
                       upgradeStrategy:
@@ -336,8 +332,8 @@ spec:
                       maxUnavailable:
                         default: 1
                         description: MaxUnavailable specifies the maximum number of
-                          Pods that can be unavailable during the update process. Applicable
-                          for RollingUpdate only. Default value is 1.
+                          Pods that can be unavailable during the update process.
+                          Applicable for RollingUpdate only. Default value is 1.
                         format: int32
                         type: integer
                       upgradeStrategy:
@@ -401,7 +397,8 @@ spec:
                               exists using plain HTTP.
                             type: boolean
                           insecureSkipTLSVerify:
-                            description: If true, skip any TLS server certificate validation
+                            description: If true, skip any TLS server certificate
+                              validation
                             type: boolean
                         type: object
                       sourceImageRepo:
@@ -414,8 +411,8 @@ spec:
                         type: string
                     type: object
                   imageRegistrySecret:
-                    description: secrets used for pull/push images from/to private registry
-                      specified in driversImage
+                    description: secrets used for pull/push images from/to private
+                      registry specified in driversImage
                     properties:
                       name:
                         default: ""
@@ -433,8 +430,8 @@ spec:
                       image
                     properties:
                       insecure:
-                        description: If true, check if the container image already exists
-                          using plain HTTP.
+                        description: If true, check if the container image already
+                          exists using plain HTTP.
                         type: boolean
                       insecureSkipTLSVerify:
                         description: If true, skip any TLS server certificate validation
@@ -563,8 +560,8 @@ spec:
                             type: integer
                         type: object
                       podDeletionPolicy:
-                        description: Pod Deletion policy. If both NodeDrainPolicy and
-                          PodDeletionPolicy config is available, NodeDrainPolicy(if
+                        description: Pod Deletion policy. If both NodeDrainPolicy
+                          and PodDeletionPolicy config is available, NodeDrainPolicy(if
                           enabled) will take precedence.
                         properties:
                           force:
@@ -580,16 +577,16 @@ spec:
                           timeoutSeconds:
                             default: 300
                             description: TimeoutSecond specifies the length of time
-                              in seconds to wait before giving up on pod deletion, zero
-                              means infinite
+                              in seconds to wait before giving up on pod deletion,
+                              zero means infinite
                             minimum: 0
                             type: integer
                         type: object
                       rebootRequired:
                         default: true
                         description: reboot between driver upgrades, enabled by default,
-                          if enabled spec.commonConfig.utilsContainer will be used to
-                          perform reboot on worker nodes
+                          if enabled spec.commonConfig.utilsContainer will be used
+                          to perform reboot on worker nodes
                         type: boolean
                     type: object
                   useSourceImage:
@@ -621,8 +618,8 @@ spec:
                     type: boolean
                   hostNetwork:
                     default: true
-                    description: HostNetwork enables metrics exporter to use host networking,
-                      enabled by default
+                    description: HostNetwork enables metrics exporter to use host
+                      networking, enabled by default
                     type: boolean
                   image:
                     description: metrics exporter image
@@ -651,17 +648,18 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   nodePort:
-                    description: NodePort is the external port for pulling metrics from
-                      outside the cluster, in the range 30000-32767 (assigned automatically
-                      by default)
+                    description: NodePort is the external port for pulling metrics
+                      from outside the cluster, in the range 30000-32767 (assigned
+                      automatically by default)
                     format: int32
                     maximum: 32767
                     minimum: 30000
                     type: integer
                   port:
                     default: 5001
-                    description: Port is the internal port used for in-cluster and node
-                      access to pull metrics from the metrics-exporter (default 5001).
+                    description: Port is the internal port used for in-cluster and
+                      node access to pull metrics from the metrics-exporter (default
+                      5001).
                     format: int32
                     type: integer
                   prometheus:
@@ -678,7 +676,7 @@ spec:
                                 description: |-
                                   When set to true, Prometheus attaches node metadata to the discovered
                                   targets.
-  
+
                                   The Prometheus service account must have the `list` and `watch`
                                   permissions on the `Nodes` objects.
                                 type: boolean
@@ -705,8 +703,8 @@ spec:
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                     type: string
                                   optional:
-                                    description: Specify whether the Secret or its key
-                                      must be defined
+                                    description: Specify whether the Secret or its
+                                      key must be defined
                                     type: boolean
                                 required:
                                 - key
@@ -715,9 +713,9 @@ spec:
                               type:
                                 description: |-
                                   Defines the authentication type. The value is case-insensitive.
-  
+
                                   "Basic" is not a supported value.
-  
+
                                   Default: "Bearer"
                                 type: string
                             type: object
@@ -727,8 +725,8 @@ spec:
                               Deprecated: Use Authorization instead. This field is kept for backward compatibility.
                             type: string
                           enable:
-                            description: Enable or disable ServiceMonitor creation (default
-                              false)
+                            description: Enable or disable ServiceMonitor creation
+                              (default false)
                             type: boolean
                           honorLabels:
                             default: true
@@ -757,17 +755,17 @@ spec:
                               description: |-
                                 RelabelConfig allows dynamic rewriting of the label set for targets, alerts,
                                 scraped samples and remote write samples.
-  
+
                                 More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
                               properties:
                                 action:
                                   default: replace
                                   description: |-
                                     Action to perform based on the regex matching.
-  
+
                                     `Uppercase` and `Lowercase` actions require Prometheus >= v2.36.0.
                                     `DropEqual` and `KeepEqual` actions require Prometheus >= v2.41.0.
-  
+
                                     Default: "Replace"
                                   enum:
                                   - replace
@@ -796,7 +794,7 @@ spec:
                                 modulus:
                                   description: |-
                                     Modulus to take of the hash of the source label values.
-  
+
                                     Only applicable when the action is `HashMod`.
                                   format: int64
                                   type: integer
@@ -808,7 +806,7 @@ spec:
                                   description: |-
                                     Replacement value against which a Replace action is performed if the
                                     regular expression matches.
-  
+
                                     Regex capture groups are available.
                                   type: string
                                 separator:
@@ -830,31 +828,32 @@ spec:
                                 targetLabel:
                                   description: |-
                                     Label to which the resulting string is written in a replacement.
-  
+
                                     It is mandatory for `Replace`, `HashMod`, `Lowercase`, `Uppercase`,
                                     `KeepEqual` and `DropEqual` actions.
-  
+
                                     Regex capture groups are available.
                                   type: string
                               type: object
                             type: array
                           relabelings:
-                            description: RelabelConfigs to apply to samples before ingestion
+                            description: RelabelConfigs to apply to samples before
+                              ingestion
                             items:
                               description: |-
                                 RelabelConfig allows dynamic rewriting of the label set for targets, alerts,
                                 scraped samples and remote write samples.
-  
+
                                 More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
                               properties:
                                 action:
                                   default: replace
                                   description: |-
                                     Action to perform based on the regex matching.
-  
+
                                     `Uppercase` and `Lowercase` actions require Prometheus >= v2.36.0.
                                     `DropEqual` and `KeepEqual` actions require Prometheus >= v2.41.0.
-  
+
                                     Default: "Replace"
                                   enum:
                                   - replace
@@ -883,7 +882,7 @@ spec:
                                 modulus:
                                   description: |-
                                     Modulus to take of the hash of the source label values.
-  
+
                                     Only applicable when the action is `HashMod`.
                                   format: int64
                                   type: integer
@@ -895,7 +894,7 @@ spec:
                                   description: |-
                                     Replacement value against which a Replace action is performed if the
                                     regular expression matches.
-  
+
                                     Regex capture groups are available.
                                   type: string
                                 separator:
@@ -917,10 +916,10 @@ spec:
                                 targetLabel:
                                   description: |-
                                     Label to which the resulting string is written in a replacement.
-  
+
                                     It is mandatory for `Replace`, `HashMod`, `Lowercase`, `Uppercase`,
                                     `KeepEqual` and `DropEqual` actions.
-  
+
                                     Regex capture groups are available.
                                   type: string
                               type: object
@@ -934,8 +933,8 @@ spec:
                                   server certificates.
                                 properties:
                                   configMap:
-                                    description: ConfigMap containing data to use for
-                                      the targets.
+                                    description: ConfigMap containing data to use
+                                      for the targets.
                                     properties:
                                       key:
                                         description: The key to select.
@@ -950,16 +949,16 @@ spec:
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                         type: string
                                       optional:
-                                        description: Specify whether the ConfigMap or
-                                          its key must be defined
+                                        description: Specify whether the ConfigMap
+                                          or its key must be defined
                                         type: boolean
                                     required:
                                     - key
                                     type: object
                                     x-kubernetes-map-type: atomic
                                   secret:
-                                    description: Secret containing data to use for the
-                                      targets.
+                                    description: Secret containing data to use for
+                                      the targets.
                                     properties:
                                       key:
                                         description: The key of the secret to select
@@ -975,8 +974,8 @@ spec:
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                         type: string
                                       optional:
-                                        description: Specify whether the Secret or its
-                                          key must be defined
+                                        description: Specify whether the Secret or
+                                          its key must be defined
                                         type: boolean
                                     required:
                                     - key
@@ -984,16 +983,16 @@ spec:
                                     x-kubernetes-map-type: atomic
                                 type: object
                               caFile:
-                                description: Path to the CA cert in the Prometheus container
-                                  to use for the targets.
+                                description: Path to the CA cert in the Prometheus
+                                  container to use for the targets.
                                 type: string
                               cert:
                                 description: Client certificate to present when doing
                                   client-authentication.
                                 properties:
                                   configMap:
-                                    description: ConfigMap containing data to use for
-                                      the targets.
+                                    description: ConfigMap containing data to use
+                                      for the targets.
                                     properties:
                                       key:
                                         description: The key to select.
@@ -1008,16 +1007,16 @@ spec:
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                         type: string
                                       optional:
-                                        description: Specify whether the ConfigMap or
-                                          its key must be defined
+                                        description: Specify whether the ConfigMap
+                                          or its key must be defined
                                         type: boolean
                                     required:
                                     - key
                                     type: object
                                     x-kubernetes-map-type: atomic
                                   secret:
-                                    description: Secret containing data to use for the
-                                      targets.
+                                    description: Secret containing data to use for
+                                      the targets.
                                     properties:
                                       key:
                                         description: The key of the secret to select
@@ -1033,8 +1032,8 @@ spec:
                                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                         type: string
                                       optional:
-                                        description: Specify whether the Secret or its
-                                          key must be defined
+                                        description: Specify whether the Secret or
+                                          its key must be defined
                                         type: boolean
                                     required:
                                     - key
@@ -1053,8 +1052,8 @@ spec:
                                   container for the targets.
                                 type: string
                               keySecret:
-                                description: Secret containing the client key file for
-                                  the targets.
+                                description: Secret containing the client key file
+                                  for the targets.
                                 properties:
                                   key:
                                     description: The key of the secret to select from.  Must
@@ -1070,8 +1069,8 @@ spec:
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                     type: string
                                   optional:
-                                    description: Specify whether the Secret or its key
-                                      must be defined
+                                    description: Specify whether the Secret or its
+                                      key must be defined
                                     type: boolean
                                 required:
                                 - key
@@ -1080,7 +1079,7 @@ spec:
                               maxVersion:
                                 description: |-
                                   Maximum acceptable TLS version.
-  
+
                                   It requires Prometheus >= v2.41.0.
                                 enum:
                                 - TLS10
@@ -1091,7 +1090,7 @@ spec:
                               minVersion:
                                 description: |-
                                   Minimum acceptable TLS version.
-  
+
                                   It requires Prometheus >= v2.35.0.
                                 enum:
                                 - TLS10
@@ -1157,8 +1156,8 @@ spec:
                               (e.g., Prometheus SA identity)
                             type: string
                           enable:
-                            description: Enables static authorization using client certificate
-                              CN
+                            description: Enables static authorization using client
+                              certificate CN
                             type: boolean
                         type: object
                     type: object
@@ -1221,8 +1220,8 @@ spec:
                       maxUnavailable:
                         default: 1
                         description: MaxUnavailable specifies the maximum number of
-                          Pods that can be unavailable during the update process. Applicable
-                          for RollingUpdate only. Default value is 1.
+                          Pods that can be unavailable during the update process.
+                          Applicable for RollingUpdate only. Default value is 1.
                         format: int32
                         type: integer
                       upgradeStrategy:
@@ -1235,8 +1234,8 @@ spec:
                     type: object
                 type: object
               secondaryNetwork:
-                description: 'SecondaryNetworkSpec contains the spec for secondary network:
-                  CNI plugins and IPAM'
+                description: 'SecondaryNetworkSpec contains the spec for secondary
+                  network: CNI plugins and IPAM'
                 properties:
                   cniPlugins:
                     description: Image information for CNI plugins
@@ -1315,13 +1314,14 @@ spec:
                             default: 1
                             description: MaxUnavailable specifies the maximum number
                               of Pods that can be unavailable during the update process.
-                              Applicable for RollingUpdate only. Default value is 1.
+                              Applicable for RollingUpdate only. Default value is
+                              1.
                             format: int32
                             type: integer
                           upgradeStrategy:
-                            description: UpgradeStrategy specifies the type of the DaemonSet
-                              update. Valid values are "RollingUpdate" (default) or
-                              "OnDelete".
+                            description: UpgradeStrategy specifies the type of the
+                              DaemonSet update. Valid values are "RollingUpdate" (default)
+                              or "OnDelete".
                             enum:
                             - RollingUpdate
                             - OnDelete
@@ -1383,8 +1383,8 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   logsLocation:
-                    description: captures logs location and export config for test runner
-                      logs
+                    description: captures logs location and export config for test
+                      runner logs
                     properties:
                       hostPath:
                         default: /var/log/amd-test-runner
@@ -1419,7 +1419,8 @@ spec:
                   selector:
                     additionalProperties:
                       type: string
-                    description: Selector describes on which nodes to enable test runner
+                    description: Selector describes on which nodes to enable test
+                      runner
                     type: object
                   tolerations:
                     description: tolerations for test runner
@@ -1466,8 +1467,8 @@ spec:
                       maxUnavailable:
                         default: 1
                         description: MaxUnavailable specifies the maximum number of
-                          Pods that can be unavailable during the update process. Applicable
-                          for RollingUpdate only. Default value is 1.
+                          Pods that can be unavailable during the update process.
+                          Applicable for RollingUpdate only. Default value is 1.
                         format: int32
                         type: integer
                       upgradeStrategy:
@@ -1560,7 +1561,8 @@ spec:
                     type: integer
                 type: object
               devicePlugin:
-                description: DevicePlugin contains the status of the Device Plugin deployment
+                description: DevicePlugin contains the status of the Device Plugin
+                  deployment
                 properties:
                   availableNumber:
                     description: number of the actually deployed and running pods
@@ -1625,8 +1627,8 @@ spec:
                     lastTransitionTime:
                       type: string
                     status:
-                      description: UpgradeState captures the state of the upgrade process
-                        on a node
+                      description: UpgradeState captures the state of the upgrade
+                        process on a node
                       type: string
                     upgradeStartTime:
                       type: string
@@ -1649,5 +1651,5 @@ status:
   acceptedNames:
     kind: ""
     plural: ""
-  conditions: []
-  storedVersions: []
+  conditions: null
+  storedVersions: null

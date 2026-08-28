@@ -5,7 +5,11 @@ endif
 
 # PROJECT_VERSION defines the project version.
 # Update this value when you upgrade the version of your project.
-PROJECT_VERSION ?= v1.2.0
+PROJECT_VERSION ?= v1.2.1
+
+# AINIC_VERSIONS lists the supported AINIC firmware versions for this release (comma-separated).
+# Used by update-docs-version to populate the compatibility matrix in docs/index.md.
+AINIC_VERSIONS ?= 1.117.5-a-77,1.117.5-a-147
 
 ####################################
 # Network Operator Image Build variables
@@ -48,7 +52,7 @@ KMM_OPERATOR_IMG_NAME ?= $(DOCKER_REGISTRY)/kernel-module-management-operator
 # by default, helm charts version is same as project version
 # unless in the hourly build where we may put hourly build tag in the helm charts version
 HELM_CHARTS_VERSION ?= $(PROJECT_VERSION)
-YAML_FILES=config/samples/amd.com_networkconfigs.yaml config/manifests/bases/amd-network-operator.clusterserviceversion.yaml example/networkconfig.yaml config/default/kustomization.yaml
+YAML_FILES=bundle/manifests/amd-network-operator-node-metrics_rbac.authorization.k8s.io_v1_rolebinding.yaml bundle/manifests/amd-network-operator.clusterserviceversion.yaml bundle/manifests/amd-network-operator-node-labeller_rbac.authorization.k8s.io_v1_clusterrolebinding.yaml bundle/manifests/amd-network-operator-node-metrics_monitoring.coreos.com_v1_servicemonitor.yaml config/samples/amd.com_networkconfigs.yaml config/manifests/bases/amd-network-operator.clusterserviceversion.yaml example/networkconfig.yaml config/default/kustomization.yaml
 CRD_YAML_FILES = networkconfig-crd.yaml
 K8S_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
 OPENSHIFT_KMM_CRD_YAML_FILES=module-crd.yaml nodemodulesconfig-crd.yaml
@@ -128,7 +132,7 @@ SHELL = /usr/bin/env bash -o pipefail
 DOCKER_GID := $(shell stat -c '%g' /var/run/docker.sock)
 USER_UID := $(shell id -u)
 USER_GID := $(shell id -g)
-DOCKER_BUILDER_TAG := v1.4
+DOCKER_BUILDER_TAG := v1.5
 DOCKER_BUILDER_IMAGE := $(DOCKER_REGISTRY)/network-operator-build:$(DOCKER_BUILDER_TAG)
 CONTAINER_WORKDIR := /network-operator
 BUILD_BASE_IMG ?= ubuntu:22.04
@@ -160,6 +164,13 @@ all: vendor generate manager manifests helm-k8s docker-build
 .PHONY: skip-vendor
 skip-vendor: generate manager manifests helm-k8s docker-build
 
+.PHONY: release-prep
+release-prep: IMAGE_TAG=$(PROJECT_VERSION)
+release-prep: update-version-in-ci update-docs-version helm-k8s bundle-build catalog ## Prepare release: bump versions in code, CI, docs, helm charts, and OLM bundle/catalog
+	@printf -- "---\n# Required by Auto Cherry Picker automation\n# Defines the list of branches into which the changes would need cherry-picking\ncherry_pick_branches:\n  - main\n" > branch_policy.yml
+	@echo ""
+	@echo "Release prep complete for ${PROJECT_VERSION}."
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -182,6 +193,7 @@ help: ## Display this help.
 .PHONY: update-registry
 update-registry: ## Update all image URLs based on the image variables
 	# updating registry information in yaml files
+	sed -i -e 's|image:.*$$|image: ${IMG}|' bundle/manifests/amd-network-operator.clusterserviceversion.yaml
 	sed -i -e 's|repository:.*$$|repository: ${IMAGE_TAG_BASE}|' \
 	hack/k8s-patch/metadata-patch/values.yaml \
 	hack/openshift-patch/metadata-patch/values.yaml
@@ -189,7 +201,7 @@ update-registry: ## Update all image URLs based on the image variables
 	-e 's|newName:.*$$|newName: ${IMAGE_TAG_BASE}|' \
 	config/manager-base/kustomization.yaml config/manager/kustomization.yaml \
 	hack/k8s-patch/metadata-patch/values.yaml helm-charts-k8s/values.yaml \
-	hack/openshift-patch/metadata-patch/values.yaml \
+	hack/openshift-patch/metadata-patch/values.yaml helm-charts-openshift/values.yaml \
 	example/networkconfig.yaml
 	sed -i -e 's|tag:.*$$|tag: ${KMM_IMAGE_TAG}|' \
 	-e 's|repository:.*operator.*$$|repository: ${KMM_OPERATOR_IMG_NAME}|' \
@@ -212,6 +224,60 @@ update-version: ## Update the Project version in helm charts based on ${PROJECT_
 	sed -i 's|network-operator-utils:v[^ "]*|network-operator-utils:${PROJECT_VERSION}|' internal/controllers/upgrademgr.go internal/utils.go
 	sed -i 's|k8s-network-device-plugin:v[^ "]*|k8s-network-device-plugin:${PROJECT_VERSION}|' internal/deviceplugin/deviceplugin.go
 	sed -i 's|device-metrics-exporter:nic-v[^ "]*|device-metrics-exporter:nic-${PROJECT_VERSION}|' internal/metricsexporter/exporter.go
+	# updating image tags in OLM CSV base (flows into bundle via make bundle)
+	sed -i 's|k8s-network-device-plugin:v[^ "]*|k8s-network-device-plugin:${PROJECT_VERSION}|' config/manifests/bases/amd-network-operator.clusterserviceversion.yaml
+	sed -i 's|k8s-network-node-labeller:v[^ "]*|k8s-network-node-labeller:${PROJECT_VERSION}|' config/manifests/bases/amd-network-operator.clusterserviceversion.yaml
+	sed -i 's|device-metrics-exporter:nic-v[^ "]*|device-metrics-exporter:nic-${PROJECT_VERSION}|' config/manifests/bases/amd-network-operator.clusterserviceversion.yaml
+	# updating image tags in sample and example CRs
+	sed -i 's|k8s-network-device-plugin:v[^ "]*|k8s-network-device-plugin:${PROJECT_VERSION}|' config/samples/amd.com_networkconfigs.yaml
+	sed -i 's|k8s-network-node-labeller:v[^ "]*|k8s-network-node-labeller:${PROJECT_VERSION}|' config/samples/amd.com_networkconfigs.yaml
+
+DOCS_IMAGE_VERSION_FILES = \
+	docs/installation/networkconfig.md \
+	docs/installation/networkconfig-full.md \
+	docs/device_plugin/deviceplugin.md \
+	docs/metrics/exporter.md \
+	docs/upgrades/componentupgrades.md \
+	docs/_static/cluster-validation-job.yaml \
+	example/networkconfig.yaml
+
+DOCS_HELM_VERSION_FILES = \
+	docs/installation/kubernetes-helm.md \
+	docs/upgrades/upgrade.md
+
+.PHONY: update-docs-version
+update-docs-version: ## Update image tags, helm versions, and compat matrix in docs and examples
+	# updating image tags in docs and examples
+	sed -i 's|k8s-network-device-plugin:v[^ "`()]*|k8s-network-device-plugin:${PROJECT_VERSION}|' $(DOCS_IMAGE_VERSION_FILES)
+	sed -i 's|k8s-network-node-labeller:v[^ "`()]*|k8s-network-node-labeller:${PROJECT_VERSION}|' $(DOCS_IMAGE_VERSION_FILES)
+	sed -i 's|device-metrics-exporter:nic-v[^ "`()]*|device-metrics-exporter:nic-${PROJECT_VERSION}|' $(DOCS_IMAGE_VERSION_FILES)
+	sed -i 's|k8s-cni-plugins:v[^ "`()]*|k8s-cni-plugins:${PROJECT_VERSION}|' $(DOCS_IMAGE_VERSION_FILES)
+	sed -i 's|network-operator-utils:v[^ "`()]*|network-operator-utils:${PROJECT_VERSION}|' $(DOCS_IMAGE_VERSION_FILES)
+	# updating helm version references in docs
+	sed -i 's|--version=v[0-9][^ ]*|--version=${PROJECT_VERSION}|' $(DOCS_HELM_VERSION_FILES)
+	sed -i 's|image\.tag=v[0-9][^ ]*|image.tag=${PROJECT_VERSION}|' $(DOCS_HELM_VERSION_FILES)
+	sed -i '/controllerManager\.manager\.image\.tag/s|`"v[0-9][^"]*"`|`"${PROJECT_VERSION}"`|' $(DOCS_HELM_VERSION_FILES)
+	# updating network operator helm version in co-install guide (skip GPU operator commands)
+	sed -i '/network-operator-charts/,+5 s|--version=v[0-9][^ ]*|--version=${PROJECT_VERSION}|' docs/installation/kubernetes-helm-operators.md
+	# updating compatibility matrix in docs/index.md
+	@AINIC_FW=$$(echo '${AINIC_VERSIONS}' | sed 's/,/<br>/g'); \
+	ROW=$$(printf "| %-16s | %-30s | %-14s |" "${PROJECT_VERSION}" "$${AINIC_FW}" "Pollara 400"); \
+	sed -i '/^| ${PROJECT_VERSION} /d' docs/index.md; \
+	LAST_LINE=$$(grep -n 'Pollara 400' docs/index.md | tail -1 | cut -d: -f1); \
+	if [ -n "$$LAST_LINE" ]; then \
+		sed -i "$${LAST_LINE} a $$ROW" docs/index.md; \
+	else \
+		echo "WARNING: Could not find compat matrix. Add manually: $$ROW"; \
+	fi
+
+.PHONY: update-version-in-ci
+update-version-in-ci: ## Update project version and helm chart references in CI job config (.job.yml) and asset-push script
+	sed -i -e 's|PROJECT_VERSION=v[^ ]*|PROJECT_VERSION=${PROJECT_VERSION}|' .job.yml
+	sed -i '0,/HELM_CHARTS_VERSION=/s|HELM_CHARTS_VERSION=[^ ]*|HELM_CHARTS_VERSION=$${RELEASE:-${PROJECT_VERSION}-dev}|' .job.yml
+	sed -i '0,/BUNDLE_VERSION=/s|BUNDLE_VERSION=[^ ]*|BUNDLE_VERSION=$${RELEASE:-${PROJECT_VERSION}-dev}|' .job.yml
+	sed -i 's|network-operator-helm-k8s-[^$$].*\.tgz|network-operator-helm-k8s-${HELM_CHARTS_VERSION}.tgz|' .job.yml
+	sed -i 's|network-operator-helm-openshift-.*\.tgz|network-operator-helm-openshift-${HELM_CHARTS_VERSION}.tgz|' .job.yml
+	sed -i 's|PROJECT_VERSION:-.*$$|PROJECT_VERSION:-${PROJECT_VERSION}\}|' asset-build/networkoperator-asset-push.sh
 
 .PHONY: manifests
 manifests: controller-gen update-registry update-version ## Generate ClusterRole and CustomResourceDefinition objects.
@@ -295,6 +361,11 @@ lint: golangci-lint ## Run golangci-lint against code.
 		exit 1; \
 	fi
 	$(GOLANGCI_LINT) run -v --timeout 5m0s
+
+.PHONY: docs-lint
+docs-lint: ## Run docs Markdown lint + spelling.
+	markdownlint-cli2 "**/*.md" --config docs/.markdownlint-cli2.yaml
+	pyspelling -c .spellcheck.yaml
 
 ##@ Build
 
@@ -448,6 +519,7 @@ bundle-build: operator-sdk manifests kustomize
 		     PKG=amd-network-operator \
 		     SOURCE_DIR=$(dir $(realpath $(lastword $(MAKEFILE_LIST)))) \
 		     KUBECTL_CMD=${KUBECTL_CMD} ./hack/generate-bundle
+	cp hack/device-plugin-configmap.yaml bundle/manifests/
 	${OPERATOR_SDK} bundle validate ./bundle
 	$(CONTAINER_ENGINE) build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 

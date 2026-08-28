@@ -2,10 +2,37 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
-    alm-examples: '[]'
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "amd.com/v1alpha1",
+          "kind": "NetworkConfig",
+          "metadata": {
+            "name": "test-NetworkConfig",
+            "namespace": "kube-amd-network"
+          },
+          "spec": {
+            "devicePlugin": {
+              "devicePluginImage": "rocm/k8s-network-device-plugin:v1.2.1",
+              "nodeLabellerImage": "rocm/k8s-network-node-labeller:v1.2.1"
+            },
+            "driver": {
+              "image": "my.registry.io/myUserName/myRepo",
+              "imageRegistrySecret": {
+                "name": "docker-auth"
+              },
+              "version": "6.2.2"
+            },
+            "selector": {
+              "feature.node.kubernetes.io/amd-nic": "true"
+            }
+          }
+        }
+      ]
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning,Networking,Monitoring
     containerImage: docker.io/rocm/amd-network-operator:v1.2.1
+    createdAt: "2026-08-28T04:46:37Z"
     description: |-
       Operator responsible for deploying AMD Network kernel drivers, device plugin, node labeller and device metrics exporter
       For more information, visit [documentation](https://instinct.docs.amd.com/projects/network-operator/en/latest/)
@@ -22,9 +49,11 @@ metadata:
     operatorframework.io/cluster-monitoring: "true"
     operatorframework.io/suggested-namespace: openshift-amd-network
     operators.openshift.io/valid-subscription: '[]'
+    operators.operatorframework.io/builder: operator-sdk-v1.32.0
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/ROCm/network-operator
     support: Advanced Micro Devices, Inc.
-  name: amd-network-operator.v1.0.0
+  name: amd-network-operator.v1.2.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -819,8 +848,494 @@ spec:
     mediatype: image/svg+xml
   install:
     spec:
-      deployments: null
-    strategy: ""
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-cni-plugins
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - list
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - daemonsets
+          verbs:
+          - get
+          - list
+          - watch
+          - delete
+          - create
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - get
+          - list
+          - watch
+          - delete
+          - create
+          - update
+        serviceAccountName: amd-network-operator-config-manager
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          - secrets
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - get
+          - list
+          - patch
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes/finalizers
+          - nodes/status
+          verbs:
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - pods/eviction
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+        - apiGroups:
+          - ""
+          resources:
+          - pods/finalizers
+          - pods/status
+          verbs:
+          - delete
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - services/finalizers
+          verbs:
+          - create
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - amd.com
+          resources:
+          - networkconfigs
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - amd.com
+          resources:
+          - networkconfigs/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - amd.com
+          resources:
+          - networkconfigs/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - delete
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - daemonsets
+          - daemonsets/status
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - daemonsets/finalizers
+          verbs:
+          - create
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - kmm.sigs.x-k8s.io
+          resources:
+          - modules
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kmm.sigs.x-k8s.io
+          resources:
+          - modules/finalizers
+          - nodemodulesconfigs/finalizers
+          verbs:
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - kmm.sigs.x-k8s.io
+          resources:
+          - modules/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - kmm.sigs.x-k8s.io
+          resources:
+          - nodemodulesconfigs
+          - nodemodulesconfigs/status
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: amd-network-operator-controller-manager
+      - rules:
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-device-plugin
+      - rules:
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-kmm-module-loader
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          - pods
+          verbs:
+          - watch
+          - get
+          - list
+          - update
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-metrics-exporter
+      - rules:
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - watch
+          - get
+          - list
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - watch
+          - get
+          - list
+        serviceAccountName: amd-network-operator-metrics-exporter-rbac-proxy
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - watch
+          - get
+          - list
+          - update
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-node-labeller
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - list
+          - get
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
+          - patch
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-test-runner
+      - rules:
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - privileged
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
+        serviceAccountName: amd-network-operator-utils-container
+      deployments:
+      - label:
+          app.kubernetes.io/component: amd-network
+          app.kubernetes.io/name: amd-network
+          app.kubernetes.io/part-of: amd-network
+          control-plane: controller-manager
+        name: amd-network-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app.kubernetes.io/component: amd-network
+              app.kubernetes.io/name: amd-network
+              app.kubernetes.io/part-of: amd-network
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              annotations:
+                kubectl.kubernetes.io/default-container: manager
+              labels:
+                app.kubernetes.io/component: amd-network
+                app.kubernetes.io/name: amd-network
+                app.kubernetes.io/part-of: amd-network
+                control-plane: controller-manager
+            spec:
+              affinity:
+                nodeAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                  - preference:
+                      matchExpressions:
+                      - key: node-role.kubernetes.io/control-plane
+                        operator: Exists
+                    weight: 1
+                  - preference:
+                      matchExpressions:
+                      - key: node-role.kubernetes.io/master
+                        operator: Exists
+                    weight: 1
+              containers:
+              - args:
+                - --config=controller_manager_config.yaml
+                env:
+                - name: OPERATOR_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                image: docker.io/rocm/amd-network-operator:v1.2.1
+                imagePullPolicy: Always
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                name: manager
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 384Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                volumeMounts:
+                - mountPath: /controller_manager_config.yaml
+                  name: manager-config
+                  subPath: controller_manager_config.yaml
+              securityContext:
+                runAsNonRoot: true
+              serviceAccountName: amd-network-operator-controller-manager
+              terminationGracePeriodSeconds: 10
+              tolerations:
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/master
+                operator: Equal
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/control-plane
+                operator: Equal
+              volumes:
+              - configMap:
+                  name: amd-network-operator-manager-config
+                name: manager-config
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        serviceAccountName: amd-network-operator-controller-manager
+    strategy: deployment
   installModes:
   - supported: false
     type: OwnNamespace
@@ -855,4 +1370,4 @@ spec:
   maturity: stable
   provider:
     name: Advanced Micro Devices, Inc.
-  version: 1.0.0
+  version: 1.2.1
