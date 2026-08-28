@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	defaultNodeLabellerUbiImage = "docker.io/rocm/k8s-network-node-labeller:v1.2.0"
+	defaultNodeLabellerUbiImage = "docker.io/rocm/k8s-network-node-labeller:v1.2.1"
 	defaultInitContainerImage   = "busybox:1.36"
 	defaultBlacklistFileName    = "blacklist-ionic-netop.conf"
 	nodeLabellerSAName          = "amd-network-operator-node-labeller"
