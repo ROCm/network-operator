@@ -24,10 +24,11 @@ AMD Network Operator simplifies the use of AMD AINICs in Kubernetes environments
 Below is a list of operating systems and Kubernetes versions validated with the AMD Network Operator and Metrics Exporter.  
 Additional versions will be added in future releases.
 
-| Operating System | Kubernetes Versions |
-| ---------------- | ------------------- |
-| Ubuntu 22.04 LTS | 1.29 – 1.34 |
-| Ubuntu 24.04 LTS | 1.29 – 1.34 |
+| Operating System | Kubernetes | Red Hat OpenShift |
+| ---------------- | ---------- | ----------------- |
+| Ubuntu 22.04 LTS | 1.29–1.36 | |
+| Ubuntu 24.04 LTS | 1.29–1.36 | |
+| Red Hat CoreOS (RHCOS) | | 4.21 |
 
 ### Software Version Compatibility Matrix
 
@@ -37,6 +38,7 @@ Additional versions will be added in future releases.
 | v1.0.1           | 1.117.1-a-63                   | Pollara 400    |
 | v1.1.0           | 1.117.5-a-56                   | Pollara 400    |
 | v1.2.0           | 1.117.5-a-56<br>1.117.5-a-77   | Pollara 400    |
+| v1.2.1           | 1.117.5-a-77<br>1.117.5-a-147  | Pollara 400    |
 
 ## Prerequisites
 
