@@ -137,7 +137,8 @@ func (n *upgradeMgr) HandleUpgrade(ctx context.Context, networkConfig *amdv1alph
 
 	initInternalNodeStates := func(networkConfig *amdv1alpha1.NetworkConfig) {
 		for nodeName, moduleStatus := range networkConfig.Status.NodeModuleStatus {
-			if moduleStatus.Status == amdv1alpha1.UpgradeStateStarted {
+			switch moduleStatus.Status {
+			case amdv1alpha1.UpgradeStateStarted:
 				if networkConfig.Spec.Driver.UpgradePolicy.RebootRequired != nil && *networkConfig.Spec.Driver.UpgradePolicy.RebootRequired {
 					nodeObj, err := n.helper.getNode(ctx, nodeName)
 					if err == nil {
@@ -158,7 +159,7 @@ func (n *upgradeMgr) HandleUpgrade(ctx context.Context, networkConfig *amdv1alph
 					log.FromContext(ctx).Info(fmt.Sprintf("Node: %v: Resetting Upgrade State to UpgradeStateEmpty", nodeName))
 					n.helper.setNodeStatus(ctx, nodeName, amdv1alpha1.UpgradeStateEmpty)
 				}
-			} else if moduleStatus.Status == amdv1alpha1.UpgradeStateRebootInProgress {
+			case amdv1alpha1.UpgradeStateRebootInProgress:
 				// Operator restarted during upgrade operation. Schedule the reboot pod deletion
 				log.FromContext(ctx).Info(fmt.Sprintf("Node: %v: Reboot is in progress, scheduling reboot pod deletion", nodeName))
 				// If the pod is still present, schedule reboot pod deletion, else, move ahead to Upgrade-In-Progress
@@ -171,7 +172,7 @@ func (n *upgradeMgr) HandleUpgrade(ctx context.Context, networkConfig *amdv1alph
 					n.helper.setNodeStatus(ctx, nodeName, moduleStatus.Status)
 					go n.helper.deleteRebootPod(ctx, nodeName, *networkConfig, false)
 				}
-			} else {
+			default:
 				n.helper.setNodeStatus(ctx, nodeName, moduleStatus.Status)
 			}
 		}
