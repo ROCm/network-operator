@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release-*'
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# No job needs write access or secrets. Keeping this read-only means pull
+# requests from forks are safe to run.
+permissions:
+  contents: read
+
+# Note on checkout: this repo declares the external/common-infra-operator
+# submodule, but the dependency is vendored and no Makefile target or Dockerfile
+# references external/, so a plain checkout is sufficient. Fetching submodules
+# would only add a failure mode.
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build manager binary
+        run: make manager
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: manager
+          path: manager
+          retention-days: 7
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # `unit-test` depends on `vet`, so vet runs here too. The separate Vet job
+      # below exists to attribute a vet failure without reading the test log.
+      - name: Run unit tests
+        run: make unit-test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cover.out
+          retention-days: 7
+
+  vet:
+    name: Vet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run go vet
+        run: make vet
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # `make lint` installs golangci-lint v2.13.1, which requires Go >= 1.26,
+      # so the go command switches toolchains on the fly. Leave GOTOOLCHAIN at
+      # its default - pinning it to `local` would break this step.
+      - name: Run golangci-lint
+        run: make lint

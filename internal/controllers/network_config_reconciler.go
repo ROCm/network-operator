@@ -207,7 +207,7 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err != nil {
 		if k8serrors.IsNotFound(err) || strings.Contains(err.Error(), "not found") {
 			logger.Info("NetworkConfig CR deleted")
-			r.helper.updateNodeAssignments(req.NamespacedName.String(), nil, true)
+			r.helper.updateNodeAssignments(req.String(), nil, true)
 			return ctrl.Result{}, nil
 		}
 		return res, fmt.Errorf("failed to get the requested %s CR: %v", req.NamespacedName, err)
@@ -232,13 +232,13 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Verify that the NetworkConfig does not select nodes covered by other NetworkConfigs
-	err = r.helper.validateNodeAssignments(req.NamespacedName.String(), nodes)
+	err = r.helper.validateNodeAssignments(req.String(), nodes)
 	if err != nil {
 		if errSet := r.helper.setCondition(ctx, conditions.ConditionTypeError, nwConfig, metav1.ConditionTrue, conditions.ValidationError, fmt.Sprintf("Validation failed: %v", err)); errSet != nil {
-			logger.Error(fmt.Errorf("Failed to set error condition: %v", errSet), "")
+			logger.Error(fmt.Errorf("failed to set error condition: %v", errSet), "")
 		}
 		if errSet := r.helper.setCondition(ctx, conditions.ConditionTypeReady, nwConfig, metav1.ConditionFalse, conditions.ReadyStatus, ""); errSet != nil {
-			logger.Error(fmt.Errorf("Failed to set ready condition: %v", errSet), "")
+			logger.Error(fmt.Errorf("failed to set ready condition: %v", errSet), "")
 		}
 		return res, err
 	}
@@ -248,10 +248,10 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if len(result) != 0 {
 		// Update status Conditions here
 		if errSet := r.helper.setCondition(ctx, conditions.ConditionTypeError, nwConfig, metav1.ConditionTrue, conditions.ValidationError, fmt.Sprintf("Validation failed: %v", result)); errSet != nil {
-			logger.Error(fmt.Errorf("Failed to set error condition: %v", errSet), "")
+			logger.Error(fmt.Errorf("failed to set error condition: %v", errSet), "")
 		}
 		if errSet := r.helper.setCondition(ctx, conditions.ConditionTypeReady, nwConfig, metav1.ConditionFalse, conditions.ReadyStatus, ""); errSet != nil {
-			logger.Error(fmt.Errorf("Failed to set ready condition: %v", errSet), "")
+			logger.Error(fmt.Errorf("failed to set ready condition: %v", errSet), "")
 		}
 		return res, fmt.Errorf("validation failed for NetworkConfig %s: %v", req.NamespacedName, result)
 	}
@@ -270,7 +270,7 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	logger.Info("start module install/upgrade reconciliation")
 	res, err = r.helper.handleModuleUpgrade(ctx, nwConfig, nodes, false)
 	if err != nil {
-		return res, fmt.Errorf("Failed to fetch nodes for NetworkConfig %s: %v", req.NamespacedName, err)
+		return res, fmt.Errorf("failed to fetch nodes for NetworkConfig %s: %v", req.NamespacedName, err)
 	}
 
 	logger.Info("start KMM reconciliation")
@@ -326,7 +326,7 @@ func (r *NetworkConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Update nodeAssignments after NetworkConfig status update
-	r.helper.updateNodeAssignments(req.NamespacedName.String(), nodes, false)
+	r.helper.updateNodeAssignments(req.String(), nodes, false)
 
 	return res, nil
 }
@@ -1539,7 +1539,7 @@ func (dcrh *networkConfigReconcilerHelper) setCondition(ctx context.Context, con
 		dcrh.conditionUpdater.SetErrorCondition(nwConfig, status, reason, message)
 		return dcrh.updateNetworkConfigStatus(ctx, nwConfig)
 	}
-	return fmt.Errorf("Condition %s not supported", condition)
+	return fmt.Errorf("condition %s not supported", condition)
 }
 
 func (dcrh *networkConfigReconcilerHelper) deleteCondition(ctx context.Context, condition string, nwConfig *amdv1alpha1.NetworkConfig) error {
@@ -1551,7 +1551,7 @@ func (dcrh *networkConfigReconcilerHelper) deleteCondition(ctx context.Context, 
 		dcrh.conditionUpdater.DeleteErrorCondition(nwConfig)
 		return dcrh.updateNetworkConfigStatus(ctx, nwConfig)
 	}
-	return fmt.Errorf("Condition %s not supported", condition)
+	return fmt.Errorf("condition %s not supported", condition)
 }
 
 func (dcrh *networkConfigReconcilerHelper) validateNetworkConfig(ctx context.Context, nwConfig *amdv1alpha1.NetworkConfig) []string {

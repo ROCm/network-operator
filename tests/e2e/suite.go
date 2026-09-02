@@ -32,6 +32,7 @@ import (
 	monitoringClient "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	//nolint:staticcheck // ST1001: gocheck's dot-import is the library's documented idiom; qualifying it would touch 66 call sites across the e2e suite.
 	. "gopkg.in/check.v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextClient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
