@@ -32,15 +32,12 @@ import (
 )
 
 const (
-	defaultOcDriversVersion     = "1.117.1-a-42"
-	defaultUbuntuDriversVersion = "1.117.1-a-42"
+	DefaultOcDriversVersion     = "1.117.5-a-147"
+	DefaultUbuntuDriversVersion = "1.117.5-a-147"
 	openShiftNodeLabel          = "node.openshift.io/os_id"
 	NodeFeatureLabelAmdNic      = "feature.node.kubernetes.io/amd-nic"
 	NodeFeatureLabelAmdVNic     = "feature.node.kubernetes.io/amd-vnic"
-	ResourceNamingStrategyFlag  = "resource_naming_strategy"
-	SingleStrategy              = "single"
-	MixedStrategy               = "mixed"
-	DefaultUtilsImage           = "docker.io/rocm/network-operator-utils:v1.2.0"
+	DefaultUtilsImage           = "docker.io/rocm/network-operator-utils:v1.2.1"
 
 	// worker pod related constants
 	KindNetworkConfig      = "NetworkConfig"
@@ -77,27 +74,27 @@ func GetDefaultDriversVersion(node v1.Node) (string, error) {
 var defaultDriverversionsMappers = map[string]func(fullImageStr string) (string, error){
 	"ubuntu": UbuntuDefaultDriverVersionsMapper,
 	"rhel": func(f string) (string, error) {
-		return defaultOcDriversVersion, nil
+		return DefaultOcDriversVersion, nil
 	},
 	"redhat": func(f string) (string, error) {
-		return defaultOcDriversVersion, nil
+		return DefaultOcDriversVersion, nil
 	},
 	"red hat": func(f string) (string, error) {
-		return defaultOcDriversVersion, nil
+		return DefaultOcDriversVersion, nil
 	},
 }
 
 func UbuntuDefaultDriverVersionsMapper(fullImageStr string) (string, error) {
 	if strings.Contains(fullImageStr, "20.04") {
-		return defaultUbuntuDriversVersion, nil
+		return DefaultUbuntuDriversVersion, nil
 	}
 	if strings.Contains(fullImageStr, "22.04") {
-		return defaultUbuntuDriversVersion, nil
+		return DefaultUbuntuDriversVersion, nil
 	}
 	if strings.Contains(fullImageStr, "24.04") {
-		return defaultUbuntuDriversVersion, nil
+		return DefaultUbuntuDriversVersion, nil
 	}
-	return "", fmt.Errorf("invalid ubuntu version, should be one of [20.04, 22.04]")
+	return "", fmt.Errorf("invalid ubuntu version, should be one of [20.04, 22.04, 24.04]")
 }
 
 func HasNodeLabelKey(node v1.Node, labelKey string) bool {

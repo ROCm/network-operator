@@ -66,7 +66,6 @@ const (
 	defaultOcDriversImageTemplate = "image-registry.openshift-image-registry.svc:5000/$MOD_NAMESPACE/amdnetwork_kmod"
 	// start local registry image-registry:5000 in k8s
 	defaultDriversImageTemplate = "image-registry:5000/$MOD_NAMESPACE/amdnetwork_kmod"
-	defaultOcDriversVersion     = "1.117.5-a-56"
 	defaultInstallerRepoURL     = "https://repo.radeon.com"
 	defaultInitContainerImage   = "busybox:1.36"
 	defaultSourceImageRepo      = "docker.io/rocm/amdainic-driver"
@@ -397,7 +396,7 @@ func getKM(nwConfig *amdv1alpha1.NetworkConfig, node v1.Node, inTreeModuleToRemo
 
 	if isOpenShift {
 		if driversVersion == "" {
-			driversVersion = defaultOcDriversVersion
+			driversVersion = utils.DefaultOcDriversVersion
 		}
 		if driversImage == "" {
 			driversImage = defaultOcDriversImageTemplate

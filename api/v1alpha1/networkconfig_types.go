@@ -57,12 +57,6 @@ type DevicePluginSpec struct {
 	// +optional
 	DevicePluginTolerations []v1.Toleration `json:"devicePluginTolerations,omitempty"`
 
-	// device plugin arguments is used to pass supported flags and their values while starting device plugin daemonset
-	// supported flag values: {"resource_naming_strategy": {"single", "mixed"}}
-	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="DevicePluginArguments",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:devicePluginArguments"}
-	// +optional
-	DevicePluginArguments map[string]string `json:"devicePluginArguments,omitempty"`
-
 	// node labeller image
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="NodeLabellerImage",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:nodeLabellerImage"}
 	// +optional
@@ -229,7 +223,7 @@ type DriverSpec struct {
 	AMDNetworkInstallerRepoURL string `json:"AMDNetworkInstallerRepoURL,omitempty"`
 
 	// version of the drivers source code, can be used as part of image of dockerfile source image
-	// default value for different OS is: ubuntu: 1.117.1-a-42, coreOS: 1.117.1-a-42
+	// default value for different OS is: ubuntu: 1.117.5-a-147, coreOS: 1.117.5-a-147
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Version",xDescriptors={"urn:alm:descriptor:com.amd.NetworkConfigs:version"}
 	// +optional
 	Version string `json:"version,omitempty"`
@@ -501,6 +495,8 @@ type MetricsExporterSpec struct {
 	// Port is the internal port used for in-cluster and node access to pull metrics from the metrics-exporter (default 5001).
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Port",xDescriptors={"urn:alm:descriptor:com.amd.networkconfigs:port"}
 	// +kubebuilder:default=5001
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=65535
 	Port int32 `json:"port,omitempty"`
 
 	// ServiceType service type for metrics, clusterIP/NodePort, clusterIP by default

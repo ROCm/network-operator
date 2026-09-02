@@ -195,13 +195,6 @@ spec:
               devicePlugin:
                 description: device plugin
                 properties:
-                  devicePluginArguments:
-                    additionalProperties:
-                      type: string
-                    description: |-
-                      device plugin arguments is used to pass supported flags and their values while starting device plugin daemonset
-                      supported flag values: {"resource_naming_strategy": {"single", "mixed"}}
-                    type: object
                   devicePluginImage:
                     description: device plugin image
                     pattern: ^([a-z0-9]+(?:[._-][a-z0-9]+)*(:[0-9]+)?)(/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[a-z0-9._-]+)?(?:@[a-zA-Z0-9]+:[a-f0-9]+)?$
@@ -594,7 +587,7 @@ spec:
                   version:
                     description: |-
                       version of the drivers source code, can be used as part of image of dockerfile source image
-                      default value for different OS is: ubuntu: 1.117.1-a-42, coreOS: 1.117.1-a-42
+                      default value for different OS is: ubuntu: 1.117.5-a-147, coreOS: 1.117.5-a-147
                     type: string
                 type: object
               metricsExporter:
@@ -657,6 +650,8 @@ spec:
                       node access to pull metrics from the metrics-exporter (default
                       5001).
                     format: int32
+                    maximum: 65535
+                    minimum: 1
                     type: integer
                   prometheus:
                     description: Prometheus configuration for metrics exporter

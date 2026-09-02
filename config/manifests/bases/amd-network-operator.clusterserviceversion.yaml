@@ -9,7 +9,7 @@ metadata:
     description: |-
       Operator responsible for deploying AMD Network kernel drivers, device plugin, node labeller and device metrics exporter
       For more information, visit [documentation](https://instinct.docs.amd.com/projects/network-operator/en/latest/)
-    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v0.0.1
+    devicePluginImage: docker.io/rocm/k8s-network-device-plugin:v1.2.1
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "false"
     features.operators.openshift.io/proxy-aware: "true"
@@ -17,8 +17,8 @@ metadata:
     features.operators.openshift.io/token-auth-aws: "false"
     features.operators.openshift.io/token-auth-azure: "false"
     features.operators.openshift.io/token-auth-gcp: "false"
-    metricsExporterImage: docker.io/rocm/device-metrics-exporter:nic-v0.0.1
-    nodelabellerImage: docker.io/rocm/k8s-network-node-labeller:v0.0.1
+    metricsExporterImage: docker.io/rocm/device-metrics-exporter:nic-v1.2.1
+    nodelabellerImage: docker.io/rocm/k8s-network-node-labeller:v1.2.1
     operatorframework.io/cluster-monitoring: "true"
     operatorframework.io/suggested-namespace: openshift-amd-network
     operators.openshift.io/valid-subscription: '[]'
@@ -144,13 +144,6 @@ spec:
         path: devicePlugin
         x-descriptors:
         - urn:alm:descriptor:com.amd.NetworkConfigs:devicePlugin
-      - description: 'device plugin arguments is used to pass supported flags and
-          their values while starting device plugin daemonset supported flag values:
-          {"resource_naming_strategy": {"single", "mixed"}}'
-        displayName: DevicePluginArguments
-        path: devicePlugin.devicePluginArguments
-        x-descriptors:
-        - urn:alm:descriptor:com.amd.networkconfigs:devicePluginArguments
       - description: device plugin image
         displayName: DevicePluginImage
         path: devicePlugin.devicePluginImage
@@ -391,8 +384,8 @@ spec:
         x-descriptors:
         - urn:alm:descriptor:com.amd.networkconfigs:useSourceImage
       - description: 'version of the drivers source code, can be used as part of image
-          of dockerfile source image default value for different OS is: ubuntu: 1.117.1-a-42,
-          coreOS: 1.117.1-a-42'
+          of dockerfile source image default value for different OS is: ubuntu: 1.117.5-a-147,
+          coreOS: 1.117.5-a-147'
         displayName: Version
         path: driver.version
         x-descriptors:
