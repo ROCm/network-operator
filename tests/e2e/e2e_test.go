@@ -280,11 +280,12 @@ func (s *E2ESuite) verifyMetricsExporterServiceStatus(nc *v1alpha1.NetworkConfig
 		}
 
 		// Validate port configuration based on service type
-		if ncSvcType == v1alpha1.ServiceTypeNodePort {
+		switch ncSvcType {
+		case v1alpha1.ServiceTypeNodePort:
 			if svc.Spec.Ports[0].NodePort != nc.Spec.MetricsExporter.NodePort {
 				return false, fmt.Errorf("NodePort service port mismatch, expected %d, got %d", nc.Spec.MetricsExporter.NodePort, svc.Spec.Ports[0].NodePort)
 			}
-		} else if ncSvcType == v1alpha1.ServiceTypeClusterIP {
+		case v1alpha1.ServiceTypeClusterIP:
 			if svc.Spec.Ports[0].Port != nc.Spec.MetricsExporter.Port {
 				return false, fmt.Errorf("ClusterIP service port mismatch, expected %d, got %d", nc.Spec.MetricsExporter.Port, svc.Spec.Ports[0].Port)
 			}

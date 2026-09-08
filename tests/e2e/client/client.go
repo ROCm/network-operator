@@ -37,7 +37,7 @@ type NetworkConfigClient struct {
 
 func Client(c *rest.Config) (*NetworkConfigClient, error) {
 	config := *c
-	config.ContentConfig.GroupVersion = &v1alpha1.GroupVersion
+	config.GroupVersion = &v1alpha1.GroupVersion
 	config.APIPath = "/apis"
 	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.UserAgent = rest.DefaultKubernetesUserAgent()

@@ -74,7 +74,6 @@ var (
 						Architecture:            "amd64",
 						ContainerRuntimeVersion: "containerd://1.7.19",
 						KernelVersion:           "6.8.0-40-generic",
-						KubeProxyVersion:        "v1.30.3",
 						KubeletVersion:          "v1.30.3",
 						OperatingSystem:         "linux",
 						OSImage:                 "Ubuntu 22.04.3 LTS",

@@ -216,7 +216,7 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 		if !present {
 			return "", fmt.Errorf("invalid ubuntu version, expected to be one of %v", maps.Keys(driverLabels))
 		}
-		dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$DRIVER_LABEL", driverLabel, -1)
+		dockerfileTemplate = strings.ReplaceAll(dockerfileTemplate, "$$DRIVER_LABEL", driverLabel)
 
 		// trigger to pull the internal ROCM dev build
 		if internalArtifactoryURL, ok := os.LookupEnv("INTERNAL_ARTIFACTORY"); ok &&
@@ -227,9 +227,9 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 				return "", fmt.Errorf("please provide internal build info, required 4 items: artifactory URL, installer deb file name, amdionic build number and rocm build tag, got: %+v", nwConfig.Spec.Driver.AMDNetworkInstallerRepoURL)
 			}
 			nwConfig.Spec.Driver.AMDNetworkInstallerRepoURL = devBuildinfo[0]
-			dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$DEV_DEB", devBuildinfo[1], -1)
-			dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$AMDNetwork_BUILD", devBuildinfo[2], -1)
-			dockerfileTemplate = strings.Replace(dockerfileTemplate, "$$ROCM_BUILD", devBuildinfo[3], -1)
+			dockerfileTemplate = strings.ReplaceAll(dockerfileTemplate, "$$DEV_DEB", devBuildinfo[1])
+			dockerfileTemplate = strings.ReplaceAll(dockerfileTemplate, "$$AMDNetwork_BUILD", devBuildinfo[2])
+			dockerfileTemplate = strings.ReplaceAll(dockerfileTemplate, "$$ROCM_BUILD", devBuildinfo[3])
 		}
 	case "coreos":
 		dockerfileTemplate = dockerfileTemplateCoreOSFromRPM
@@ -251,7 +251,7 @@ func resolveDockerfile(cmName string, nwConfig *amdv1alpha1.NetworkConfig) (stri
 	default:
 		return "", fmt.Errorf("not supported OS: %s", osDistro)
 	}
-	resolvedDockerfile := strings.Replace(dockerfileTemplate, "$$VERSION", version, -1)
+	resolvedDockerfile := strings.ReplaceAll(dockerfileTemplate, "$$VERSION", version)
 	return resolvedDockerfile, nil
 }
 
@@ -339,7 +339,7 @@ func getKernelMappings(nwConfig *amdv1alpha1.NetworkConfig, isOpenshift bool, no
 	}
 
 	if nodes == nil || len(nodes.Items) == 0 {
-		return nil, "", fmt.Errorf("No nodes found for the label selector %s", MapToLabelSelector(nwConfig.Spec.Selector))
+		return nil, "", fmt.Errorf("no nodes found for the label selector %s", MapToLabelSelector(nwConfig.Spec.Selector))
 	}
 	kernelMappings := []kmmv1beta1.KernelMapping{}
 	kmSet := map[string]bool{}

@@ -486,7 +486,7 @@ func RunCommandOnNode(ctx context.Context, cl *kubernetes.Clientset, nodeName, c
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	data, err := io.ReadAll(resp.Body)
 	log.Infof("runcommand resp status=%s err=%v", resp.Status, err)
 	if err != nil {
@@ -723,7 +723,7 @@ func DeployResourcesFromFile(pathOrURL string, cl *kubernetes.Clientset, apiCl *
 		if err != nil {
 			return fmt.Errorf("HTTP GET %s: %w", pathOrURL, err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("HTTP GET %s returned status %d (%s)", pathOrURL, resp.StatusCode, resp.Status)
 		}
@@ -879,7 +879,7 @@ func IsNodeHealthy(cl *kubernetes.Clientset, nodeip string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, _ := io.ReadAll(resp.Body)
 	log.Infof("health resp: %s body=%s", resp.Status, string(body))
 	if resp.StatusCode != http.StatusOK || string(body) != "healthy" {
@@ -900,7 +900,7 @@ func RebootNode(cl *kubernetes.Clientset, nodeip string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("reboot failed status=%s body=%s", resp.Status, string(body))
