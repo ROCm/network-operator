@@ -56,7 +56,7 @@ var (
 	helmChart     = flag.String("helmchart", "", "helm chart reference")
 	operatorNS    = flag.String("namespace", "kube-amd-network", "operator namespace")
 	cfgName       = flag.String("networkConfigName", "networkconfig-example", "NetworkConfig name")
-	driverVersion = flag.String("driverVersion", "1.117.1-a-42", "driver version")
+	driverVersion = flag.String("driverVersion", "1.117.5-a-147", "driver version")
 	openshift     = flag.Bool("openshift", false, "openshift deployment")
 	simEnable     = flag.Bool("simEnable", false, "simulate (no hardware)")
 	ciEnv         = flag.Bool("ciEnv", false, "CI environment")

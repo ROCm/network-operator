@@ -34,7 +34,7 @@ func (s *E2ESuite) TestDriverInstallDefault(c *C) {
 	logger.Infof("create %v", s.cfgName)
 	netCfg := s.getNetworkConfig()
 	netCfg.Spec.Selector = vnicselector
-	netCfg.Spec.Driver.Version = ""
+	netCfg.Spec.Driver.Version = "1.117.1-a-42"
 	s.createNetworkConfig(netCfg, c)
 	s.verifyOperandReadiness(c, netCfg)
 	s.verifyNodeDriverVersionLabel(netCfg, c)
@@ -138,7 +138,7 @@ func (s *E2ESuite) TestParallelUpgrade(c *C) {
 	}{
 		{
 			name:        "default version to specific version",
-			fromVersion: "",
+			fromVersion: "1.117.1-a-42",
 			toVersion:   "1.117.1-a-63",
 			upgradePolicy: v1alpha1.DriverUpgradePolicySpec{
 				Enable:              boolPtr(true),
@@ -149,7 +149,7 @@ func (s *E2ESuite) TestParallelUpgrade(c *C) {
 		{
 			name:        "specific version to default version",
 			fromVersion: "1.117.1-a-63",
-			toVersion:   "",
+			toVersion:   "1.117.1-a-42",
 			upgradePolicy: v1alpha1.DriverUpgradePolicySpec{
 				Enable:              boolPtr(true),
 				RebootRequired:      boolPtr(false),

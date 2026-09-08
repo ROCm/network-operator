@@ -30,7 +30,7 @@ import (
 
 const (
 	defaultInitContainerImage    = "busybox:1.36"
-	defaultDevicePluginImage     = "docker.io/rocm/k8s-network-device-plugin:v1.2.0"
+	defaultDevicePluginImage     = "docker.io/rocm/k8s-network-device-plugin:v1.2.1"
 	defaultDevicePluginConfigMap = "amd-network-operator-device-plugin-config"
 	devicePluginSAName           = "amd-network-operator-device-plugin"
 	DevicePluginName             = "device-plugin"
@@ -119,12 +119,6 @@ func GenerateCommonDevicePluginSpec(nwConfig *amdv1alpha1.NetworkConfig, isOpenS
 	dpOut.MainContainer.IsPrivileged = true
 	dpOut.MainContainer.IsHostNetwork = true
 	dpOut.MainContainer.Command = []string{}
-
-	var commandArgs string
-	for key, val := range specIn.DevicePluginArguments {
-		commandArgs += " -" + key + "=" + val
-	}
-	//dpOut.MainContainer.Command = []string{"sh", "-c", commandArgs}
 
 	hostPathDirectory := v1.HostPathDirectory
 	hostPathDirectoryOrCreate := v1.HostPathDirectoryOrCreate
