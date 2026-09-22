@@ -1,0 +1,10 @@
+images:
+  # controller
+  - target: docker.io/rocm/network-operator:v1.2.1
+    k8s_comp_prefix:
+      - network-operator-charts-controller
+  # operands
+  # cni-plugins
+  - target: docker.io/rocm/k8s-cni-plugins:v1.2.1
+  # utils
+  - target: docker.io/rocm/network-operator-utils:v1.2.1
