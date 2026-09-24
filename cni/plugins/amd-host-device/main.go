@@ -68,28 +68,13 @@ func cmdAdd(args *skel.CmdArgs) error {
 		log.Printf("error getting IPv4 address for %s: %v", hostInterfaceName, errV4)
 	} else {
 		for _, a := range addrsV4 {
-			addr := a.IPNet.String()
-			gwStr := ""
-			ones, bits := a.Mask.Size()
-
-			if bits == 32 && ones == 31 {
-				// For point-to-point /31, the gateway is always the "other" bit.
-				peerIP := make(net.IP, len(a.IP))
-				copy(peerIP, a.IP)
-				peerIP[len(peerIP)-1] ^= 1 // XOR last bit
-				gwStr = peerIP.String()
-				log.Printf("P2P /31 detected: computed gateway %s for %s", gwStr, hostInterfaceName)
+			addr := formatOnLinkCIDR(a)
+			if addr == "" {
+				continue
 			}
-
-			entry := map[string]interface{}{
+			addresses = append(addresses, map[string]interface{}{
 				"address": addr,
-			}
-
-			if gwStr != "" {
-				entry["gateway"] = gwStr
-			}
-
-			addresses = append(addresses, entry)
+			})
 			addrs = append(addrs, addr)
 		}
 	}
@@ -115,14 +100,43 @@ func cmdAdd(args *skel.CmdArgs) error {
 		}
 	}
 
+	// Compute routes if nexthopNetAddrOffset and routeDstPrefixLen are specified in the NAD.
+	// dst     = interface_ip & routeDstPrefixLen mask  (routeDstPrefixLen=0 gives a default route)
+	// nexthop = XOR-derived peer IP for /31 (always correct regardless of which end the NIC is on);
+	//           network_address + nexthopNetAddrOffset for all other prefix lengths.
+	// Invalid or partial config is logged and skipped; the pod still attaches.
+	var injectedRoutes []map[string]interface{}
+	nexthopNetAddrOffset, hasNHOffset, nhErr := parseIntField(cniConf, "nexthopNetAddrOffset")
+	routeDstPrefixLen, hasDstPrefix, dstErr := parseIntField(cniConf, "routeDstPrefixLen")
+	switch {
+	case nhErr != nil:
+		log.Printf("ignoring route injection: invalid nexthopNetAddrOffset: %v", nhErr)
+	case dstErr != nil:
+		log.Printf("ignoring route injection: invalid routeDstPrefixLen: %v", dstErr)
+	case !hasNHOffset && !hasDstPrefix:
+		// Neither field set: no routes injected (default behaviour).
+	case hasNHOffset != hasDstPrefix:
+		log.Printf("ignoring route injection: nexthopNetAddrOffset and routeDstPrefixLen must be set together (nexthopNetAddrOffset set=%t, routeDstPrefixLen set=%t)", hasNHOffset, hasDstPrefix)
+	case routeDstPrefixLen < 0 || routeDstPrefixLen > 32:
+		log.Printf("ignoring route injection: routeDstPrefixLen %d out of range (0-32)", routeDstPrefixLen)
+	case nexthopNetAddrOffset < 0:
+		log.Printf("ignoring route injection: nexthopNetAddrOffset %d must be non-negative", nexthopNetAddrOffset)
+	default:
+		injectedRoutes = computeInjectedRoutes(addrsV4, nexthopNetAddrOffset, routeDstPrefixLen, hostInterfaceName)
+	}
+
 	// 3. Create static IPAM config.
 	if len(addresses) > 0 {
 		log.Printf("got IP addresses %v from host interface %s", addrs, hostInterfaceName)
+		innerIPAM := map[string]interface{}{
+			"type":      "static",
+			"addresses": addresses,
+		}
+		if len(injectedRoutes) > 0 {
+			innerIPAM["routes"] = injectedRoutes
+		}
 		ipamConf := map[string]interface{}{
-			"ipam": map[string]interface{}{
-				"type":      "static",
-				"addresses": addresses,
-			},
+			"ipam": innerIPAM,
 		}
 
 		// Construct the full CNI configuration with static IPAM config to be sent to the host-device CNI plugin

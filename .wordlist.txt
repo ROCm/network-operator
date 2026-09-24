@@ -172,6 +172,8 @@ namespace
 Namespace
 namespaces
 netdev
+nexthop
+Nexthop
 NetworkAttachmentDefinition
 NetworkAttachmentDefinitions
 NetworkConfig
@@ -272,6 +274,7 @@ Subdirectory
 SubjectAccessReview
 submodules
 subnet
+supernet
 Sundara
 tawk
 TBD
@@ -281,7 +284,9 @@ TLS
 tlsConfig
 TODO
 TokenReview
+ToR
 tolerations
+topologies
 UCX
 UI
 uncordoned

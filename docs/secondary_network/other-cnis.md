@@ -111,7 +111,11 @@ The [SBR CNI plugin](https://github.com/k8snetworkplumbingwg/sbr-cni) enables So
 
 ### AMD Host Device + SBR Example
 
-The SBR plugin can be used with the AMD Host Device CNI to enable proper source-based routing for secondary networks. Note that, for /31 point-to-point IPv4 networks where amd-host-device computes a gateway, it will pass the IP address and gateway information to SBR for correct routing configuration.
+The SBR plugin can be used with the AMD Host Device CNI to enable proper source-based routing for secondary networks. Routing is **opt-in**: set both `nexthopNetAddrOffset` and `routeDstPrefixLen` on `amd-host-device` so a route is injected into the static IPAM result that SBR consumes. See [Policy route injection](../amd-host-device/route-injection.md).
+
+**Migration from v1.2.x:** previous releases injected an implicit default gateway for `/31` links even when those fields were absent. That behaviour is removed. Existing `/31` + SBR NADs must add `"nexthopNetAddrOffset": 0` and `"routeDstPrefixLen": 0` to keep a default route via the peer.
+
+The base chaining configuration (no route injection) looks like this — add the two fields to the `amd-host-device` block to opt in:
 
 ```yaml
 apiVersion: k8s.cni.cncf.io/v1

@@ -7,7 +7,8 @@ The AMD Host Device CNI plugin is a specialized Container Network Interface (CNI
 ### Interface Movement and IP Preservation
 
 - **Direct PF/VF Movement**: Moves entire Physical or Virtual Function interfaces from host to pod namespace
-- **IP Address Preservation**: Captures and preserves existing IP addresses (both IPv4 and IPv6 addresses) from the host interface and passes them to the static IPAM configuration. For point-to-point /31 IPv4 networks, it automatically computes and adds the gateway.
+- **IP Address Preservation**: Captures and preserves existing IP addresses (both IPv4 and IPv6 addresses) from the host interface and passes them to the static IPAM configuration
+- **Policy route injection (opt-in)**: set both `nexthopNetAddrOffset` and `routeDstPrefixLen` on the NAD to inject a route into the static IPAM result for SBR. See [Policy route injection](../amd-host-device/route-injection.md). Earlier releases implicitly added a gateway for `/31` links; that behaviour is removed. Restore a default route via the peer with `"nexthopNetAddrOffset": 0` and `"routeDstPrefixLen": 0`
 - **IP Address and State Persistence**: IP addresses and the interface state are retained on the host interface even after workload deletion
 
 ## Configuration
