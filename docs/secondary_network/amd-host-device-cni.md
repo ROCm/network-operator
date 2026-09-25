@@ -53,6 +53,139 @@ spec:
 
 For detailed information on how this resource is allocated and how the CNI is invoked, please refer to the [integration flow documentation](./integration-flow.md).
 
+### Configuration Reference
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `type` | string | yes | Must be `"amd-host-device"` |
+| `cniVersion` | string | yes | CNI spec version (e.g. `"0.3.1"`) |
+| `nexthopNetAddrOffset` | integer | no | Offset from subnet network address to derive gateway IP. Ignored on `/31` (XOR peer used). Must be set with `routeDstPrefixLen` |
+| `routeDstPrefixLen` | integer (0–32) | no | Prefix length for route destination. Must be less than interface prefix. `0` = default route. Must be set with `nexthopNetAddrOffset` |
+
+### Route Injection (opt-in)
+
+When both `nexthopNetAddrOffset` and `routeDstPrefixLen` are set, the plugin computes a route per IPv4 address on the host interface and injects it into the static IPAM `routes` array. When chained with the [SBR CNI plugin](https://github.com/k8snetworkplumbingwg/sbr-cni), SBR installs the route into a per-source policy routing table. For the full derivation algorithm and edge cases, see [Policy Route Injection](../amd-host-device/route-injection.md).
+
+**Field value combinations:**
+
+| `nexthopNetAddrOffset` | `routeDstPrefixLen` | Effect |
+| --- | --- | --- |
+| *(absent)* | *(absent)* | No route injected. Interface moves to pod with IPs only. |
+| `1` | `19` | Supernet route: `<supernet>/19 via <network_addr+1>`. For leaf/spine fabrics with /25 host links. |
+| `1` | `0` | Default route: `0.0.0.0/0 via <network_addr+1>`. All non-local traffic exits via gateway. |
+| `0` | `0` | Default route on /31: `0.0.0.0/0 via <XOR peer>`. v1.2.x migration path. On non-/31, gateway = network address (offset 0), generally not useful. |
+| `0` | `16` | /31 supernet: `<supernet>/16 via <XOR peer>`. Offset ignored on /31. |
+
+**Key behaviors:**
+
+- Both fields must be set together — setting only one is a no-op (logged as warning)
+- `routeDstPrefixLen: 0` means a default route (`0.0.0.0/0`) — routes **all** non-local traffic via the computed gateway
+- On `/31` links, `nexthopNetAddrOffset` is always ignored; the XOR peer is used as the gateway regardless of the offset value
+- On non-`/31` links, `nexthopNetAddrOffset: 0` produces a gateway equal to the network address (e.g., `.128` for a `/25`) — this is typically not a valid host; use `1` for the first usable address
+
+#### NAD with supernet route (leaf/spine fabric)
+
+For environments with `/25` host interfaces and a `/19` supernet across the fabric (e.g., spine/leaf datacenter topologies), this NAD injects a supernet route so pods can reach peers behind other leaf switches. For a NIC at `10.1.2.130/25`, this installs `10.1.0.0/19 via 10.1.2.129` in the SBR policy table.
+
+```yaml
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: amd-host-device-sbr-nad
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: amd.com/nic
+spec:
+  config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "amd-host-device-sbr-nad",
+      "plugins": [
+        {
+          "type": "amd-host-device",
+          "nexthopNetAddrOffset": 1,
+          "routeDstPrefixLen": 19
+        },
+        { "type": "sbr" }
+      ]
+    }
+```
+
+#### NAD with default route (non-/31)
+
+Routes all secondary-network traffic via the first host in the subnet. For a NIC at `10.1.2.130/25`, this installs `0.0.0.0/0 via 10.1.2.129`.
+
+```yaml
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: amd-host-device-sbr-default-nad
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: amd.com/nic
+spec:
+  config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "amd-host-device-sbr-default-nad",
+      "plugins": [
+        {
+          "type": "amd-host-device",
+          "nexthopNetAddrOffset": 1,
+          "routeDstPrefixLen": 0
+        },
+        { "type": "sbr" }
+      ]
+    }
+```
+
+#### NAD with default route (/31 — migration from v1.2.x)
+
+Replaces the implicit `/31` gateway that was automatically injected in v1.2.x. For a NIC at `192.168.4.8/31`, this installs `0.0.0.0/0 via 192.168.4.9` (XOR peer). The offset value is ignored on `/31`.
+
+```yaml
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: amd-host-device-sbr-p2p-nad
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: amd.com/nic
+spec:
+  config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "amd-host-device-sbr-p2p-nad",
+      "plugins": [
+        {
+          "type": "amd-host-device",
+          "nexthopNetAddrOffset": 0,
+          "routeDstPrefixLen": 0
+        },
+        { "type": "sbr" }
+      ]
+    }
+```
+
+The basic NAD examples shown earlier (without `nexthopNetAddrOffset` and `routeDstPrefixLen`) continue to work unchanged — the interface moves to the pod with its IPs and no routes are injected.
+
+### Verifying Route Injection
+
+When route injection is configured with SBR, verify the injected route appears in the SBR policy table inside the pod. Using the supernet NAD example above (NIC at `10.1.2.130/25`, `nexthopNetAddrOffset: 1`, `routeDstPrefixLen: 19`):
+
+```bash
+root@workload-app:/tmp# ip route show table 100
+10.1.0.0/19 via 10.1.2.129 dev net1
+10.1.2.128/25 dev net1 proto kernel scope link src 10.1.2.130
+```
+
+```bash
+root@workload-app:/tmp# ip rule show
+0:      from all lookup local
+32765:  from 10.1.2.130 lookup 100
+32766:  from all lookup main
+32767:  from all lookup default
+```
+
+The first line in table 100 (`10.1.0.0/19 via 10.1.2.129`) is the injected supernet route — the gateway `10.1.2.129` is the network address (`10.1.2.128`) plus the offset (`1`), and the destination `10.1.0.0/19` is the interface IP masked to `/19`. The second line is the connected `/25` subnet route added by static IPAM. The ip rule ensures traffic sourced from the secondary IP (`10.1.2.130`) uses this table.
+
 ## Verification
 
 This section demonstrates how to verify that a RoCE (RDMA over Converged Ethernet) device is correctly allocated to a pod and moved from the host namespace into the pod namespace.

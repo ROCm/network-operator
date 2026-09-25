@@ -115,7 +115,9 @@ The SBR plugin can be used with the AMD Host Device CNI to enable proper source-
 
 **Migration from v1.2.x:** previous releases injected an implicit default gateway for `/31` links even when those fields were absent. That behaviour is removed. Existing `/31` + SBR NADs must add `"nexthopNetAddrOffset": 0` and `"routeDstPrefixLen": 0` to keep a default route via the peer.
 
-The base chaining configuration (no route injection) looks like this — add the two fields to the `amd-host-device` block to opt in:
+#### With route injection (supernet route)
+
+For leaf/spine fabrics where host interfaces use `/25` and the broader fabric is a `/19` supernet:
 
 ```yaml
 apiVersion: k8s.cni.cncf.io/v1
@@ -125,30 +127,59 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/resourceName: amd.com/vnic
 spec:
-  config: '{
-  "cniVersion": "0.3.1",
-  "name": "vf-amd-host-device-sbr-nad",
-  "plugins": [
+  config: |-
     {
-      "type": "amd-host-device"
-    },
-    {
-      "type": "sbr"
+      "cniVersion": "0.3.1",
+      "name": "vf-amd-host-device-sbr-nad",
+      "plugins": [
+        {
+          "type": "amd-host-device",
+          "nexthopNetAddrOffset": 1,
+          "routeDstPrefixLen": 19
+        },
+        { "type": "sbr" }
+      ]
     }
-  ]
-}'
 ```
+
+#### Without route injection (basic chaining)
+
+When no routing is needed — the interface moves to the pod with its IPs. Without a gateway or injected routes in the IPAM result, SBR does not create a policy routing table; you will only have the kernel's connected subnet route in the main table:
+
+```yaml
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: vf-amd-host-device-sbr-basic-nad
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: amd.com/vnic
+spec:
+  config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "vf-amd-host-device-sbr-basic-nad",
+      "plugins": [
+        {
+          "type": "amd-host-device"
+        },
+        { "type": "sbr" }
+      ]
+    }
+```
+
+See [AMD Host Device CNI — Configuration Reference](./amd-host-device-cni.md#configuration-reference) for all field combinations and their effects.
 
 ### How SBR Works
 
 When the SBR plugin is invoked:
 
 1. It reads the IPAM result from the previous CNI plugin in the chain
-2. For each IP address with a gateway, it creates:
+2. For each IP address with a gateway or routes, it creates:
    - A new routing table (using a unique table ID)
-   - A default route in that table pointing to the specified gateway
+   - A default route in that table pointing to the specified gateway (if present)
+   - Any explicit routes from the IPAM `routes` array (e.g., a supernet route injected by `amd-host-device`)
    - An IP rule that directs packets with that source address to use the new routing table
-3. This ensures that traffic originating from the secondary interface is routed through the correct gateway
+3. This ensures that traffic originating from the secondary interface is routed through the correct gateway or destination
 
 ### Verification
 
@@ -159,8 +190,9 @@ To verify SBR configuration inside a pod:
 ip route show table all
 ```
 
+#### /31 point-to-point example (with `routeDstPrefixLen: 0`)
+
 ```bash
-# Example output showing routes in custom tables:
 root@workload-app-647dc5f6fc-pvpw2:/tmp# ip route show table all
 default via 192.168.4.9 dev net1 table 100
 192.168.4.8/31 dev net1 table 100 proto kernel scope link src 192.168.4.8
@@ -200,6 +232,16 @@ root@workload-app-647dc5f6fc-pvpw2:/tmp# ip rule show
 32766:  from all lookup main
 32767:  from all lookup default
 ```
+
+#### Supernet route example (with `nexthopNetAddrOffset: 1`, `routeDstPrefixLen: 19`, NIC at `10.1.2.130/25`)
+
+```bash
+root@workload-app:/tmp# ip route show table 100
+10.1.0.0/19 via 10.1.2.129 dev net1
+10.1.2.128/25 dev net1 proto kernel scope link src 10.1.2.130
+```
+
+The first line is the injected supernet route: destination `10.1.0.0/19` (interface IP masked to `/19`), gateway `10.1.2.129` (network address `10.1.2.128` + offset `1`). The second is the connected `/25` subnet route from static IPAM.
 
 To ping a NIC interface between two pods, you can use the following command:
 
