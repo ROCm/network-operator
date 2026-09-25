@@ -314,6 +314,7 @@ webhook's
 webhookServer
 whereabouts
 workermgr
+XOR
 yaml
 YAML
 YYYY
