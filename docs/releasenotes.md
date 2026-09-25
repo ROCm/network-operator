@@ -1,5 +1,28 @@
 # Release Notes
 
+## v1.3.0
+
+This release replaces the implicit `/31` gateway behavior in the AMD Host Device CNI with
+explicit, opt-in policy route injection for source-based routing.
+
+### Release Highlights
+
+- **AMD Host Device CNI**
+  - Added opt-in policy route injection via two NAD fields, `nexthopNetAddrOffset` and
+    `routeDstPrefixLen`. When both are set, the plugin computes one route per IPv4 address
+    and injects it into the static IPAM `routes` array for the chained `sbr` plugin to
+    consume. See [Policy route injection](amd-host-device/route-injection.md).
+
+### Breaking Changes
+
+- **AMD Host Device CNI — implicit `/31` gateway removed.** v1.2.0–v1.2.1 automatically
+  injected a gateway for `/31` IPv4 links into the static IPAM result for SBR. That
+  implicit behavior has been removed in favor of the explicit route injection above.
+  **Migration:** existing `/31` + SBR NADs that relied on the implicit gateway must add
+  `"nexthopNetAddrOffset": 0` and `"routeDstPrefixLen": 0` to the `amd-host-device` plugin
+  config to preserve the default route via the peer (the offset is ignored on `/31`; both
+  fields are required only because they must be set together).
+
 ## v1.2.1
 
 This release adds OpenShift (OLM) deployment support, configurable base image registries for air-gapped environments, and a modernized RoCE workload image, alongside numerous bug fixes for OpenShift driver management, OLM packaging, and node lifecycle operations.

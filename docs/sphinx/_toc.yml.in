@@ -59,6 +59,8 @@ subtrees:
     entries:
       - file: secondary_network/amd-host-device-cni
         title: AMD Host Device CNI Plugin 
+      - file: amd-host-device/route-injection
+        title: Policy Route Injection
       - file: secondary_network/other-cnis
         title: Alternative CNI Plugins
       - file: secondary_network/integration-flow
