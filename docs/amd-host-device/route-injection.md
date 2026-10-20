@@ -50,9 +50,9 @@ dstNet = dstIP / routeDstPrefixLen
 
 **Nexthop — two cases:**
 
-- **/31 point-to-point links:** the nexthop is always the XOR peer
-  (`interfaceIP ^ 1` on the last octet). This is correct regardless of which end of
-  the /31 the NIC holds, and `nexthopNetAddrOffset` is ignored for this case.
+- **/31 point-to-point links:** `nexthopNetAddrOffset` is ignored. The nexthop is
+  the kernel peer when one is present, otherwise the XOR of the local address
+  (`interfaceIP ^ 1` on the last octet).
 
 - **All other prefix lengths:** the nexthop is derived as:
 
@@ -162,9 +162,12 @@ and fully visible in the NAD, with no implicit defaults.
   or host route via the peer, which is not useful. `0` is always a supernet and
   installs a default route (`0.0.0.0/0`), which is how you restore the old `/31` + SBR
   gateway.
-- For non-`/31` addresses, `nexthopNetAddrOffset` must fall in
-  `[0, 2^(32 − interface prefix) − 1]` so the nexthop stays inside the interface
-  subnet (typical ToR peer is `1`). Out of range skips that address (logged).
-  On `/31` the offset is ignored and the XOR peer is used.
+- When the interface prefix length is 30 or less (`/30`, `/24`, `/16`, and so on), `nexthopNetAddrOffset` must fall in
+  `[1, 2^(32 − interface prefix) − 2]`. Offset `0` is the subnet address and
+  the top of the old range is the broadcast address; the kernel rejects both
+  as a gateway, so those offsets skip that address (logged). A typical ToR
+  peer is `1`. Any offset outside the host bits also skips that address (logged).
+  On `/31` the offset is ignored. The gateway is the kernel peer when one is
+  present, otherwise the XOR of the local address.
 - Only IPv4 addresses are processed; IPv6 addresses on the interface are unaffected.
 - Multiple IPv4 addresses on the same interface each produce an independent route entry.

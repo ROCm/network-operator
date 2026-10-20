@@ -59,7 +59,7 @@ For detailed information on how this resource is allocated and how the CNI is in
 | --- | --- | --- | --- |
 | `type` | string | yes | Must be `"amd-host-device"` |
 | `cniVersion` | string | yes | CNI spec version (e.g. `"0.3.1"`) |
-| `nexthopNetAddrOffset` | integer | no | Offset from subnet network address to derive gateway IP. Ignored on `/31` (XOR peer used). Must be set with `routeDstPrefixLen` |
+| `nexthopNetAddrOffset` | integer | no | Offset from subnet network address to derive gateway IP. Ignored on `/31` (kernel peer, otherwise XOR). Must be set with `routeDstPrefixLen` |
 | `routeDstPrefixLen` | integer (0–32) | no | Prefix length for route destination. Must be less than interface prefix. `0` = default route. Must be set with `nexthopNetAddrOffset` |
 
 ### Route Injection (opt-in)
@@ -73,15 +73,15 @@ When both `nexthopNetAddrOffset` and `routeDstPrefixLen` are set, the plugin com
 | *(absent)* | *(absent)* | No route injected. Interface moves to pod with IPs only. |
 | `1` | `19` | Supernet route: `<supernet>/19 via <network_addr+1>`. For leaf/spine fabrics with /25 host links. |
 | `1` | `0` | Default route: `0.0.0.0/0 via <network_addr+1>`. All non-local traffic exits via gateway. |
-| `0` | `0` | Default route on /31: `0.0.0.0/0 via <XOR peer>`. v1.2.x migration path. On non-/31, gateway = network address (offset 0), generally not useful. |
+| `0` | `0` | Default route on /31: `0.0.0.0/0 via <XOR peer>`. v1.2.x migration path. When the prefix length is 30 or less, offset 0 is the subnet address and is skipped. |
 | `0` | `16` | /31 supernet: `<supernet>/16 via <XOR peer>`. Offset ignored on /31. |
 
 **Key behaviors:**
 
 - Both fields must be set together — setting only one is a no-op (logged as warning)
 - `routeDstPrefixLen: 0` means a default route (`0.0.0.0/0`) — routes **all** non-local traffic via the computed gateway
-- On `/31` links, `nexthopNetAddrOffset` is always ignored; the XOR peer is used as the gateway regardless of the offset value
-- On non-`/31` links, `nexthopNetAddrOffset: 0` produces a gateway equal to the network address (e.g., `.128` for a `/25`) — this is typically not a valid host; use `1` for the first usable address
+- On `/31` links, `nexthopNetAddrOffset` is ignored. The gateway is the kernel peer when one is present, otherwise the XOR of the local address
+- When the interface prefix length is 30 or less (`/30`, `/24`, `/16`, and so on), offset `0` (the subnet address) and the all-ones offset (the broadcast address) are skipped. Use `1` for the first usable host
 
 #### NAD with supernet route (leaf/spine fabric)
 
