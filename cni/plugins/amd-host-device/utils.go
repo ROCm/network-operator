@@ -294,13 +294,20 @@ func computeInjectedRoutes(addrs []netlink.Addr, offset, dstPrefixLen int, ifNam
 		} else {
 			// The offset must fit within the on-link subnet's host bits.
 			hostBits := uint(bits - ones)
-			if uint64(offset) >= uint64(1)<<hostBits {
+			maxHost := uint64(1) << hostBits
+			if uint64(offset) >= maxHost {
 				log.Printf("skipping injected route for %s: nexthopNetAddrOffset %d does not fit in the /%d host bits", a.IPNet, offset, ones)
 				continue
 			}
 			nh, err := addOffsetToIP(a.IP.Mask(mask), offset)
 			if err != nil {
 				log.Printf("failed to compute injected nexthop for %s: %v", a.IPNet, err)
+				continue
+			}
+			// Network (offset 0) and broadcast (all-ones) are reserved — the kernel
+			// rejects them as a gateway. They only exist for prefixes shorter than /31.
+			if hostBits >= 2 && (offset == 0 || uint64(offset) == maxHost-1) {
+				log.Printf("skipping injected route for %s: nexthopNetAddrOffset %d resolves to the subnet network/broadcast address %s", a.IPNet, offset, nh)
 				continue
 			}
 			nexthop = nh
